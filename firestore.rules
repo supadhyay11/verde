@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+
+    // users: everyone reads and edits only their own profile. A provider can
+    // also read the customers linked to them. providerId and role are only
+    // ever set by the linkToProvider / createProfile paths (see below), so a
+    // user cannot attach themselves to somebody else's account.
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid
+        || resource.data.providerId == request.auth.uid);
+      // Profile is created once, with no provider link; the callable function
+      // linkToProvider sets providerId afterwards.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.role in ['provider', 'customer']
+        && request.resource.data.language in ['en', 'es']
+        && !('providerId' in request.resource.data);
+      allow update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.get('providerId', null) == resource.data.get('providerId', null)
+        && request.resource.data.get('inviteCode', null) == resource.data.get('inviteCode', null)
+        && request.resource.data.language in ['en', 'es'];
+    }
+
+    // providerProfiles: the part of a provider's profile their linked
+    // customers may see (name, Zelle and Venmo handles). The provider writes it.
+    match /providerProfiles/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid
+        || me().get('providerId', null) == uid);
+      allow write: if signedIn() && request.auth.uid == uid && me().role == 'provider';
+    }
+
+    // jobs: the provider who owns it and the customer it is for can read it.
+    // Only the provider writes. Translations are written by Cloud Functions.
+    match /jobs/{jobId} {
+      allow read: if signedIn() && (resource.data.providerId == request.auth.uid
+        || resource.data.customerId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.providerId == request.auth.uid
+        && me().role == 'provider'
+        && !('descriptionTranslations' in request.resource.data)
+        && !('noteTranslations' in request.resource.data);
+      allow update: if signedIn() && resource.data.providerId == request.auth.uid
+        && request.resource.data.providerId == resource.data.providerId
+        && request.resource.data.customerId == resource.data.customerId
+        && request.resource.data.get('descriptionTranslations', null) == resource.data.get('descriptionTranslations', null)
+        && request.resource.data.get('noteTranslations', null) == resource.data.get('noteTranslations', null);
+      allow delete: if signedIn() && resource.data.providerId == request.auth.uid;
+    }
+
+    // chat: thread id is "<providerId>_<customerId>"; only those two people
+    // can read or write. The translations field is written only by a Cloud
+    // Function, never by a client.
+    match /threads/{threadId} {
+      allow read: if signedIn() && request.auth.uid in threadId.split('_');
+      allow create, update: if signedIn() && request.auth.uid in threadId.split('_')
+        && request.resource.data.keys().hasOnly(['providerId', 'customerId', 'lastText', 'lastAt', 'lastSenderId'])
+        && threadId == request.resource.data.providerId + '_' + request.resource.data.customerId;
+
+      match /messages/{messageId} {
+        allow read: if signedIn() && request.auth.uid in threadId.split('_');
+        allow create: if signedIn() && request.auth.uid in threadId.split('_')
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.lang in ['en', 'es']
+          && !('translations' in request.resource.data);
+        allow update, delete: if false;
+      }
+    }
+  }
+}

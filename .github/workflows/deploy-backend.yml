@@ -1,0 +1,86 @@
+name: Deploy backend (functions + rules)
+
+# Publishes the Cloud Functions and the Firestore / Storage security rules.
+# The "Deploy Verde to Firebase Hosting" workflow only ever publishes the
+# website - this one is the backend half, so nothing has to be deployed by
+# hand from Cloud Shell or a laptop any more.
+#
+# Runs automatically when a merge to main touches backend files, and can also
+# be run by hand: GitHub > Actions > "Deploy backend (functions + rules)" >
+# Run workflow.
+#
+# It is a separate workflow on purpose: if a backend deploy ever fails (for
+# example a missing permission), the website deploy is not affected.
+#
+# Uses the same FIREBASE_SERVICE_ACCOUNT secret as the hosting deploy. That
+# account needs more than hosting rights for this to work: Cloud Functions
+# Admin, Firebase Rules Admin, Cloud Scheduler Admin, Artifact Registry
+# Writer, Secret Manager Viewer, Cloud Run Admin and Eventarc Admin.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "functions/**"
+      - "firestore.rules"
+      - "firestore.indexes.json"
+      - "storage.rules"
+  workflow_dispatch:
+
+# Never run two backend deploys at once; a newer one waits for the older.
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install function dependencies
+        run: npm ci --prefix functions
+
+      - name: Check the functions load
+        run: node -e "require('./functions/index.js'); console.log('functions load OK')"
+
+      - name: Deploy functions and rules
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          # No --force: if a function exists in the project but is no longer
+          # in the code, the deploy stops instead of silently deleting it.
+          set +e
+          npx -y firebase-tools@15.34.1 deploy \
+            --only functions,firestore:rules,firestore:indexes,storage \
+            --project verde-gardener-app \
+            --non-interactive > "$RUNNER_TEMP/deploy.log" 2>&1
+          code=$?
+          set -e
+          rm -f "$RUNNER_TEMP/sa.json"
+          cat "$RUNNER_TEMP/deploy.log"
+          if [ "$code" -ne 0 ]; then
+            # Put the reason in the run's red "annotations" box so it is
+            # readable at a glance without opening the full log. Lines that
+            # could contain credentials are dropped.
+            grep -v -i -E 'private_key|token|secret|password' "$RUNNER_TEMP/deploy.log" \
+              | grep -i -E 'error|permission|denied|forbidden|403|not authorized|requires|missing|failed' \
+              | tail -15 \
+              | while IFS= read -r line; do
+                  line="${line//%/%25}"
+                  echo "::error::${line}"
+                done
+            exit "$code"
+          fi

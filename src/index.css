@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: #f6fbf5;
+  --color-surface: #ffffff;
+  --color-ink: #181d1a;
+  --color-muted: #5d665a;
+  --color-line: #dfe6dc;
+  --color-green: #2e7d32;
+  --color-green-dark: #0d631b;
+  --color-green-soft: #e3f1e2;
+  --color-sand: #eef2ec;
+  --color-danger: #ba1a1a;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+h1, h2, h3, button { font-family: var(--font-display); }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .55; }
+:focus-visible { outline: 3px solid var(--color-green); outline-offset: 2px; }
