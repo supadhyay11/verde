@@ -74,3 +74,26 @@ export interface ChatMessage {
   translationFailed?: boolean
   createdAt?: Timestamp
 }
+
+/** A customer the gardener added by hand. Becomes "linked" when that person signs up and enters its code. */
+export interface CustomerRecord {
+  id: string
+  providerId: string
+  name: string
+  phone?: string
+  address?: string
+  language: Lang
+  code: string
+  claimedBy?: string
+}
+
+/** One row in the gardener's customer list: either a linked account or a hand-added record. */
+export interface CustomerEntry {
+  id: string // user uid when linked, record id otherwise (this is what a job stores as customerId)
+  name: string
+  phone?: string
+  address?: string
+  language?: Lang
+  linked: boolean
+  code?: string
+}

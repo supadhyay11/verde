@@ -9,6 +9,8 @@ import CustomerHome from '@/pages/CustomerHome'
 import Schedule from '@/pages/Schedule'
 import NewJob from '@/pages/NewJob'
 import JobPage from '@/pages/JobPage'
+import Customers from '@/pages/Customers'
+import NewCustomer from '@/pages/NewCustomer'
 import Messages from '@/pages/Messages'
 import Chat from '@/pages/Chat'
 import Profile from '@/pages/Profile'
@@ -48,6 +50,9 @@ export default function App() {
       <Route path="/chat/:customerId" element={<Chat />} />
       {provider && <Route path="/schedule" element={<Schedule />} />}
       {provider && <Route path="/jobs/new" element={<NewJob />} />}
+      {provider && <Route path="/customers" element={<Customers />} />}
+      {provider && <Route path="/customers/new" element={<NewCustomer />} />}
+      {provider && <Route path="/customers/:id/edit" element={<NewCustomer />} />}
       {provider && <Route path="/messages" element={<Messages />} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

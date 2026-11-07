@@ -34,6 +34,23 @@ service cloud.firestore {
       allow write: if signedIn() && request.auth.uid == uid && me().role == 'provider';
     }
 
+    // customers the gardener added by hand. Only that gardener can see or
+    // change them; claiming one (when the customer enters its code) is done
+    // by the linkToProvider Cloud Function, never from the app.
+    match /providerCustomers/{id} {
+      allow read, delete: if signedIn() && resource.data.providerId == request.auth.uid;
+      allow create: if signedIn() && me().role == 'provider'
+        && request.resource.data.providerId == request.auth.uid
+        && !('claimedBy' in request.resource.data)
+        && request.resource.data.name is string && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120;
+      allow update: if signedIn() && resource.data.providerId == request.auth.uid
+        && !('claimedBy' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'address', 'language'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120;
+    }
+
     // jobs: the provider who owns it and the customer it is for can read it.
     // Only the provider writes. Translations are written by Cloud Functions.
     match /jobs/{jobId} {

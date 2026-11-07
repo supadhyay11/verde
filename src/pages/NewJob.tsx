@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
-import { createJob, useCustomers } from '@/lib/data'
+import { createJob, useCustomerBook } from '@/lib/data'
 import { todayKey } from '@/lib/date'
 import { ALL_TASKS, DEFAULT_TASKS } from '@/lib/tasks'
 import type { TaskKey } from '@/lib/types'
@@ -12,7 +12,7 @@ import { Button, Empty, Field, Screen, cx } from '@/components/ui'
 export default function NewJob() {
   const { profile, t, lang } = useApp()
   const navigate = useNavigate()
-  const customers = useCustomers(profile?.uid)
+  const customers = useCustomerBook(profile?.uid)
   const [customerId, setCustomerId] = useState('')
   const [address, setAddress] = useState('')
   const [date, setDate] = useState(todayKey())
@@ -23,11 +23,11 @@ export default function NewJob() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  const customer = customers?.find((c) => c.uid === customerId)
+  const customer = customers?.find((c) => c.id === customerId)
 
   function pick(id: string) {
     setCustomerId(id)
-    const c = customers?.find((x) => x.uid === id)
+    const c = customers?.find((x) => x.id === id)
     if (c?.address && !address) setAddress(c.address)
   }
 
@@ -54,8 +54,8 @@ export default function NewJob() {
       {customers && customers.length === 0 ? (
         <Empty
           title={t('noCustomers')}
-          help={`${t('noCustomersHelp')} ${profile?.inviteCode ?? ''}`}
-          action={<Button variant="secondary" onClick={() => navigate('/profile')}>{t('yourCode')}</Button>}
+          help={t('noCustomersHelp')}
+          action={<Button variant="secondary" onClick={() => navigate('/customers/new')}>{t('addCustomer')}</Button>}
         />
       ) : (
         <form onSubmit={submit} className="space-y-5 pb-4" noValidate>
@@ -66,7 +66,7 @@ export default function NewJob() {
               className="h-16 w-full rounded-2xl border-2 border-line bg-surface px-4 text-xl focus:border-green"
             >
               <option value="" disabled />
-              {(customers ?? []).map((c) => <option key={c.uid} value={c.uid}>{c.name}</option>)}
+              {(customers ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <Field id="address" label={t('jobAddress')} value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="street-address" required />

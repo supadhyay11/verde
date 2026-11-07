@@ -5,7 +5,7 @@ import {
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { useEffect, useState } from 'react'
 import { db, storage } from './firebase'
-import type { ChatMessage, Job, JobPhoto, Lang, PhotoTag, Profile, TaskKey } from './types'
+import type { ChatMessage, CustomerEntry, CustomerRecord, Job, JobPhoto, Lang, PhotoTag, Profile, TaskKey } from './types'
 
 export function threadIdFor(providerId: string, customerId: string) {
   return `${providerId}_${customerId}`
@@ -56,9 +56,51 @@ export function useCustomers(providerId: string | undefined) {
   return customers
 }
 
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+const newCode = () => Array.from({ length: 6 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('')
+
+/** Linked customers (signed-up accounts) plus customers the gardener added by hand. */
+export function useCustomerBook(providerId: string | undefined) {
+  const linked = useCustomers(providerId)
+  const [records, setRecords] = useState<CustomerRecord[] | null>(null)
+  useEffect(() => {
+    if (!providerId) return
+    const q = query(collection(db, 'providerCustomers'), where('providerId', '==', providerId))
+    return onSnapshot(q, (snap) => {
+      setRecords(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as CustomerRecord))
+    }, () => setRecords([]))
+  }, [providerId])
+  if (linked === null || records === null) return null
+  const entries: CustomerEntry[] = [
+    ...linked.map((u) => ({ id: u.uid, name: u.name, phone: u.phone, address: u.address, language: u.language, linked: true })),
+    ...records
+      .filter((r) => !r.claimedBy)
+      .map((r) => ({ id: r.id, name: r.name, phone: r.phone, address: r.address, language: r.language, linked: false, code: r.code })),
+  ]
+  return entries.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+export async function addCustomer(input: { providerId: string; name: string; phone: string; address: string; language: Lang }): Promise<string> {
+  const ref = await addDoc(collection(db, 'providerCustomers'), {
+    providerId: input.providerId,
+    name: input.name,
+    phone: input.phone,
+    address: input.address,
+    language: input.language,
+    code: newCode(),
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export const updateCustomerRecord = (id: string, patch: { name: string; phone: string; address: string; language: Lang }) =>
+  updateDoc(doc(db, 'providerCustomers', id), patch)
+
+export const removeCustomerRecord = (id: string) => deleteDoc(doc(db, 'providerCustomers', id))
+
 export interface NewJobInput {
   providerId: string
-  customer: Profile
+  customer: { id: string; name: string }
   address: string
   date: string
   startTime: string
@@ -71,7 +113,7 @@ export interface NewJobInput {
 export async function createJob(input: NewJobInput): Promise<string> {
   const ref = await addDoc(collection(db, 'jobs'), {
     providerId: input.providerId,
-    customerId: input.customer.uid,
+    customerId: input.customer.id,
     customerName: input.customer.name,
     address: input.address,
     date: input.date,

@@ -8,13 +8,19 @@ import { Button, Field, cx } from '@/components/ui'
 
 export default function Auth({ onChangeLanguage }: { onChangeLanguage: () => void }) {
   const { t, signIn, signUp, lang } = useApp()
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
-  const [role, setRole] = useState<Role>('provider')
+  const invite = (() => {
+    try {
+      const c = (new URLSearchParams(window.location.search).get('code') ?? '').trim().toUpperCase()
+      return /^[A-Z2-9]{6}$/.test(c) ? c : ''
+    } catch { return '' }
+  })()
+  const [mode, setMode] = useState<'signin' | 'signup'>(invite ? 'signup' : 'signin')
+  const [role, setRole] = useState<Role>(invite ? 'customer' : 'provider')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
+  const [code, setCode] = useState(invite)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 

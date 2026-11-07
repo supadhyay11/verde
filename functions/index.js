@@ -4,8 +4,8 @@
 //    language (English <-> Spanish) and stored next to the original.
 //  - translateJobText: the job description (gardener -> customer) and the
 //    report note are translated the same way.
-//  - linkToProvider: a customer types the gardener's 6-character code and is
-//    linked to that gardener. Done here, not in the app, so a customer can
+//  - linkToProvider: a customer types a 6-character code (the gardener's own,
+//    or one made for that customer) and is linked to that gardener. Done here, not in the app, so a customer can
 //    never attach themselves to someone else by editing their own profile.
 //
 // Translation uses the Cloud Translation API (basic edition) with the
@@ -92,6 +92,25 @@ exports.linkToProvider = onCall({ region: REGION }, async (request) => {
     throw new HttpsError('failed-precondition', 'Only customer accounts can link to a gardener.');
   }
 
+  // 1) A code the gardener made for one specific customer they added by hand:
+  //    link this account to that gardener and move that customer's jobs over.
+  const rec = await db.collection('providerCustomers').where('code', '==', code).limit(1).get();
+  if (!rec.empty) {
+    const recDoc = rec.docs[0];
+    const r = recDoc.data();
+    if (r.claimedBy && r.claimedBy !== request.auth.uid) {
+      throw new HttpsError('already-exists', 'That code was already used.');
+    }
+    const jobs = await db.collection('jobs').where('providerId', '==', r.providerId).where('customerId', '==', recDoc.id).get();
+    const batch = db.batch();
+    jobs.docs.forEach((j) => batch.update(j.ref, { customerId: request.auth.uid }));
+    batch.update(meRef, { providerId: r.providerId });
+    batch.update(recDoc.ref, { claimedBy: request.auth.uid });
+    await batch.commit();
+    return { ok: true };
+  }
+
+  // 2) The gardener's own general code.
   const found = await db.collection('users').where('inviteCode', '==', code).where('role', '==', 'provider').limit(1).get();
   if (found.empty) throw new HttpsError('not-found', 'No gardener has that code.');
 

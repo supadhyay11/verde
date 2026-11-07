@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ChangeEvent, FocusEvent, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CalendarDays, Leaf, MessageSquare, ClipboardList, UserRound } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Leaf, MessageSquare, ClipboardList, UserRound, Users } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
 
 export function cx(...parts: Array<string | false | null | undefined>) {
@@ -43,6 +43,7 @@ function BottomNav() {
     profile?.role === 'provider'
       ? [
           { to: '/', icon: ClipboardList, label: t('todaysJobs'), end: true },
+          { to: '/customers', icon: Users, label: t('customers') },
           { to: '/messages', icon: MessageSquare, label: t('messages') },
           { to: '/schedule', icon: CalendarDays, label: t('schedule') },
           { to: '/profile', icon: UserRound, label: t('profile') },
