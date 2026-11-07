@@ -1,7 +1,8 @@
 name: Deploy Verde preview
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [tadpool-base]
 
 jobs:
   preview:
