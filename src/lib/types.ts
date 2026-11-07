@@ -97,3 +97,23 @@ export interface CustomerEntry {
   linked: boolean
   code?: string
 }
+
+export interface Invoice {
+  id: string
+  providerId: string
+  providerName: string
+  customerId: string
+  customerName: string
+  customerLang: Lang
+  number: number
+  amount: number
+  period: string
+  notes?: string
+  status: 'unpaid' | 'paid'
+  method?: 'zelle' | 'venmo'
+  paidAt?: Timestamp
+  /** copied at creation so the public invoice page never has to read the gardener's profile */
+  zelle?: string
+  venmo?: string
+  createdAt?: Timestamp
+}

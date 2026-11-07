@@ -3,7 +3,7 @@ import type { Lang } from './types'
 // The invite goes out as a text message to the customer, so it is written in
 // THEIR language (chosen when the gardener adds them), not the gardener's.
 
-const ORIGIN = 'https://verde-gardener-app.web.app'
+export const ORIGIN = 'https://verde-gardener-app.web.app'
 
 /** Sign-up link with the code and the customer's language already filled in. */
 export function inviteLink(code: string, lang: Lang): string {

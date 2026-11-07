@@ -106,6 +106,8 @@ exports.linkToProvider = onCall({ region: REGION }, async (request) => {
     const jobs = await db.collection('jobs').where('providerId', '==', r.providerId).where('customerId', '==', recDoc.id).get();
     const batch = db.batch();
     jobs.docs.forEach((j) => batch.update(j.ref, { customerId: request.auth.uid }));
+    const invs = await db.collection('invoices').where('providerId', '==', r.providerId).where('customerId', '==', recDoc.id).get();
+    invs.docs.forEach((i) => batch.update(i.ref, { customerId: request.auth.uid }));
     batch.update(meRef, { providerId: r.providerId });
     batch.update(recDoc.ref, { claimedBy: request.auth.uid });
     await batch.commit();
@@ -139,6 +141,7 @@ exports.deleteMyAccount = onCall({ region: REGION, timeoutSeconds: 120 }, async 
 
   if (role === 'provider') {
     await deleteQuery(db.collection('jobs').where('providerId', '==', uid));
+    await deleteQuery(db.collection('invoices').where('providerId', '==', uid));
     await deleteQuery(db.collection('providerCustomers').where('providerId', '==', uid));
     await deleteQuery(db.collection('threads').where('providerId', '==', uid));
     const linked = await db.collection('users').where('providerId', '==', uid).get();

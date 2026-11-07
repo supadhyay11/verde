@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ChangeEvent, FocusEvent, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CalendarDays, Leaf, MessageSquare, ClipboardList, UserRound, Users } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Leaf, MessageSquare, ClipboardList, Receipt, UserRound, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useApp } from '@/lib/app-context'
 
@@ -30,7 +30,11 @@ export function Screen({
           <Leaf size={26} className="shrink-0 text-green" aria-hidden />
         )}
         <h1 className="min-w-0 flex-1 truncate text-xl font-extrabold text-green">{title ?? 'Verde'}</h1>
-        {right}
+        {right ?? (nav && (
+          <Link to="/profile" aria-label={t('profile')} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sand text-ink">
+            <UserRound size={22} aria-hidden />
+          </Link>
+        ))}
       </header>
       <VerifyBanner />
       <main className={cx('flex-1 px-5 pt-5', nav ? 'pb-32' : 'pb-10')}>{children}</main>
@@ -45,15 +49,15 @@ function BottomNav() {
     profile?.role === 'provider'
       ? [
           { to: '/', icon: ClipboardList, label: t('todaysJobs'), end: true },
-          { to: '/customers', icon: Users, label: t('customers') },
-          { to: '/messages', icon: MessageSquare, label: t('messages') },
           { to: '/schedule', icon: CalendarDays, label: t('schedule') },
-          { to: '/profile', icon: UserRound, label: t('profile') },
+          { to: '/customers', icon: Users, label: t('customers') },
+          { to: '/billing', icon: Receipt, label: t('billing') },
+          { to: '/messages', icon: MessageSquare, label: t('messages') },
         ]
       : [
           { to: '/', icon: ClipboardList, label: t('jobs'), end: true },
+          { to: '/billing', icon: Receipt, label: t('billing') },
           { to: '/chat', icon: MessageSquare, label: t('messages') },
-          { to: '/profile', icon: UserRound, label: t('profile') },
         ]
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-md border-t border-line bg-bg/95 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 backdrop-blur">

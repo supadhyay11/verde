@@ -34,6 +34,26 @@ service cloud.firestore {
       allow write: if signedIn() && request.auth.uid == uid && me().role == 'provider';
     }
 
+    // invoices: anyone holding the exact (unguessable) id can open one, signed
+    // in or not, which is what makes the shared link work. Lists are limited to
+    // the gardener who made them and the customer they are for.
+    match /invoices/{invoiceId} {
+      allow get: if true;
+      allow list: if signedIn() && (resource.data.providerId == request.auth.uid
+        || resource.data.customerId == request.auth.uid);
+      allow create: if signedIn() && me().role == 'provider'
+        && request.resource.data.providerId == request.auth.uid
+        && request.resource.data.status == 'unpaid'
+        && request.resource.data.amount is number && request.resource.data.amount > 0
+        && request.resource.data.amount < 1000000;
+      allow update: if signedIn() && resource.data.providerId == request.auth.uid
+        && request.resource.data.providerId == resource.data.providerId
+        && request.resource.data.customerId == resource.data.customerId
+        && request.resource.data.number == resource.data.number
+        && request.resource.data.amount == resource.data.amount;
+      allow delete: if signedIn() && resource.data.providerId == request.auth.uid;
+    }
+
     // support messages: anyone signed in can leave one (as themselves); only
     // the Verde team reads them, in the Firebase console.
     match /supportRequests/{id} {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useApp } from '@/lib/app-context'
 import { Loading } from '@/components/ui'
 import LanguagePick from '@/pages/LanguagePick'
@@ -15,9 +15,14 @@ import Messages from '@/pages/Messages'
 import Chat from '@/pages/Chat'
 import Profile from '@/pages/Profile'
 import Support from '@/pages/Support'
+import Billing from '@/pages/Billing'
+import NewInvoice from '@/pages/NewInvoice'
+import InvoiceDetail from '@/pages/InvoiceDetail'
+import InvoicePage from '@/pages/InvoicePage'
 
 export default function App() {
   const { user, profile, lang, authReady, profileLoading, t, signOut } = useApp()
+  const { pathname } = useLocation()
   const [picking, setPicking] = useState(false)
   const [stuck, setStuck] = useState(false)
 
@@ -30,6 +35,8 @@ export default function App() {
   }, [user, profile])
 
   if (!authReady) return <Loading label="Verde" />
+  // A shared invoice link opens for anyone, signed in or not.
+  if (pathname.startsWith('/invoice/')) return <Routes><Route path="/invoice/:id" element={<InvoicePage />} /></Routes>
   if (!lang || picking) return <LanguagePick onDone={() => setPicking(false)} />
   if (!user) return <Auth onChangeLanguage={() => setPicking(true)} />
   if (!profile) {
@@ -48,6 +55,9 @@ export default function App() {
       <Route path="/job/:id" element={<JobPage />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/support" element={<Support />} />
+      <Route path="/billing" element={<Billing />} />
+      {provider && <Route path="/billing/new" element={<NewInvoice />} />}
+      {provider && <Route path="/billing/:id" element={<InvoiceDetail />} />}
       <Route path="/chat" element={<Chat />} />
       <Route path="/chat/:customerId" element={<Chat />} />
       {provider && <Route path="/schedule" element={<Schedule />} />}

@@ -1,11 +1,11 @@
 import {
   addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp,
-  setDoc, updateDoc, where,
+  deleteField, runTransaction, setDoc, updateDoc, where,
 } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import { useEffect, useState } from 'react'
 import { db, storage } from './firebase'
-import type { ChatMessage, CustomerEntry, CustomerRecord, Job, JobPhoto, Lang, PhotoTag, Profile, TaskKey } from './types'
+import type { ChatMessage, CustomerEntry, CustomerRecord, Invoice, Job, JobPhoto, Lang, PhotoTag, Profile, TaskKey } from './types'
 
 export function threadIdFor(providerId: string, customerId: string) {
   return `${providerId}_${customerId}`
@@ -192,3 +192,74 @@ export function textFor(lang: Lang, original: string, originalLang: Lang, transl
   if (tr) return { text: tr, translated: true as const, pending: false }
   return { text: original, translated: false as const, pending: true }
 }
+
+// ---- invoices ----
+
+export function useInvoices(role: 'provider' | 'customer' | undefined, uid: string | undefined) {
+  const [list, setList] = useState<Invoice[] | null>(null)
+  useEffect(() => {
+    if (!role || !uid) return
+    const field = role === 'provider' ? 'providerId' : 'customerId'
+    const q = query(collection(db, 'invoices'), where(field, '==', uid))
+    return onSnapshot(q, (snap) => {
+      setList(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Invoice).sort((a, b) => b.number - a.number))
+    }, () => setList([]))
+  }, [role, uid])
+  return list
+}
+
+/** One invoice by its (unguessable) id: works without signing in, that is how the shared link opens. */
+export function useInvoice(id: string | undefined) {
+  const [invoice, setInvoice] = useState<Invoice | null | undefined>(undefined)
+  useEffect(() => {
+    if (!id) return
+    return onSnapshot(doc(db, 'invoices', id), (snap) => {
+      setInvoice(snap.exists() ? ({ id: snap.id, ...snap.data() } as Invoice) : null)
+    }, () => setInvoice(null))
+  }, [id])
+  return invoice
+}
+
+export interface NewInvoiceInput {
+  providerId: string
+  providerName: string
+  customer: { id: string; name: string; language?: Lang }
+  amount: number
+  period: string
+  notes: string
+  zelle?: string
+  venmo?: string
+}
+
+/** Numbers run 1001, 1002, ... per gardener; the counter lives on their profile and moves in one transaction. */
+export async function createInvoice(input: NewInvoiceInput): Promise<string> {
+  const userRef = doc(db, 'users', input.providerId)
+  const invRef = doc(collection(db, 'invoices'))
+  await runTransaction(db, async (tx) => {
+    const u = await tx.get(userRef)
+    const number = ((u.data()?.invoiceSeq as number | undefined) ?? 1000) + 1
+    tx.update(userRef, { invoiceSeq: number })
+    tx.set(invRef, {
+      providerId: input.providerId,
+      providerName: input.providerName,
+      customerId: input.customer.id,
+      customerName: input.customer.name,
+      customerLang: input.customer.language ?? 'en',
+      number,
+      amount: input.amount,
+      period: input.period,
+      ...(input.notes ? { notes: input.notes } : {}),
+      status: 'unpaid',
+      ...(input.zelle ? { zelle: input.zelle } : {}),
+      ...(input.venmo ? { venmo: input.venmo } : {}),
+      createdAt: serverTimestamp(),
+    })
+  })
+  return invRef.id
+}
+
+export const markInvoicePaid = (id: string, method: 'zelle' | 'venmo') =>
+  updateDoc(doc(db, 'invoices', id), { status: 'paid', method, paidAt: serverTimestamp() })
+export const markInvoiceUnpaid = (id: string) =>
+  updateDoc(doc(db, 'invoices', id), { status: 'unpaid', method: deleteField(), paidAt: deleteField() })
+export const removeInvoice = (id: string) => deleteDoc(doc(db, 'invoices', id))
