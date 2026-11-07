@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Check, Copy, Send, Trash2 } from 'lucide-react'
+import { Check, Copy, Mail, Send, Trash2 } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
 import { markInvoicePaid, markInvoiceUnpaid, removeInvoice, useCustomerBook, useInvoice } from '@/lib/data'
 import { translate } from '@/lib/i18n'
-import { ORIGIN, smsLink } from '@/lib/invite'
+import { ORIGIN, mailtoLink, smsLink } from '@/lib/invite'
 import { money } from '@/lib/money'
 import InvoiceView from '@/components/InvoiceView'
 import { Button, Empty, Loading, Screen, cx } from '@/components/ui'
@@ -30,7 +30,9 @@ export default function InvoiceDetail() {
   const message = translate(invoice.customerLang, 'invSms', {
     name: invoice.providerName, amount: money(invoice.amount, invoice.customerLang), period: invoice.period, link,
   })
-  const phone = book?.find((c) => c.id === invoice.customerId)?.phone
+  const who = book?.find((c) => c.id === invoice.customerId)
+  const phone = who?.phone
+  const email = who?.email
 
   async function copyLink() {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* link is in the text message */ }
@@ -47,7 +49,9 @@ export default function InvoiceDetail() {
     <Screen title={t('invoiceNo', { n: invoice.number })} back="/billing" nav={false}>
       <InvoiceView invoice={invoice} lang={lang ?? 'en'} />
       <div className="mt-6 space-y-3">
-        <Button onClick={send} icon={<Send size={22} aria-hidden />}>{t('invSend')}</Button>
+        {phone && <Button onClick={send} icon={<Send size={22} aria-hidden />}>{t('invSend')}</Button>}
+        {email && <Button variant={phone ? 'secondary' : 'primary'} onClick={() => { window.location.href = mailtoLink(email, translate(invoice.customerLang, 'invEmailSubject', { n: invoice.number }), message) }} icon={<Mail size={22} aria-hidden />}>{t('sendByEmail')}</Button>}
+        {!phone && !email && <p className="rounded-2xl bg-sand px-4 py-3 text-lg">{t('noContactHelp')}</p>}
         <Button variant="secondary" onClick={copyLink} icon={copied ? <Check size={22} aria-hidden /> : <Copy size={22} aria-hidden />}>{copied ? t('copied') : t('copy')}</Button>
         {invoice.status === 'unpaid' ? (
           <div className="space-y-3 rounded-3xl bg-surface p-5 ring-1 ring-line">

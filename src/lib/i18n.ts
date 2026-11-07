@@ -76,6 +76,14 @@ const en = {
   rptNotFound: 'This report is not available.',
   rptBy: 'Service by',
 
+  // email sharing
+  emailOptional: 'Email (optional)',
+  sendByEmail: 'Send by email',
+  noContactHelp: 'Add a phone number or email to this customer to send it directly. You can still copy the link below.',
+  inviteEmailSubject: 'Your Verde invitation',
+  rptEmailSubject: 'Your garden service report',
+  invEmailSubject: 'Invoice #{n}',
+
   // auth
   signIn: 'Sign in',
   signUp: 'Create account',
@@ -336,6 +344,14 @@ const es: Record<Key, string> = {
   rptSms: '¡Hola! {name} terminó la visita a tu jardín. Mira el reporte y las fotos aquí: {link}',
   rptNotFound: 'Este reporte no está disponible.',
   rptBy: 'Servicio de',
+
+  // email sharing
+  emailOptional: 'Correo (opcional)',
+  sendByEmail: 'Enviar por correo',
+  noContactHelp: 'Agrega un teléfono o correo a este cliente para enviarlo directamente. También puedes copiar el enlace abajo.',
+  inviteEmailSubject: 'Tu invitación a Verde',
+  rptEmailSubject: 'Tu reporte de servicio de jardín',
+  invEmailSubject: 'Factura #{n}',
 
   signIn: 'Iniciar sesión',
   signUp: 'Crear cuenta',

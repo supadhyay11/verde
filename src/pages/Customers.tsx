@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Check, Copy, MapPin, Pencil, Phone, Plus, Search, Send, Trash2 } from 'lucide-react'
+import { Check, Copy, Mail, MapPin, Pencil, Phone, Plus, Search, Send, Trash2 } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
 import { removeCustomerRecord, useCustomerBook } from '@/lib/data'
-import { inviteMessage, smsLink } from '@/lib/invite'
+import { inviteMessage, mailtoLink, smsLink } from '@/lib/invite'
+import { translate } from '@/lib/i18n'
 import type { CustomerEntry } from '@/lib/types'
 import { Button, Card, Empty, Pill, Screen, cx } from '@/components/ui'
 
@@ -37,6 +38,12 @@ export default function Customers() {
     const body = inviteMessage(profile?.name, c.code, c.language ?? 'en')
     if (c.phone) window.location.href = smsLink(c.phone, body)
     else void copy(c.code, c.language)
+  }
+
+  function emailInvite(c: CustomerEntry) {
+    if (!c.code || !c.email) return
+    const l = c.language ?? 'en'
+    window.location.href = mailtoLink(c.email, translate(l, 'inviteEmailSubject'), inviteMessage(profile?.name, c.code, l))
   }
 
   async function remove(id: string) {
@@ -79,6 +86,7 @@ export default function Customers() {
             </div>
             <Pill tone={c.linked ? 'green' : 'neutral'}>{c.linked ? t('inApp') : t('notInApp')}</Pill>
             {c.address && <p className="flex items-start gap-2 text-lg text-muted"><MapPin size={20} className="mt-0.5 shrink-0" aria-hidden />{c.address}</p>}
+            {c.email && <p className="break-all text-lg text-muted">{c.email}</p>}
             {c.phone && (
               <a href={`tel:${c.phone}`} className="flex items-center gap-2 text-xl font-bold text-green-dark">
                 <Phone size={20} aria-hidden /> {c.phone}
@@ -91,6 +99,7 @@ export default function Customers() {
                   <p className="text-3xl font-extrabold tracking-widest text-green-dark">{c.code}</p>
                 </div>
                 <Button onClick={() => sendInvite(c)} icon={<Send size={22} aria-hidden />}>{t('sendInvite')}</Button>
+                {c.email && <Button variant="secondary" onClick={() => emailInvite(c)} icon={<Mail size={22} aria-hidden />}>{t('sendByEmail')}</Button>}
                 <button type="button" onClick={() => copy(c.code!, c.language)} className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-surface text-lg font-bold">
                   {copied === c.code ? <Check size={20} aria-hidden /> : <Copy size={20} aria-hidden />} {copied === c.code ? t('copied') : t('copy')}
                 </button>

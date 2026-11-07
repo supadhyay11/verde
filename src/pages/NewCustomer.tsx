@@ -14,6 +14,7 @@ export default function NewCustomer() {
   const existing = id ? book?.find((c) => c.id === id && !c.linked) : undefined
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [address, setAddress] = useState('')
   const [language, setLanguage] = useState<Lang>('en')
   const [loadedId, setLoadedId] = useState('')
@@ -21,6 +22,7 @@ export default function NewCustomer() {
     setLoadedId(existing.id)
     setName(existing.name)
     setPhone(existing.phone ?? '')
+    setEmail(existing.email ?? '')
     setAddress(existing.address ?? '')
     setLanguage(existing.language ?? 'en')
   }
@@ -34,10 +36,10 @@ export default function NewCustomer() {
     setError('')
     try {
       if (id) {
-        await updateCustomerRecord(id, { name: name.trim(), phone: phone.trim(), address: address.trim(), language })
+        await updateCustomerRecord(id, { name: name.trim(), phone: phone.trim(), email: email.trim(), address: address.trim(), language })
         navigate('/customers')
       } else {
-        const newId = await addCustomer({ providerId: profile.uid, name: name.trim(), phone: phone.trim(), address: address.trim(), language })
+        const newId = await addCustomer({ providerId: profile.uid, name: name.trim(), phone: phone.trim(), email: email.trim(), address: address.trim(), language })
         navigate('/customers', { state: { added: newId } })
       }
     } catch {
@@ -51,6 +53,7 @@ export default function NewCustomer() {
       <form onSubmit={submit} className="space-y-5 pb-4" noValidate>
         <Field id="c-name" label={t('customerName')} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" required />
         <Field id="c-phone" label={t('customerPhone')} type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="off" />
+        <Field id="c-email" label={t('emailOptional')} type="email" inputMode="email" autoCapitalize="none" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
         <Field id="c-address" label={t('jobAddress')} value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="off" />
         <fieldset>
           <legend className="mb-2 text-lg font-bold">{t('customerLanguage')}</legend>

@@ -75,7 +75,7 @@ service cloud.firestore {
         && request.resource.data.name.size() <= 120;
       allow update: if signedIn() && resource.data.providerId == request.auth.uid
         && !('claimedBy' in resource.data)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'address', 'language'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'email', 'address', 'language'])
         && request.resource.data.name is string && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 120;
     }

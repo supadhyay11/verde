@@ -83,6 +83,7 @@ export interface CustomerRecord {
   providerId: string
   name: string
   phone?: string
+  email?: string
   address?: string
   language: Lang
   code: string
@@ -94,6 +95,7 @@ export interface CustomerEntry {
   id: string // user uid when linked, record id otherwise (this is what a job stores as customerId)
   name: string
   phone?: string
+  email?: string
   address?: string
   language?: Lang
   linked: boolean

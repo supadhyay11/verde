@@ -22,6 +22,11 @@ export function inviteMessage(gardener: string | undefined, code: string, lang: 
 
 const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
 
+/** `mailto:` link that opens the gardener's own email app with the message ready to send. */
+export function mailtoLink(email: string, subject: string, body: string): string {
+  return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+}
+
 /** `sms:` link that pre-fills both the number and the text. iOS wants `&body=`, Android wants `?body=`. */
 export function smsLink(phone: string, body: string): string {
   return `sms:${phone}${IS_IOS ? '&' : '?'}body=${encodeURIComponent(body)}`

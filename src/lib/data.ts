@@ -72,19 +72,20 @@ export function useCustomerBook(providerId: string | undefined) {
   }, [providerId])
   if (linked === null || records === null) return null
   const entries: CustomerEntry[] = [
-    ...linked.map((u) => ({ id: u.uid, name: u.name, phone: u.phone, address: u.address, language: u.language, linked: true })),
+    ...linked.map((u) => ({ id: u.uid, name: u.name, phone: u.phone, email: u.email, address: u.address, language: u.language, linked: true })),
     ...records
       .filter((r) => !r.claimedBy)
-      .map((r) => ({ id: r.id, name: r.name, phone: r.phone, address: r.address, language: r.language, linked: false, code: r.code })),
+      .map((r) => ({ id: r.id, name: r.name, phone: r.phone, email: r.email, address: r.address, language: r.language, linked: false, code: r.code })),
   ]
   return entries.sort((a, b) => a.name.localeCompare(b.name))
 }
 
-export async function addCustomer(input: { providerId: string; name: string; phone: string; address: string; language: Lang }): Promise<string> {
+export async function addCustomer(input: { providerId: string; name: string; phone: string; email: string; address: string; language: Lang }): Promise<string> {
   const ref = await addDoc(collection(db, 'providerCustomers'), {
     providerId: input.providerId,
     name: input.name,
     phone: input.phone,
+    email: input.email,
     address: input.address,
     language: input.language,
     code: newCode(),
@@ -93,7 +94,7 @@ export async function addCustomer(input: { providerId: string; name: string; pho
   return ref.id
 }
 
-export const updateCustomerRecord = (id: string, patch: { name: string; phone: string; address: string; language: Lang }) =>
+export const updateCustomerRecord = (id: string, patch: { name: string; phone: string; email: string; address: string; language: Lang }) =>
   updateDoc(doc(db, 'providerCustomers', id), patch)
 
 export const removeCustomerRecord = (id: string) => deleteDoc(doc(db, 'providerCustomers', id))
