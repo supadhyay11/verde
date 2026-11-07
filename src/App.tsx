@@ -14,6 +14,7 @@ import NewCustomer from '@/pages/NewCustomer'
 import Messages from '@/pages/Messages'
 import Chat from '@/pages/Chat'
 import Profile from '@/pages/Profile'
+import Support from '@/pages/Support'
 
 export default function App() {
   const { user, profile, lang, authReady, profileLoading, t, signOut } = useApp()
@@ -46,6 +47,7 @@ export default function App() {
       <Route path="/" element={provider ? <Today /> : <CustomerHome />} />
       <Route path="/job/:id" element={<JobPage />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/support" element={<Support />} />
       <Route path="/chat" element={<Chat />} />
       <Route path="/chat/:customerId" element={<Chat />} />
       {provider && <Route path="/schedule" element={<Schedule />} />}

@@ -7,7 +7,7 @@ import type { Role } from '@/lib/types'
 import { Button, Field, cx } from '@/components/ui'
 
 export default function Auth({ onChangeLanguage }: { onChangeLanguage: () => void }) {
-  const { t, signIn, signUp, lang } = useApp()
+  const { t, signIn, signUp, sendReset, lang } = useApp()
   const invite = (() => {
     try {
       const c = (new URLSearchParams(window.location.search).get('code') ?? '').trim().toUpperCase()
@@ -23,6 +23,24 @@ export default function Auth({ onChangeLanguage }: { onChangeLanguage: () => voi
   const [code, setCode] = useState(invite)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [resetting, setResetting] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+
+  async function submitReset(e: FormEvent) {
+    e.preventDefault()
+    setError('')
+    setBusy(true)
+    try {
+      await sendReset(email)
+      setResetSent(true)
+    } catch (err) {
+      const c = err instanceof FirebaseError ? err.code : ''
+      // Never reveal whether an address has an account: only real failures are shown.
+      if (c === 'auth/invalid-email') setError(t('badEmail'))
+      else setResetSent(true)
+    }
+    setBusy(false)
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -55,6 +73,17 @@ export default function Auth({ onChangeLanguage }: { onChangeLanguage: () => voi
         </button>
       </div>
 
+      {resetting ? (
+        <form onSubmit={submitReset} className="mt-6 flex flex-1 flex-col gap-5" noValidate>
+          <h2 className="text-3xl font-extrabold">{t('resetTitle')}</h2>
+          <p className="text-lg text-muted">{t('resetHelp')}</p>
+          <Field id="reset-email" label={t('email')} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" inputMode="email" autoCapitalize="none" />
+          {error && <p role="alert" className="rounded-2xl bg-danger/10 px-4 py-3 text-lg font-semibold text-danger">{error}</p>}
+          {resetSent && <p role="status" className="rounded-2xl bg-green-soft px-4 py-3 text-lg font-semibold text-green-dark">{t('resetSent')}</p>}
+          <Button type="submit" disabled={busy || !email.trim()}>{busy ? t('loading') : t('resetSend')}</Button>
+          <button type="button" onClick={() => { setResetting(false); setResetSent(false); setError('') }} className="text-center text-lg font-bold text-green-dark underline">{t('backToSignIn')}</button>
+        </form>
+      ) : (
       <form onSubmit={submit} className="mt-6 flex flex-1 flex-col gap-5" noValidate>
         <h2 className="text-3xl font-extrabold">{mode === 'signin' ? t('signIn') : t('signUp')}</h2>
 
@@ -106,6 +135,10 @@ export default function Auth({ onChangeLanguage }: { onChangeLanguage: () => voi
           {busy ? t('loading') : mode === 'signin' ? t('signIn') : t('signUp')}
         </Button>
 
+        {mode === 'signin' && (
+          <button type="button" onClick={() => { setResetting(true); setError('') }} className="text-center text-lg font-bold text-green-dark underline">{t('forgotPassword')}</button>
+        )}
+
         <p className="text-center text-lg text-muted">
           {mode === 'signin' ? t('noAccount') : t('haveAccount')}{' '}
           <button
@@ -117,6 +150,7 @@ export default function Auth({ onChangeLanguage }: { onChangeLanguage: () => voi
           </button>
         </p>
       </form>
+      )}
     </div>
   )
 }

@@ -15,7 +15,9 @@ const { onDocumentCreated, onDocumentWritten } = require('firebase-functions/v2/
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const logger = require('firebase-functions/logger');
 const { initializeApp } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
+const { getStorage } = require('firebase-admin/storage');
 const { v2 } = require('@google-cloud/translate');
 
 initializeApp();
@@ -115,5 +117,41 @@ exports.linkToProvider = onCall({ region: REGION }, async (request) => {
   if (found.empty) throw new HttpsError('not-found', 'No gardener has that code.');
 
   await meRef.update({ providerId: found.docs[0].id });
+  return { ok: true };
+});
+
+// deleteMyAccount: the signed-in person deletes their own account and data.
+//  - Gardener: their profile, customers, jobs (and job photos) and chats go;
+//    customers who were linked to them are simply unlinked.
+//  - Customer: their profile and chat go; the gardener keeps the job history
+//    (names only) and the customer card goes back to "not in the app yet".
+exports.deleteMyAccount = onCall({ region: REGION, timeoutSeconds: 120 }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in first.');
+  const uid = request.auth.uid;
+  const meRef = db.doc(`users/${uid}`);
+  const me = await meRef.get();
+  const role = me.exists ? me.data().role : null;
+
+  const deleteQuery = async (q) => {
+    const snap = await q.get();
+    for (const d of snap.docs) await db.recursiveDelete(d.ref);
+  };
+
+  if (role === 'provider') {
+    await deleteQuery(db.collection('jobs').where('providerId', '==', uid));
+    await deleteQuery(db.collection('providerCustomers').where('providerId', '==', uid));
+    await deleteQuery(db.collection('threads').where('providerId', '==', uid));
+    const linked = await db.collection('users').where('providerId', '==', uid).get();
+    for (const d of linked.docs) await d.ref.update({ providerId: FieldValue.delete() });
+    await db.doc(`providerProfiles/${uid}`).delete().catch(() => {});
+    try { await getStorage().bucket().deleteFiles({ prefix: `jobs/${uid}/` }); } catch (err) { logger.warn('photo cleanup failed', err.message); }
+  } else if (role === 'customer') {
+    await deleteQuery(db.collection('threads').where('customerId', '==', uid));
+    const claimed = await db.collection('providerCustomers').where('claimedBy', '==', uid).get();
+    for (const d of claimed.docs) await d.ref.update({ claimedBy: FieldValue.delete() });
+  }
+
+  await meRef.delete().catch(() => {});
+  await getAuth().deleteUser(uid);
   return { ok: true };
 });

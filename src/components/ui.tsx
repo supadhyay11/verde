@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ChangeEvent, FocusEvent, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CalendarDays, Leaf, MessageSquare, ClipboardList, UserRound, Users } from 'lucide-react'
+import { useState } from 'react'
 import { useApp } from '@/lib/app-context'
 
 export function cx(...parts: Array<string | false | null | undefined>) {
@@ -31,6 +32,7 @@ export function Screen({
         <h1 className="min-w-0 flex-1 truncate text-xl font-extrabold text-green">{title ?? 'Verde'}</h1>
         {right}
       </header>
+      <VerifyBanner />
       <main className={cx('flex-1 px-5 pt-5', nav ? 'pb-32' : 'pb-10')}>{children}</main>
       {nav && <BottomNav />}
     </div>
@@ -171,4 +173,24 @@ export function Loading({ label }: { label: string }) {
 export function Card({ children, className, to }: { children: ReactNode; className?: string; to?: string }) {
   const cls = cx('block rounded-3xl border border-line bg-surface p-5 shadow-sm', className)
   return to ? <Link to={to} className={cls}>{children}</Link> : <div className={cls}>{children}</div>
+}
+
+/** Gentle reminder (never a wall) until the email address is confirmed. */
+function VerifyBanner() {
+  const { user, emailVerified, resendVerification, refreshVerified, t } = useApp()
+  const [note, setNote] = useState('')
+  if (!user || emailVerified) return null
+  async function resend() {
+    try { await resendVerification(); setNote(t('verifySent')) } catch { setNote(t('somethingWrong')) }
+  }
+  return (
+    <div className="border-b border-line bg-sand px-5 py-3">
+      <p className="text-base font-bold">{t('verifyTitle')}</p>
+      <p className="text-base text-muted">{note || t('verifyHelp')}</p>
+      <div className="mt-2 flex gap-2">
+        <button type="button" onClick={resend} className="h-12 flex-1 rounded-xl bg-surface text-base font-bold ring-1 ring-line">{t('verifyResend')}</button>
+        <button type="button" onClick={refreshVerified} className="h-12 flex-1 rounded-xl bg-green text-base font-bold text-white">{t('verifyDone')}</button>
+      </div>
+    </div>
+  )
 }

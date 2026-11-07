@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as fbSignOut,
 } from 'firebase/auth'
@@ -31,6 +33,12 @@ interface AppState {
   updateProfile: (patch: Partial<Pick<Profile, 'name' | 'phone' | 'address' | 'language'>>) => Promise<void>
   updateProviderProfile: (patch: Partial<ProviderProfile>) => Promise<void>
   linkToProvider: (code: string) => Promise<void>
+  emailVerified: boolean
+  sendReset: (email: string) => Promise<void>
+  resendVerification: () => Promise<void>
+  /** re-reads the account so the banner goes away right after the link was tapped */
+  refreshVerified: () => Promise<void>
+  deleteAccount: () => Promise<void>
 }
 
 export interface SignUpInput {
@@ -99,6 +107,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [lang])
 
+  const [verified, setVerified] = useState(false)
+  useEffect(() => { setVerified(!!user?.emailVerified) }, [user])
+  // Password-reset and verification emails go out in the user's language.
+  useEffect(() => { auth.languageCode = lang ?? 'en' }, [lang])
+
+  const sendReset = useCallback(async (email: string) => { await sendPasswordResetEmail(auth, email.trim()) }, [])
+  const resendVerification = useCallback(async () => { if (auth.currentUser) await sendEmailVerification(auth.currentUser) }, [])
+  const refreshVerified = useCallback(async () => {
+    if (!auth.currentUser) return
+    await auth.currentUser.reload()
+    setVerified(auth.currentUser.emailVerified)
+  }, [])
+  const deleteAccount = useCallback(async () => {
+    await httpsCallable<unknown, { ok: true }>(functions, 'deleteMyAccount')({})
+    await fbSignOut(auth)
+  }, [])
+
   const t = useCallback<AppState['t']>((key, vars) => translate(lang ?? 'en', key, vars), [lang])
 
   const chooseLang = useCallback((l: Lang) => {
@@ -120,6 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     signingUp.current = true
     try {
       const cred = await createUserWithEmailAndPassword(auth, input.email.trim(), input.password)
+      sendEmailVerification(cred.user).catch(() => { /* they can resend from the banner */ })
       const base = {
         role: input.role,
         language: chosen,
@@ -177,7 +203,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     user, profile, providerProfile, lang, authReady,
     profileLoading: !!user && !profileLoaded,
     t, chooseLang, signIn, signUp, signOut, updateProfile, updateProviderProfile, linkToProvider,
-  }), [user, profile, providerProfile, lang, authReady, profileLoaded, t, chooseLang, signIn, signUp, signOut, updateProfile, updateProviderProfile, linkToProvider])
+    emailVerified: verified, sendReset, resendVerification, refreshVerified, deleteAccount,
+  }), [user, profile, providerProfile, lang, authReady, profileLoaded, t, chooseLang, signIn, signUp, signOut, updateProfile, updateProviderProfile, linkToProvider, verified, sendReset, resendVerification, refreshVerified, deleteAccount])
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }

@@ -34,6 +34,15 @@ service cloud.firestore {
       allow write: if signedIn() && request.auth.uid == uid && me().role == 'provider';
     }
 
+    // support messages: anyone signed in can leave one (as themselves); only
+    // the Verde team reads them, in the Firebase console.
+    match /supportRequests/{id} {
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0 && request.resource.data.message.size() <= 2000;
+      allow read, update, delete: if false;
+    }
+
     // customers the gardener added by hand. Only that gardener can see or
     // change them; claiming one (when the customer enters its code) is done
     // by the linkToProvider Cloud Function, never from the app.

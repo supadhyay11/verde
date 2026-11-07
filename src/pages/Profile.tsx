@@ -1,12 +1,17 @@
 import { useState } from 'react'
-import { Check, Copy, LogOut } from 'lucide-react'
+import { Check, Copy, LifeBuoy, LogOut, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useApp } from '@/lib/app-context'
 import type { Lang } from '@/lib/types'
 import { Button, Field, Screen, cx } from '@/components/ui'
 import LinkProvider from './LinkProvider'
 
 export default function Profile() {
-  const { profile, providerProfile, t, signOut, updateProfile, updateProviderProfile } = useApp()
+  const { profile, providerProfile, t, signOut, updateProfile, updateProviderProfile, deleteAccount } = useApp()
+  const navigate = useNavigate()
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const [name, setName] = useState(profile?.name ?? '')
   const [phone, setPhone] = useState(profile?.phone ?? '')
   const [address, setAddress] = useState(profile?.address ?? '')
@@ -91,8 +96,29 @@ export default function Profile() {
 
       <div className="mt-8 space-y-3">
         <Button onClick={save} icon={saved ? <Check aria-hidden /> : undefined}>{saved ? t('saved') : t('save')}</Button>
+        <Button variant="ghost" onClick={() => navigate('/support')} icon={<LifeBuoy size={22} aria-hidden />}>{t('support')}</Button>
         <Button variant="ghost" onClick={signOut} icon={<LogOut size={22} aria-hidden />}>{t('signOut')}</Button>
       </div>
+
+      <section className="mt-10 space-y-3 border-t border-line pt-6">
+        {!confirmDelete ? (
+          <Button variant="danger" onClick={() => setConfirmDelete(true)} icon={<Trash2 size={22} aria-hidden />}>{t('deleteAccount')}</Button>
+        ) : (
+          <div className="space-y-3 rounded-3xl bg-danger/10 p-5">
+            <p className="text-lg font-bold text-danger">{t('deleteAccountHelp')}</p>
+            {deleteError && <p role="alert" className="text-lg font-semibold text-danger">{deleteError}</p>}
+            <Button
+              variant="danger" disabled={deleting}
+              onClick={async () => {
+                setDeleting(true)
+                setDeleteError('')
+                try { await deleteAccount() } catch { setDeleteError(t('somethingWrong')); setDeleting(false) }
+              }}
+            >{deleting ? t('loading') : t('deleteAccountConfirm')}</Button>
+            <Button variant="ghost" onClick={() => setConfirmDelete(false)}>{t('cancel')}</Button>
+          </div>
+        )}
+      </section>
     </Screen>
   )
 }
