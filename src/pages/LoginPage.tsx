@@ -1,6 +1,7 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { Droplet, ArrowRight, Eye, EyeOff } from "lucide-react"
+import { ArrowRight, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 
 export function LoginPage() {
@@ -30,18 +31,18 @@ export function LoginPage() {
 
   return (
     <div
-      className="flex min-h-full flex-col bg-[#F4F8FA] text-[#0F2233] lg:flex-row"
+      className="flex min-h-full flex-col bg-[#F3F8F3] text-[#10241A] lg:flex-row"
       style={{ minHeight: "100dvh" }}
     >
       {/* Brand panel: a short header on phones, a full side panel on laptops. */}
-      <div className="relative flex shrink-0 flex-col items-center justify-center gap-3.5 overflow-hidden bg-[#0B2F4E] px-6 pt-16 pb-16 text-center lg:w-[44%] lg:max-w-[560px] lg:items-start lg:justify-between lg:p-14 lg:text-left">
+      <div className="relative flex shrink-0 flex-col items-center justify-center gap-3.5 overflow-hidden bg-[#14532D] px-6 pt-16 pb-16 text-center lg:w-[44%] lg:max-w-[560px] lg:items-start lg:justify-between lg:p-14 lg:text-left">
         <svg
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 size-full"
           viewBox="0 0 400 300"
           preserveAspectRatio="xMidYMid slice"
         >
-          <g fill="none" stroke="#19B5C2" strokeWidth="1.5">
+          <g fill="none" stroke="#86D17A" strokeWidth="1.5">
             <circle cx="200" cy="150" r="70" opacity="0.5" />
             <circle cx="200" cy="150" r="115" opacity="0.32" />
             <circle cx="200" cy="150" r="165" opacity="0.2" />
@@ -53,8 +54,8 @@ export function LoginPage() {
           aria-label="Go to Verde homepage"
           className="relative flex flex-col items-center gap-3.5 lg:flex-row lg:gap-3"
         >
-          <span className="flex size-[68px] items-center justify-center rounded-[20px] bg-[#19B5C2] text-[#0B2F4E] lg:size-11 lg:rounded-[13px]">
-            <Droplet className="size-8 lg:size-[22px]" fill="currentColor" />
+          <span className="flex size-[68px] items-center justify-center rounded-[20px] bg-[#86D17A] text-[#14532D] lg:size-11 lg:rounded-[13px]">
+            <VerdeMark className="size-11 lg:size-[28px]" />
           </span>
           <span className="font-display text-3xl font-extrabold text-white lg:text-2xl">
             Verde
@@ -64,20 +65,20 @@ export function LoginPage() {
           <h2 className="font-display text-[40px] leading-[1.1] font-extrabold text-balance text-white">
             Every garden, every visit, one clear picture.
           </h2>
-          <p className="max-w-[400px] text-[17px] leading-normal text-[#C9DCE8]">
+          <p className="max-w-[400px] text-[17px] leading-normal text-[#D6EBD8]">
             Garden pros plan routes and send reports. Customers see what was done and what is next.
           </p>
         </div>
       </div>
 
       {/* Form: a white sheet overlapping the header on phones, centered on laptops. */}
-      <div className="relative -mt-7 flex flex-1 items-start justify-center rounded-t-[28px] bg-white px-6 pt-8 pb-10 lg:mt-0 lg:items-center lg:rounded-none lg:bg-[#F4F8FA] lg:p-12">
+      <div className="relative -mt-7 flex flex-1 items-start justify-center rounded-t-[28px] bg-white px-6 pt-8 pb-10 lg:mt-0 lg:items-center lg:rounded-none lg:bg-[#F3F8F3] lg:p-12">
         <div className="flex w-full max-w-[400px] flex-col gap-5 lg:gap-6">
           <div className="flex flex-col gap-1">
             <h1 className="font-display text-[26px] leading-[1.15] font-extrabold lg:text-[32px]">
               Welcome back
             </h1>
-            <p className="text-[15px] text-[#4A5B6B] lg:text-base">
+            <p className="text-[15px] text-[#4B5E50] lg:text-base">
               <span className="lg:hidden">Your gardens, visits and invoices in one place.</span>
               <span className="hidden lg:inline">Sign in to manage your services.</span>
             </p>
@@ -98,7 +99,7 @@ export function LoginPage() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
-                className="h-[52px] w-full rounded-[14px] border-[1.5px] border-[#C5D2DC] bg-white px-4 text-base text-[#0F2233] placeholder:text-[#6B7C8C] focus:border-[#0E7C86] focus:outline-none focus:ring-[3px] focus:ring-[#9fd8de]"
+                className="h-[52px] w-full rounded-[14px] border-[1.5px] border-[#C6D6C9] bg-white px-4 text-base text-[#10241A] placeholder:text-[#6B7F70] focus:border-[#1F7A3D] focus:outline-none focus:ring-[3px] focus:ring-[#9fd8de]"
               />
             </div>
 
@@ -109,7 +110,7 @@ export function LoginPage() {
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="inline-flex min-h-11 items-center text-sm font-semibold text-[#0B5F69] hover:underline"
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-[#166534] hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -123,13 +124,13 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-[52px] w-full rounded-[14px] border-[1.5px] border-[#C5D2DC] bg-white px-4 text-base text-[#0F2233] placeholder:text-[#6B7C8C] focus:border-[#0E7C86] focus:outline-none focus:ring-[3px] focus:ring-[#9fd8de] pr-14"
+                  className="h-[52px] w-full rounded-[14px] border-[1.5px] border-[#C6D6C9] bg-white px-4 text-base text-[#10241A] placeholder:text-[#6B7F70] focus:border-[#1F7A3D] focus:outline-none focus:ring-[3px] focus:ring-[#9fd8de] pr-14"
                 />
                 <button
                   type="button"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute top-1 right-1 flex size-11 items-center justify-center rounded-[10px] text-[#4A5B6B]"
+                  className="absolute top-1 right-1 flex size-11 items-center justify-center rounded-[10px] text-[#4B5E50]"
                 >
                   {showPassword ? <EyeOff className="size-[22px]" /> : <Eye className="size-[22px]" />}
                 </button>
@@ -141,30 +142,30 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-1 flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#0E7C86] text-[17px] font-bold text-white disabled:opacity-60"
+              className="mt-1 flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#1F7A3D] text-[17px] font-bold text-white disabled:opacity-60"
             >
               {submitting ? "Signing in..." : "Sign in"}
               <ArrowRight className="size-5" />
             </button>
           </form>
 
-          <div className="flex items-center gap-3 text-[13px] text-[#4A5B6B] lg:hidden">
-            <div className="h-px flex-1 bg-[#D9E2EA]" />
+          <div className="flex items-center gap-3 text-[13px] text-[#4B5E50] lg:hidden">
+            <div className="h-px flex-1 bg-[#DCE7DD]" />
             New to Verde?
-            <div className="h-px flex-1 bg-[#D9E2EA]" />
+            <div className="h-px flex-1 bg-[#DCE7DD]" />
           </div>
           <Link
             to="/signup"
-            className="flex h-[54px] items-center justify-center rounded-2xl border-[1.5px] border-[#0E7C86] text-base font-bold text-[#0B5F69] lg:hidden"
+            className="flex h-[54px] items-center justify-center rounded-2xl border-[1.5px] border-[#1F7A3D] text-base font-bold text-[#166534] lg:hidden"
           >
             Create an account
           </Link>
-          <p className="text-center text-[13px] text-[#4A5B6B] lg:hidden">
+          <p className="text-center text-[13px] text-[#4B5E50] lg:hidden">
             Got an invite code from your garden service? Tap Create an account.
           </p>
-          <p className="hidden text-center text-[15px] text-[#4A5B6B] lg:block">
+          <p className="hidden text-center text-[15px] text-[#4B5E50] lg:block">
             New to Verde?{" "}
-            <Link to="/signup" className="font-bold text-[#0B5F69] hover:underline">
+            <Link to="/signup" className="font-bold text-[#166534] hover:underline">
               Create an account
             </Link>
           </p>

@@ -22,9 +22,9 @@ interface RouteMapProps {
   className?: string
 }
 
-const NAVY = "#0F3D6B"
+const NAVY = "#14532D"
 const GREEN = "#15803D"
-const TEAL = "#0E7C86"
+const TEAL = "#2F8F4E"
 
 /** The day's stops as numbered pins joined by a line, in visit order. */
 export function RouteMap({ stops, selectedId, ghostPath, origin, onSelect, className }: RouteMapProps) {

@@ -1,8 +1,9 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useParams } from "react-router-dom"
 import { doc, getDoc } from "firebase/firestore"
 import { httpsCallable } from "firebase/functions"
-import { CheckCircle2, Clock, Droplet, FileText, Sparkles, Wrench } from "lucide-react"
+import { CheckCircle2, Clock, FileText, Sparkles, Wrench } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { db, functions } from "@/lib/firebase"
@@ -58,7 +59,7 @@ export function JobReportPage() {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background">
         <span className="flex size-14 animate-pulse items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Droplet className="size-7" fill="currentColor" />
+          <VerdeMark className="size-7" />
         </span>
       </div>
     )
@@ -67,7 +68,7 @@ export function JobReportPage() {
   if (error || !job || job.status !== "completed") {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-2 bg-background px-6 text-center">
-        <Droplet className="size-8 text-primary" />
+        <VerdeMark className="size-8 text-primary" />
         <p className="font-semibold">Report not available</p>
         <p className="max-w-xs text-sm text-muted-foreground">
           {error ?? "This link may be expired, or the service hasn't been marked complete yet."}
@@ -95,7 +96,7 @@ export function JobReportPage() {
       <div className="mx-auto flex max-w-lg flex-col gap-4 px-4 pt-6">
         <div className="flex items-center gap-2 px-1">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Droplet className="size-4" fill="currentColor" />
+            <VerdeMark className="size-4" />
           </span>
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -300,7 +301,7 @@ export function JobReportPage() {
             href="https://verde-gardener-app.web.app"
             className="flex items-center gap-1 text-xs font-semibold text-primary"
           >
-            <Droplet className="size-3" fill="currentColor" />
+            <VerdeMark className="size-3" />
             Powered by Verde
           </a>
           <p className="text-[11px] text-muted-foreground">

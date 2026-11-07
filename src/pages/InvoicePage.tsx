@@ -1,7 +1,8 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useParams } from "react-router-dom"
 import { doc, getDoc } from "firebase/firestore"
-import { CheckCircle2, Droplet, Landmark, Printer, Wallet } from "lucide-react"
+import { CheckCircle2, Landmark, Printer, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { db } from "@/lib/firebase"
@@ -44,7 +45,7 @@ export function InvoicePage() {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background">
         <span className="flex size-14 animate-pulse items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Droplet className="size-7" fill="currentColor" />
+          <VerdeMark className="size-7" />
         </span>
       </div>
     )
@@ -53,7 +54,7 @@ export function InvoicePage() {
   if (error || !invoice) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-2 bg-background px-6 text-center">
-        <Droplet className="size-8 text-primary" />
+        <VerdeMark className="size-8 text-primary" />
         <p className="font-semibold">Invoice not available</p>
         <p className="max-w-xs text-sm text-muted-foreground">
           {error ?? "This link may be incorrect or the invoice may have been removed."}
@@ -82,7 +83,7 @@ export function InvoicePage() {
               {invoice.snapBusinessLogoUrl ? (
                 <img src={invoice.snapBusinessLogoUrl} alt="" className="size-full object-cover" />
               ) : (
-                <Droplet className="size-6" fill="currentColor" />
+                <VerdeMark className="size-6" />
               )}
             </span>
             <div>

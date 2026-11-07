@@ -1,6 +1,7 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { Droplet, ArrowRight, CheckCircle2 } from "lucide-react"
+import { ArrowRight, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth-context"
@@ -37,7 +38,7 @@ export function ForgotPasswordPage() {
       <div className="relative flex flex-1 flex-col justify-end px-6 pt-16 pb-8 text-primary-foreground sm:justify-center sm:pb-16">
         <div className="mx-auto w-full max-w-sm">
           <span className="shadow-elevated-lg mb-5 flex size-16 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur-sm">
-            <Droplet className="size-8" fill="currentColor" />
+            <VerdeMark className="size-8" />
           </span>
           <h1 className="font-display text-3xl font-bold tracking-tight">
             Reset your password

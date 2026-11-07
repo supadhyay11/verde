@@ -1,4 +1,5 @@
-import { Bell, ChevronLeft, Droplet } from "lucide-react"
+import { VerdeMark } from "@/components/VerdeMark"
+import { Bell, ChevronLeft } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useNavigate } from "react-router-dom"
 
@@ -55,7 +56,7 @@ export function TopBar({
         )}
         {showLogo && !showBack && (
           <span className="bg-brand-gradient shadow-elevated flex size-7 items-center justify-center rounded-full text-white">
-            <Droplet className="size-4" fill="currentColor" />
+            <VerdeMark className="size-4" />
           </span>
         )}
         <h1 className="font-display text-base font-bold tracking-tight text-foreground">

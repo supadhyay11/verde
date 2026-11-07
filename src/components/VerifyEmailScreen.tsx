@@ -1,7 +1,8 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { httpsCallable } from "firebase/functions"
-import { Droplet, MailCheck } from "lucide-react"
+import { MailCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { functions } from "@/lib/firebase"
@@ -133,7 +134,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
     <div className="flex min-h-full flex-col items-center justify-center bg-background px-6 py-10">
       <div className="w-full max-w-sm">
         <span className="bg-brand-gradient mb-5 flex size-14 items-center justify-center rounded-2xl text-primary-foreground">
-          <Droplet className="size-7" fill="currentColor" />
+          <VerdeMark className="size-7" />
         </span>
         <h1 className="font-display text-2xl font-bold tracking-tight">Check your email</h1>
         <p className="mt-1.5 flex items-start gap-2 text-sm text-muted-foreground">

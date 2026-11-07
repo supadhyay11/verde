@@ -1,6 +1,6 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import type { ReactNode } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
-import { Droplet } from "lucide-react"
 import { AppShell } from "@/components/layout/AppShell"
 import { LoginPage } from "@/pages/LoginPage"
 import { SignUpPage } from "@/pages/SignUpPage"
@@ -29,7 +29,7 @@ function SplashScreen() {
   return (
     <div className="flex h-dvh items-center justify-center bg-background">
       <span className="flex size-14 animate-pulse items-center justify-center rounded-full bg-primary text-primary-foreground">
-        <Droplet className="size-7" fill="currentColor" />
+        <VerdeMark className="size-7" />
       </span>
     </div>
   )

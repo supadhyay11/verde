@@ -1,16 +1,7 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { NavLink, Outlet } from "react-router-dom"
-import {
-  Briefcase,
-  DollarSign,
-  Droplet,
-  LayoutGrid,
-  Mail,
-  MessageCircle,
-  ShieldAlert,
-  User,
-  Users,
-} from "lucide-react"
+import { Briefcase, DollarSign, LayoutGrid, Mail, MessageCircle, ShieldAlert, User, Users } from "lucide-react"
 import { AddToHomeScreenBanner } from "@/components/AddToHomeScreenBanner"
 import { cn } from "@/lib/utils"
 import { isBizAdmin, useAuth } from "@/lib/auth-context"
@@ -152,7 +143,7 @@ export function AppShell() {
         <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card">
           <div className="flex items-center gap-2.5 px-5 py-5">
             <span className="bg-brand-gradient shadow-elevated flex size-8 items-center justify-center rounded-full text-white">
-              <Droplet className="size-4.5" fill="currentColor" />
+              <VerdeMark className="size-4.5" />
             </span>
             <span className="font-display text-lg font-extrabold tracking-tight text-foreground">
               Verde

@@ -1,6 +1,7 @@
+import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { Droplet, ArrowRight, ArrowLeft, Check } from "lucide-react"
+import { ArrowRight, ArrowLeft, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -205,7 +206,7 @@ export function SignUpPage() {
         <div className="relative mx-auto flex w-full max-w-sm flex-col items-center text-center">
           <a href="https://verde-gardener-app.web.app" aria-label="Go to Verde homepage">
             <span className="shadow-elevated mb-3 flex size-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur-sm">
-              <Droplet className="size-7" fill="currentColor" />
+              <VerdeMark className="size-7" />
             </span>
           </a>
           <h1 className="font-display text-2xl font-bold tracking-tight">{header.title}</h1>
