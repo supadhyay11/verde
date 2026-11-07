@@ -2,16 +2,76 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Job photos live at jobs/<providerId>/<jobId>/<file>. Only that provider
-    // can upload (images up to 10 MB). Signed-in users can read; the file
-    // links are long random tokens and are only shown to the job's customer.
-    match /jobs/{providerId}/{jobId}/{fileName} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.uid == providerId
-        && request.resource.size < 10 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
-      allow delete: if request.auth != null && request.auth.uid == providerId;
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUser() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function myBusinessId() {
+      return myUser().businessId;
+    }
+
+    // Provider-side staff (admin or technician) of a business. Customers
+    // (role "owner") share their provider's businessId, so a plain
+    // businessId check is NOT enough to keep one customer's files away
+    // from another customer - the rules below also check the role (and,
+    // for chat, the property).
+    function isProvider() {
+      return isSignedIn() && myUser().role == 'provider';
+    }
+
+    function isBizAdmin() {
+      return isProvider() && myUser().get('businessRole', 'admin') == 'admin';
+    }
+
+    // Images only, and never SVG - an SVG is a script-capable document,
+    // not just a picture.
+    function isSafeImage(maxBytes) {
+      return request.resource.size < maxBytes &&
+        request.resource.contentType.matches('image/.*') &&
+        !request.resource.contentType.matches('image/svg.*');
+    }
+
+    // Before/after job photos. Path: jobs/{businessId}/{jobId}/{fileName}
+    // Anyone in the same business can open a photo they have the exact
+    // path to (the customer whose job it is needs this); only providers
+    // can browse (list) or upload.
+    match /jobs/{businessId}/{jobId}/{fileName} {
+      allow get: if isSignedIn() && businessId == myBusinessId();
+      allow list: if isProvider() && businessId == myBusinessId();
+      allow create, update: if isProvider() && businessId == myBusinessId() &&
+        isSafeImage(10 * 1024 * 1024);
+      allow delete: if false;
+    }
+
+    // Chat photo attachments. Path: chat/{businessId}/{propertyId}/{fileName}
+    // Providers in the business, and the ONE customer whose property this
+    // conversation belongs to - not every customer of the business.
+    match /chat/{businessId}/{propertyId}/{fileName} {
+      allow read: if isSignedIn() && businessId == myBusinessId() &&
+        (isProvider() || myUser().get('propertyId', '') == propertyId);
+      allow create, update: if isSignedIn() && businessId == myBusinessId() &&
+        (isProvider() || myUser().get('propertyId', '') == propertyId) &&
+        isSafeImage(10 * 1024 * 1024);
+      allow delete: if false;
+    }
+
+    // Business logo. Path: logos/{businessId}/{fileName}
+    // One logo per business - smaller size cap than photos since this is
+    // just a small brand image, not a full-resolution job/chat photo.
+    // Only a business admin can change it. The signed download URL
+    // getDownloadURL() returns already works on the public,
+    // unauthenticated /invoice/:id page even though the read rule below
+    // requires isSignedIn() - so no public read exception is needed.
+    match /logos/{businessId}/{fileName} {
+      allow read: if isSignedIn() && businessId == myBusinessId();
+      allow create, update: if isBizAdmin() && businessId == myBusinessId() &&
+        isSafeImage(5 * 1024 * 1024);
+      allow delete: if false;
     }
   }
 }

@@ -1,12 +1,19 @@
 {
-  "name": "verde-functions",
-  "description": "Verde Cloud Functions: automatic English/Spanish translation of chat messages and job text, and linking a customer to a gardener by code.",
-  "engines": { "node": "22" },
+  "name": "functions",
+  "description": "CleanTrack (PoolService Pro) Cloud Functions - server-side actions the client Firebase SDK can't do on its own, like deleting another user's sign-in account.",
+  "engines": {
+    "node": "22"
+  },
   "main": "index.js",
+  "scripts": {
+    "deploy": "firebase deploy --only functions"
+  },
   "dependencies": {
-    "@google-cloud/translate": "^8.5.0",
     "firebase-admin": "^12.7.0",
-    "firebase-functions": "^6.3.1"
+    "firebase-functions": "^6.3.1",
+    "nodemailer": "^6.9.14",
+    "pdfkit": "^0.15.2",
+    "stripe": "^22.6.2"
   },
   "private": true
 }

@@ -1,75 +1,152 @@
-import { useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { useApp } from '@/lib/app-context'
-import { Loading } from '@/components/ui'
-import LanguagePick from '@/pages/LanguagePick'
-import Auth from '@/pages/Auth'
-import Today from '@/pages/Today'
-import CustomerHome from '@/pages/CustomerHome'
-import Schedule from '@/pages/Schedule'
-import NewJob from '@/pages/NewJob'
-import JobPage from '@/pages/JobPage'
-import Customers from '@/pages/Customers'
-import NewCustomer from '@/pages/NewCustomer'
-import Messages from '@/pages/Messages'
-import Chat from '@/pages/Chat'
-import Profile from '@/pages/Profile'
-import Support from '@/pages/Support'
-import Billing from '@/pages/Billing'
-import NewInvoice from '@/pages/NewInvoice'
-import InvoiceDetail from '@/pages/InvoiceDetail'
-import InvoicePage from '@/pages/InvoicePage'
-import ReportPage from '@/pages/ReportPage'
+import type { ReactNode } from "react"
+import { Navigate, Route, Routes, useLocation } from "react-router-dom"
+import { Droplet } from "lucide-react"
+import { AppShell } from "@/components/layout/AppShell"
+import { LoginPage } from "@/pages/LoginPage"
+import { SignUpPage } from "@/pages/SignUpPage"
+import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage"
+import { JobsListPage } from "@/pages/JobsListPage"
+import { JobDetailPage } from "@/pages/JobDetailPage"
+import { AssignJobPage } from "@/pages/AssignJobPage"
+import { CustomersPage } from "@/pages/CustomersPage"
+import { CustomerProfilePage } from "@/pages/CustomerProfilePage"
+import { BillingPage } from "@/pages/BillingPage"
+import { MyInvoicesPage } from "@/pages/MyInvoicesPage"
+import { TeamPage } from "@/pages/TeamPage"
+import { ReferralsPage } from "@/pages/ReferralsPage"
+import { DashboardPage } from "@/pages/DashboardPage"
+import { ChatListPage } from "@/pages/ChatListPage"
+import { ChatThreadPage } from "@/pages/ChatThreadPage"
+import { ProfilePage } from "@/pages/ProfilePage"
+import { SupportPage } from "@/pages/SupportPage"
+import { JobReportPage } from "@/pages/JobReportPage"
+import { InvoicePage } from "@/pages/InvoicePage"
+import { VerifyEmailScreen } from "@/components/VerifyEmailScreen"
+import { isBizAdmin, useAuth } from "@/lib/auth-context"
+import { JobsStoreProvider } from "@/lib/jobs-store"
+
+function SplashScreen() {
+  return (
+    <div className="flex h-dvh items-center justify-center bg-background">
+      <span className="flex size-14 animate-pulse items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <Droplet className="size-7" fill="currentColor" />
+      </span>
+    </div>
+  )
+}
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { user, loading, emailVerified } = useAuth()
+  const location = useLocation()
+  if (loading) return <SplashScreen />
+  // Remember where they were headed (e.g. a "Refer now" link from the
+  // website) so signing in lands them there instead of on Jobs.
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  // Admin accounts aren't scoped to a single business, so they never enter
+  // the normal provider/owner app shell - straight to the admin console.
+  if (user.role === "admin") return <Navigate to="/admin" replace />
+  // Business admins must confirm their email with the 6-digit code before
+  // using the app. Technicians (and anyone invited) can go on and just see
+  // the banner. Platform-admin preview ("view as") is never blocked.
+  if (isBizAdmin(user) && emailVerified === false) {
+    return <VerifyEmailScreen required />
+  }
+  return <JobsStoreProvider>{children}</JobsStoreProvider>
+}
+
+// Customers, Billing, and Team are administrative surfaces - a
+// technician (a "provider" role account whose businessRole isn't
+// "admin") is bounced back to Jobs just like a non-provider is, even if
+// they land on the URL directly rather than through the nav.
+function RequireBizAdmin({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+  if (user && !isBizAdmin(user)) return <Navigate to="/jobs" replace />
+  return <>{children}</>
+}
 
 export default function App() {
-  const { user, profile, lang, authReady, profileLoading, t, signOut } = useApp()
-  const { pathname } = useLocation()
-  const [picking, setPicking] = useState(false)
-  const [stuck, setStuck] = useState(false)
-
-  // A signed-in account whose profile never shows up (rare: sign-up was cut
-  // off halfway) gets a way out instead of an endless spinner.
-  useEffect(() => {
-    if (!user || profile) { setStuck(false); return }
-    const id = setTimeout(() => setStuck(true), 8000)
-    return () => clearTimeout(id)
-  }, [user, profile])
-
-  if (!authReady) return <Loading label="Verde" />
-  // Shared invoice and report links open for anyone, signed in or not.
-  if (pathname.startsWith('/invoice/') || pathname.startsWith('/report/')) {
-    return <Routes><Route path="/invoice/:id" element={<InvoicePage />} /><Route path="/report/:id" element={<ReportPage />} /></Routes>
-  }
-  if (!lang || picking) return <LanguagePick onDone={() => setPicking(false)} />
-  if (!user) return <Auth onChangeLanguage={() => setPicking(true)} />
-  if (!profile) {
-    return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-bg px-6 text-center">
-        <Loading label={profileLoading || !stuck ? t('loading') : t('somethingWrong')} />
-        {stuck && <button type="button" onClick={signOut} className="rounded-full bg-sand px-6 py-3 text-lg font-bold">{t('signOut')}</button>}
-      </div>
-    )
-  }
-
-  const provider = profile.role === 'provider'
   return (
     <Routes>
-      <Route path="/" element={provider ? <Today /> : <CustomerHome />} />
-      <Route path="/job/:id" element={<JobPage />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/support" element={<Support />} />
-      <Route path="/billing" element={<Billing />} />
-      {provider && <Route path="/billing/new" element={<NewInvoice />} />}
-      {provider && <Route path="/billing/:id" element={<InvoiceDetail />} />}
-      <Route path="/chat" element={<Chat />} />
-      <Route path="/chat/:customerId" element={<Chat />} />
-      {provider && <Route path="/schedule" element={<Schedule />} />}
-      {provider && <Route path="/jobs/new" element={<NewJob />} />}
-      {provider && <Route path="/customers" element={<Customers />} />}
-      {provider && <Route path="/customers/new" element={<NewCustomer />} />}
-      {provider && <Route path="/customers/:id/edit" element={<NewCustomer />} />}
-      {provider && <Route path="/messages" element={<Messages />} />}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      {/* Public - no login required. Shared via the provider's Email/Text
+          "Send Report" buttons on a completed job. */}
+      <Route path="/report/:jobId" element={<JobReportPage />} />
+      {/* Public - no login required. Shared via the provider's "Send
+          Invoice" text/email button on a customer. */}
+      <Route path="/invoice/:invoiceId" element={<InvoicePage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        }
+      >
+        <Route path="/jobs" element={<JobsListPage />} />
+        <Route
+          path="/jobs/new"
+          element={
+            <RequireBizAdmin>
+              <AssignJobPage />
+            </RequireBizAdmin>
+          }
+        />
+        <Route path="/jobs/:id" element={<JobDetailPage />} />
+        <Route
+          path="/customers"
+          element={
+            <RequireBizAdmin>
+              <CustomersPage />
+            </RequireBizAdmin>
+          }
+        />
+        <Route
+          path="/customers/:id"
+          element={
+            <RequireBizAdmin>
+              <CustomerProfilePage />
+            </RequireBizAdmin>
+          }
+        />
+        <Route
+          path="/billing"
+          element={
+            <RequireBizAdmin>
+              <BillingPage />
+            </RequireBizAdmin>
+          }
+        />
+        <Route
+          path="/team"
+          element={
+            <RequireBizAdmin>
+              <TeamPage />
+            </RequireBizAdmin>
+          }
+        />
+        <Route
+          path="/referrals"
+          element={
+            <RequireBizAdmin>
+              <ReferralsPage />
+            </RequireBizAdmin>
+          }
+        />
+        {/* Owner-facing equivalent of /billing above - a customer's own
+            invoice history and pay links, scoped to their property (see
+            MyInvoicesPage.tsx). Not admin-gated like /billing since every
+            signed-in owner should see their own bills; the page itself
+            redirects a provider account back to /billing. */}
+        <Route path="/my-billing" element={<MyInvoicesPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/chat" element={<ChatListPage />} />
+        <Route path="/chat/:propertyId" element={<ChatThreadPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/verify-email" element={<VerifyEmailScreen />} />
+        <Route path="/support" element={<SupportPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/jobs" replace />} />
     </Routes>
   )
 }

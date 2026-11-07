@@ -1,160 +1,253 @@
-// Verde Cloud Functions.
-//
-//  - translateMessage: every new chat message is translated into the other
-//    language (English <-> Spanish) and stored next to the original.
-//  - translateJobText: the job description (gardener -> customer) and the
-//    report note are translated the same way.
-//  - linkToProvider: a customer types a 6-character code (the gardener's own,
-//    or one made for that customer) and is linked to that gardener. Done here, not in the app, so a customer can
-//    never attach themselves to someone else by editing their own profile.
-//
-// Translation uses the Cloud Translation API (basic edition) with the
-// function's own service account, so there is no API key to manage.
+const { onCall, HttpsError } = require("firebase-functions/v2/https")
+const { initializeApp } = require("firebase-admin/app")
+const { getAuth } = require("firebase-admin/auth")
+const { getFirestore } = require("firebase-admin/firestore")
 
-const { onDocumentCreated, onDocumentWritten } = require('firebase-functions/v2/firestore');
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
-const logger = require('firebase-functions/logger');
-const { initializeApp } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const { getAuth } = require('firebase-admin/auth');
-const { getStorage } = require('firebase-admin/storage');
-const { v2 } = require('@google-cloud/translate');
+initializeApp()
 
-initializeApp();
-const db = getFirestore();
-const translator = new v2.Translate();
+// Auto-emails an invoice the moment it's created, and auto-generates
+// monthly invoices for customers with a monthly rate set - see
+// functions/invoices.js for the full explanation of what's automated
+// (email) and what isn't (text, which still requires a paid SMS provider
+// this app doesn't use).
+const { onInvoiceCreatedSendEmail, autoGenerateMonthlyInvoices, sendScheduledInvoices } = require("./invoices")
+exports.onInvoiceCreatedSendEmail = onInvoiceCreatedSendEmail
+exports.autoGenerateMonthlyInvoices = autoGenerateMonthlyInvoices
+exports.sendScheduledInvoices = sendScheduledInvoices
 
-const REGION = 'us-central1';
-const LANGS = ['en', 'es'];
-const otherLang = (l) => (l === 'en' ? 'es' : 'en');
+// Auto-emails the service report the moment a job is marked complete -
+// same Gmail secrets and pattern as the invoice auto-email above. See
+// functions/reports.js.
+const { onJobCompletedSendReportEmail } = require("./reports")
+exports.onJobCompletedSendReportEmail = onJobCompletedSendReportEmail
 
-async function translateText(text, from, to) {
-  const [out] = await translator.translate(text, { from, to, format: 'text' });
-  return out;
-}
+// Finishes an owner sign-up server-side (transactional, bypasses security
+// rules) - fixes the "insufficient privilege" error real customers were
+// hitting right after sign-up. See functions/claim-invite.js for the full
+// explanation.
+const { claimInvite } = require("./claim-invite")
+exports.claimInvite = claimInvite
 
-exports.translateMessage = onDocumentCreated(
-  { document: 'threads/{threadId}/messages/{messageId}', region: REGION, retry: false },
-  async (event) => {
-    const snap = event.data;
-    if (!snap) return;
-    const { text, lang } = snap.data();
-    if (typeof text !== 'string' || !LANGS.includes(lang)) return;
-    const target = otherLang(lang);
+// Push notifications - new chat message, a new visit getting scheduled,
+// and a job being marked complete. Each registered device's FCM token
+// lives in users/{uid}/pushTokens - see src/lib/push-notifications.ts for
+// how a device registers itself. See functions/push-notifications.js.
+const { onNewChatMessageSendPush, onJobScheduledSendPush, onJobCompletedSendPush } = require("./push-notifications")
+exports.onNewChatMessageSendPush = onNewChatMessageSendPush
+exports.onJobScheduledSendPush = onJobScheduledSendPush
+exports.onJobCompletedSendPush = onJobCompletedSendPush
+
+// Lets an admin view the app as a specific provider account - see
+// functions/admin-impersonate.js for how this stays safe (never resets or
+// touches the provider's real password, and never disturbs the admin's
+// own session).
+
+// Lets someone sign in with their phone number instead of their email -
+// see functions/resolve-login-email.js for how (looks up the matching
+// account's email; the password itself still goes straight to Firebase
+// Auth on the client, never through this function).
+const { resolveLoginEmail } = require("./resolve-login-email")
+exports.resolveLoginEmail = resolveLoginEmail
+
+// Records that a customer opened their public service-report link, so
+// the provider can see whether/when it was actually viewed. See
+// functions/report-view.js.
+const { markReportViewed } = require("./report-view")
+exports.markReportViewed = markReportViewed
+
+// In-app "Contact Us" - sends a signed-in user's support message
+// straight to admin@tadpool.app. See functions/support.js.
+const { sendSupportMessage } = require("./support")
+exports.sendSupportMessage = sendSupportMessage
+
+// Public "Book your demo" form on the marketing homepage (tadpool.app) -
+// anonymous visitors, no auth, plain HTTP + CORS rather than onCall. See
+// functions/book-demo.js.
+
+// Homepage "Email us" form in the chat button - public, emails
+// admin@tadpool.app only. See functions/contact-email.js.
+
+// Referral program - a business shares its link, and when another pool pro
+// signs up with it both earn free months. Server-only collections, no
+// security-rule changes. See functions/referrals.js.
+const { getMyReferral, recordReferral } = require("./referrals")
+exports.getMyReferral = getMyReferral
+exports.recordReferral = recordReferral
+
+// Stripe Connect - lets a business accept card/ACH/Apple Pay payments
+// directly into their own bank account. See functions/stripe-connect.js
+// for the full setup steps (Stripe account, secrets, webhook).
+
+// // TadPool's own subscription billing - businesses paying TadPool to use
+// // the app ($19.99/month flat, first 3 months free), separate from
+// // Stripe Connect above. See functions/stripe-billing.js.
+// const {
+//   createSubscriptionCheckout,
+//   createBillingPortalLink,
+//   stripeBillingWebhook,
+// } = require("./stripe-billing")
+// exports.createSubscriptionCheckout = createSubscriptionCheckout
+// exports.createBillingPortalLink = createBillingPortalLink
+// exports.stripeBillingWebhook = stripeBillingWebhook
+
+// One-time "Connect to QuickBooks" customer import - a business admin
+// connects once, TadPool pulls in their existing QuickBooks Online
+// customers, no ongoing sync in either direction. See
+// functions/quickbooks-import.js for the full setup steps (Intuit app,
+// secrets, redirect URI).
+
+// Keeps businesses/{id}.customerCount in sync with the properties
+// collection (cached count for display and reporting; no customer limit)
+// without a collection-count query. See functions/customer-count.js.
+const {
+  onPropertyCreatedIncrementCustomerCount,
+  onPropertyDeletedDecrementCustomerCount,
+} = require("./customer-count")
+exports.onPropertyCreatedIncrementCustomerCount = onPropertyCreatedIncrementCustomerCount
+exports.onPropertyDeletedDecrementCustomerCount = onPropertyDeletedDecrementCustomerCount
+
+// Auto-sends the "create your account" invite email to a customer, as
+// an alternative to the existing text/mailto "Send Invite" button. See
+// functions/send-invite-email.js.
+const { sendInviteEmail } = require("./send-invite-email")
+exports.sendInviteEmail = sendInviteEmail
+
+// Automated SMS to customers who've opted in - a Quo (formerly OpenPhone)
+// number, separate from the existing manual "text" buttons which keep
+// working from the provider's own phone either way. No-ops until
+// QUO_API_KEY/QUO_FROM_NUMBER secrets are set - see functions/sms.js.
+
+// Inbound side of the same Quo integration - a webhook Quo calls
+// whenever a customer replies by text, which forwards that reply to
+// the right business's own phone (so replies don't just pile up in
+// Shail's shared Quo inbox). See functions/quo-inbound.js.
+
+// Lets a signed-in user delete their own account from inside the app -
+// required by App Store Guideline 5.1.1(v). See functions/self-delete-account.js.
+const { selfDeleteAccount } = require("./self-delete-account")
+exports.selfDeleteAccount = selfDeleteAccount
+
+// Lets a business admin add technician (or additional admin) logins
+// under their own business, change a teammate's role, or remove one.
+// See functions/team.js.
+const { createTechnician, updateTeamMemberRole, removeTeamMember } = require("./team")
+
+const { resetCustomerAccess } = require("./reset-customer-access")
+exports.resetCustomerAccess = resetCustomerAccess
+exports.createTechnician = createTechnician
+exports.updateTeamMemberRole = updateTeamMemberRole
+exports.removeTeamMember = removeTeamMember
+
+// Every Sunday 10am: emails a "create your account" reminder to
+// unclaimed customers who have an email on file. See
+// functions/weekly-signup-reminder.js.
+const { sendWeeklySignupReminders } = require("./weekly-signup-reminder")
+exports.sendWeeklySignupReminders = sendWeeklySignupReminders
+
+const MAX_UIDS_PER_CALL = 100
+
+/**
+ * Deletes one or more Firebase Authentication accounts (sign-ins), plus
+ * their users/{uid} Firestore profile doc.
+ *
+ * This exists ONLY because the client Firebase SDK can never delete
+ * someone else's Auth account - that requires the Admin SDK, which only
+ * runs in a trusted server context like this Cloud Function. It's what
+ * lets the admin console's "Delete Customer" / "Delete Business" actions
+ * fully remove an account instead of just its Firestore data, so the
+ * same email can be used to sign up again afterward.
+ *
+ * Callable only by a signed-in user whose own users/{uid} doc has
+ * role == "admin" - the same platform-support role documented in
+ * docs/admin-access.md, provisioned by hand and never available through
+ * the public sign-up form.
+ */
+exports.adminDeleteAccounts = onCall(async (request) => {
+  const callerUid = request.auth?.uid
+  if (!callerUid) {
+    throw new HttpsError("unauthenticated", "You must be signed in.")
+  }
+
+  const db = getFirestore()
+  const callerSnap = await db.collection("users").doc(callerUid).get()
+  if (!callerSnap.exists || callerSnap.data()?.role !== "admin") {
+    throw new HttpsError(
+      "permission-denied",
+      "Only an admin account can delete another user's sign-in."
+    )
+  }
+
+  const uids = request.data?.uids
+  if (!Array.isArray(uids) || uids.length === 0) {
+    throw new HttpsError("invalid-argument", "Provide a non-empty array of uids.")
+  }
+  if (uids.length > MAX_UIDS_PER_CALL) {
+    throw new HttpsError(
+      "invalid-argument",
+      `Can't delete more than ${MAX_UIDS_PER_CALL} accounts in one call.`
+    )
+  }
+  if (!uids.every((u) => typeof u === "string" && u.length > 0)) {
+    throw new HttpsError("invalid-argument", "Every uid must be a non-empty string.")
+  }
+
+  const auth = getAuth()
+  const deleted = []
+  const failed = []
+
+  for (const uid of uids) {
     try {
-      const out = await translateText(text, lang, target);
-      await snap.ref.update({ translations: { [lang]: text, [target]: out } });
+      await auth.deleteUser(uid)
+      deleted.push(uid)
     } catch (err) {
-      logger.error('translateMessage failed', { path: snap.ref.path, message: err.message });
-      // The app shows the original text and stops saying "Translating…".
-      await snap.ref.update({ translationFailed: true });
-    }
-  },
-);
-
-exports.translateJobText = onDocumentWritten(
-  { document: 'jobs/{jobId}', region: REGION, retry: false },
-  async (event) => {
-    const after = event.data && event.data.after;
-    if (!after || !after.exists) return;
-    const before = event.data.before && event.data.before.exists ? event.data.before.data() : {};
-    const job = after.data();
-    const updates = {};
-
-    const pairs = [
-      ['description', 'descriptionLang', 'descriptionTranslations'],
-      ['note', 'noteLang', 'noteTranslations'],
-    ];
-    for (const [textField, langField, outField] of pairs) {
-      const text = job[textField];
-      const lang = job[langField];
-      if (typeof text !== 'string' || !text.trim() || !LANGS.includes(lang)) continue;
-      const target = otherLang(lang);
-      const have = job[outField] && job[outField][target];
-      const changed = before[textField] !== text;
-      if (have && !changed) continue; // already translated, nothing new to do
-      try {
-        updates[outField] = { [lang]: text, [target]: await translateText(text, lang, target) };
-      } catch (err) {
-        logger.error('translateJobText failed', { path: after.ref.path, field: textField, message: err.message });
+      // Already gone is fine - that's the desired end state either way.
+      if (err?.code === "auth/user-not-found") {
+        deleted.push(uid)
+      } else {
+        failed.push({ uid, message: err instanceof Error ? err.message : String(err) })
       }
     }
-    if (Object.keys(updates).length) await after.ref.update(updates);
-  },
-);
-
-exports.linkToProvider = onCall({ region: REGION }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in first.');
-  const code = String((request.data && request.data.code) || '').trim().toUpperCase();
-  if (!/^[A-Z2-9]{6}$/.test(code)) throw new HttpsError('invalid-argument', 'Bad code.');
-
-  const meRef = db.doc(`users/${request.auth.uid}`);
-  const me = await meRef.get();
-  if (!me.exists || me.data().role !== 'customer') {
-    throw new HttpsError('failed-precondition', 'Only customer accounts can link to a gardener.');
+    // Best-effort: remove the Firestore profile doc too, in case the
+    // caller hasn't already deleted it client-side.
+    await db.collection("users").doc(uid).delete().catch(() => {})
   }
 
-  // 1) A code the gardener made for one specific customer they added by hand:
-  //    link this account to that gardener and move that customer's jobs over.
-  const rec = await db.collection('providerCustomers').where('code', '==', code).limit(1).get();
-  if (!rec.empty) {
-    const recDoc = rec.docs[0];
-    const r = recDoc.data();
-    if (r.claimedBy && r.claimedBy !== request.auth.uid) {
-      throw new HttpsError('already-exists', 'That code was already used.');
-    }
-    const jobs = await db.collection('jobs').where('providerId', '==', r.providerId).where('customerId', '==', recDoc.id).get();
-    const batch = db.batch();
-    jobs.docs.forEach((j) => batch.update(j.ref, { customerId: request.auth.uid }));
-    const invs = await db.collection('invoices').where('providerId', '==', r.providerId).where('customerId', '==', recDoc.id).get();
-    invs.docs.forEach((i) => batch.update(i.ref, { customerId: request.auth.uid }));
-    batch.update(meRef, { providerId: r.providerId });
-    batch.update(recDoc.ref, { claimedBy: request.auth.uid });
-    await batch.commit();
-    return { ok: true };
-  }
+  return { deleted, failed }
+})
 
-  // 2) The gardener's own general code.
-  const found = await db.collection('users').where('inviteCode', '==', code).where('role', '==', 'provider').limit(1).get();
-  if (found.empty) throw new HttpsError('not-found', 'No gardener has that code.');
+// Sends the "verify your email" link via Resend (same sender as
+// invoices/reports/invites) instead of Firebase Auth's own built-in
+// verification email, which was landing in spam/junk. See
+// functions/email-verification.js.
+const { sendVerificationEmail } = require("./email-verification")
+exports.sendVerificationEmail = sendVerificationEmail
 
-  await meRef.update({ providerId: found.docs[0].id });
-  return { ok: true };
-});
+// One-time passcode (6-digit code) email verification - used at sign-up and
+// from the in-app banner instead of a link. See functions/email-code.js.
+const { sendEmailCode, verifyEmailCode } = require("./email-code")
+exports.sendEmailCode = sendEmailCode
+exports.verifyEmailCode = verifyEmailCode
 
-// deleteMyAccount: the signed-in person deletes their own account and data.
-//  - Gardener: their profile, customers, jobs (and job photos) and chats go;
-//    customers who were linked to them are simply unlinked.
-//  - Customer: their profile and chat go; the gardener keeps the job history
-//    (names only) and the customer card goes back to "not in the app yet".
-exports.deleteMyAccount = onCall({ region: REGION, timeoutSeconds: 120 }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in first.');
-  const uid = request.auth.uid;
-  const meRef = db.doc(`users/${uid}`);
-  const me = await meRef.get();
-  const role = me.exists ? me.data().role : null;
+// Fixing a mistyped email: a person can fix their own while it's still
+// unverified, and a platform admin can change a provider's. See
+// functions/change-email.js.
+const { changeMyUnverifiedEmail, adminChangeUserEmail } = require("./change-email")
+exports.changeMyUnverifiedEmail = changeMyUnverifiedEmail
+exports.adminChangeUserEmail = adminChangeUserEmail
 
-  const deleteQuery = async (q) => {
-    const snap = await q.get();
-    for (const d of snap.docs) await db.recursiveDelete(d.ref);
-  };
+// Route map: address -> map point lookup and the map key for the browser.
+// See functions/maps.js.
+const { getMapsBrowserKey, geocodeProperties, geocodeBusiness } = require("./maps")
+exports.getMapsBrowserKey = getMapsBrowserKey
+exports.geocodeProperties = geocodeProperties
+exports.geocodeBusiness = geocodeBusiness
 
-  if (role === 'provider') {
-    await deleteQuery(db.collection('jobs').where('providerId', '==', uid));
-    await deleteQuery(db.collection('invoices').where('providerId', '==', uid));
-    await deleteQuery(db.collection('providerCustomers').where('providerId', '==', uid));
-    await deleteQuery(db.collection('threads').where('providerId', '==', uid));
-    const linked = await db.collection('users').where('providerId', '==', uid).get();
-    for (const d of linked.docs) await d.ref.update({ providerId: FieldValue.delete() });
-    await db.doc(`providerProfiles/${uid}`).delete().catch(() => {});
-    try { await getStorage().bucket().deleteFiles({ prefix: `jobs/${uid}/` }); } catch (err) { logger.warn('photo cleanup failed', err.message); }
-  } else if (role === 'customer') {
-    await deleteQuery(db.collection('threads').where('customerId', '==', uid));
-    const claimed = await db.collection('providerCustomers').where('claimedBy', '==', uid).get();
-    for (const d of claimed.docs) await d.ref.update({ claimedBy: FieldValue.delete() });
-  }
-
-  await meRef.delete().catch(() => {});
-  await getAuth().deleteUser(uid);
-  return { ok: true };
-});
+// Plans (Pro up to 3 technicians, Premium up to 10) - see plans.js.
+const {
+  onBusinessCreatedSetPlan,
+  getTeamPlan,
+  adminSetBusinessPlan,
+} = require("./plans")
+exports.onBusinessCreatedSetPlan = onBusinessCreatedSetPlan
+exports.getTeamPlan = getTeamPlan
+exports.adminSetBusinessPlan = adminSetBusinessPlan

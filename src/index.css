@@ -1,32 +1,183 @@
 @import "tailwindcss";
 
-@theme {
-  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+@custom-variant dark (&:is(.dark *));
 
-  --color-bg: #f6fbf5;
-  --color-surface: #ffffff;
-  --color-ink: #181d1a;
-  --color-muted: #5d665a;
-  --color-line: #dfe6dc;
-  --color-green: #2e7d32;
-  --color-green-dark: #0d631b;
-  --color-green-soft: #e3f1e2;
-  --color-sand: #eef2ec;
-  --color-danger: #ba1a1a;
+:root {
+  --radius: 0.875rem;
+
+  /* Verde brand palette - deep garden green + fresh leaf accent, tuned for a
+     richer, higher-contrast "premium SaaS" feel than the original flatter
+     palette. */
+  --background: oklch(0.985 0.004 150);
+  --foreground: oklch(0.19 0.025 150);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.19 0.025 150);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.19 0.025 150);
+
+  --primary: oklch(0.36 0.11 150);
+  --primary-foreground: oklch(0.99 0.004 150);
+
+  --secondary: oklch(0.955 0.016 150);
+  --secondary-foreground: oklch(0.3 0.06 150);
+
+  --muted: oklch(0.96 0.008 150);
+  --muted-foreground: oklch(0.5 0.025 150);
+
+  --accent: oklch(0.91 0.06 160);
+  --accent-foreground: oklch(0.28 0.09 150);
+
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.98 0.005 150);
+
+  --success: oklch(0.6 0.16 155);
+  --success-foreground: oklch(0.98 0.01 155);
+
+  --warning: oklch(0.75 0.15 75);
+  --warning-foreground: oklch(0.25 0.05 75);
+
+  --border: oklch(0.91 0.011 150);
+  --input: oklch(0.91 0.011 150);
+  --ring: oklch(0.58 0.09 150);
+
+  /* Brand accent gradient stops - used for hero surfaces (login, dashboard
+     highlight cards) instead of a flat primary fill. */
+  --brand-glow-1: oklch(0.4 0.13 150);
+  --brand-glow-2: oklch(0.52 0.14 160);
+  --brand-glow-3: oklch(0.62 0.13 160);
+
+  --shadow-color: 250 30% 30%;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
 }
 
-html, body, #root { height: 100%; }
-body {
-  margin: 0;
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-body);
-  font-size: 18px;
-  line-height: 1.45;
-  -webkit-tap-highlight-color: transparent;
+.dark {
+  --background: oklch(0.19 0.02 150);
+  --foreground: oklch(0.95 0.01 150);
+
+  --card: oklch(0.24 0.02 150);
+  --card-foreground: oklch(0.95 0.01 150);
+
+  --popover: oklch(0.24 0.02 150);
+  --popover-foreground: oklch(0.95 0.01 150);
+
+  --primary: oklch(0.68 0.1 150);
+  --primary-foreground: oklch(0.17 0.02 150);
+
+  --secondary: oklch(0.3 0.02 150);
+  --secondary-foreground: oklch(0.95 0.01 150);
+
+  --muted: oklch(0.28 0.02 150);
+  --muted-foreground: oklch(0.65 0.02 150);
+
+  --accent: oklch(0.32 0.05 150);
+  --accent-foreground: oklch(0.9 0.03 150);
+
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.98 0.005 150);
+
+  --success: oklch(0.68 0.15 155);
+  --success-foreground: oklch(0.17 0.03 155);
+
+  --warning: oklch(0.78 0.15 80);
+  --warning-foreground: oklch(0.2 0.04 80);
+
+  --border: oklch(0.32 0.02 150);
+  --input: oklch(0.32 0.02 150);
+  --ring: oklch(0.55 0.08 150);
+
+  --brand-glow-1: oklch(0.3 0.1 150);
+  --brand-glow-2: oklch(0.4 0.12 160);
+  --brand-glow-3: oklch(0.48 0.12 160);
+  --shadow-color: 250 60% 4%;
 }
-h1, h2, h3, button { font-family: var(--font-display); }
-button { cursor: pointer; }
-button:disabled { cursor: default; opacity: .55; }
-:focus-visible { outline: 3px solid var(--color-green); outline-offset: 2px; }
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply overscroll-none;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  /* Soft, tinted elevation used on cards instead of a generic grey shadow -
+     reads as a lot more "designed" than shadow-sm/md at basically no cost. */
+  .shadow-elevated {
+    box-shadow:
+      0 1px 2px hsl(var(--shadow-color) / 0.04),
+      0 8px 24px -8px hsl(var(--shadow-color) / 0.12);
+  }
+  .shadow-elevated-lg {
+    box-shadow:
+      0 2px 4px hsl(var(--shadow-color) / 0.06),
+      0 16px 40px -12px hsl(var(--shadow-color) / 0.22);
+  }
+  /* Brand gradient surface for hero cards / headers. */
+  .bg-brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--brand-glow-1) 0%,
+      var(--brand-glow-2) 55%,
+      var(--brand-glow-3) 100%
+    );
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Printed invoices: browsers skip background-color/gradient by default when
+   printing, which makes the navy header bar and filled payment buttons
+   disappear (white-on-white). Force exact color reproduction so the
+   service-provider print view matches what's shown on screen. */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}

@@ -3,125 +3,287 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function signedIn() { return request.auth != null; }
-    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-
-    // users: everyone reads and edits only their own profile. A provider can
-    // also read the customers linked to them. providerId and role are only
-    // ever set by the linkToProvider / createProfile paths (see below), so a
-    // user cannot attach themselves to somebody else's account.
-    match /users/{uid} {
-      allow read: if signedIn() && (request.auth.uid == uid
-        || resource.data.providerId == request.auth.uid);
-      // Profile is created once, with no provider link; the callable function
-      // linkToProvider sets providerId afterwards.
-      allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.role in ['provider', 'customer']
-        && request.resource.data.language in ['en', 'es']
-        && !('providerId' in request.resource.data);
-      allow update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.role == resource.data.role
-        && request.resource.data.get('providerId', null) == resource.data.get('providerId', null)
-        && request.resource.data.get('inviteCode', null) == resource.data.get('inviteCode', null)
-        && request.resource.data.language in ['en', 'es'];
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // providerProfiles: the part of a provider's profile their linked
-    // customers may see (name, Zelle and Venmo handles). The provider writes it.
-    match /providerProfiles/{uid} {
-      allow read: if signedIn() && (request.auth.uid == uid
-        || me().get('providerId', null) == uid);
-      allow write: if signedIn() && request.auth.uid == uid && me().role == 'provider';
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
-    // invoices: anyone holding the exact (unguessable) id can open one, signed
-    // in or not, which is what makes the shared link work. Lists are limited to
-    // the gardener who made them and the customer they are for.
-    match /invoices/{invoiceId} {
-      allow get: if true;
-      allow list: if signedIn() && (resource.data.providerId == request.auth.uid
-        || resource.data.customerId == request.auth.uid);
-      allow create: if signedIn() && me().role == 'provider'
-        && request.resource.data.providerId == request.auth.uid
-        && request.resource.data.status == 'unpaid'
-        && request.resource.data.amount is number && request.resource.data.amount > 0
-        && request.resource.data.amount < 1000000;
-      allow update: if signedIn() && resource.data.providerId == request.auth.uid
-        && request.resource.data.providerId == resource.data.providerId
-        && request.resource.data.customerId == resource.data.customerId
-        && request.resource.data.number == resource.data.number
-        && request.resource.data.amount == resource.data.amount;
-      allow delete: if signedIn() && resource.data.providerId == request.auth.uid;
+    function myBusinessId() {
+      return userDoc().data.businessId;
     }
 
-    // support messages: anyone signed in can leave one (as themselves); only
-    // the Verde team reads them, in the Firebase console.
-    match /supportRequests/{id} {
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
-        && request.resource.data.message is string
-        && request.resource.data.message.size() > 0 && request.resource.data.message.size() <= 2000;
-      allow read, update, delete: if false;
+    function myRole() {
+      return userDoc().data.role;
     }
 
-    // customers the gardener added by hand. Only that gardener can see or
-    // change them; claiming one (when the customer enters its code) is done
-    // by the linkToProvider Cloud Function, never from the app.
-    match /providerCustomers/{id} {
-      allow read, delete: if signedIn() && resource.data.providerId == request.auth.uid;
-      allow create: if signedIn() && me().role == 'provider'
-        && request.resource.data.providerId == request.auth.uid
-        && !('claimedBy' in request.resource.data)
-        && request.resource.data.name is string && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 120;
-      allow update: if signedIn() && resource.data.providerId == request.auth.uid
-        && !('claimedBy' in resource.data)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone', 'email', 'address', 'language'])
-        && request.resource.data.name is string && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 120;
+    function myPropertyId() {
+      return userDoc().data.propertyId;
     }
 
-    // jobs: the provider who owns it and the customer it is for can read it.
-    // Only the provider writes. Translations are written by Cloud Functions.
-    match /jobs/{jobId} {
-      // Once the report is sent, anyone holding the exact (unguessable) job id
-      // can open it: that is the shared report link. Lists stay private.
-      allow get: if (signedIn() && (resource.data.providerId == request.auth.uid
-        || resource.data.customerId == request.auth.uid))
-        || resource.data.get('reportSentAt', null) != null;
-      allow list: if signedIn() && (resource.data.providerId == request.auth.uid
-        || resource.data.customerId == request.auth.uid);
-      allow create: if signedIn() && request.resource.data.providerId == request.auth.uid
-        && me().role == 'provider'
-        && !('descriptionTranslations' in request.resource.data)
-        && !('noteTranslations' in request.resource.data);
-      allow update: if signedIn() && resource.data.providerId == request.auth.uid
-        && request.resource.data.providerId == resource.data.providerId
-        && request.resource.data.customerId == resource.data.customerId
-        && request.resource.data.get('descriptionTranslations', null) == resource.data.get('descriptionTranslations', null)
-        && request.resource.data.get('noteTranslations', null) == resource.data.get('noteTranslations', null);
-      allow delete: if signedIn() && resource.data.providerId == request.auth.uid;
+    // "provider" role accounts split into "admin" (manages customers,
+    // billing, team, business profile) and "technician" (completes
+    // assigned jobs only) - see BusinessRole in src/types/index.ts.
+    // .get(key, default) treats every pre-existing single-operator
+    // account (no businessRole field at all) as "admin", so nothing about
+    // an existing business's access changes just because this field now
+    // exists.
+    function myBusinessRole() {
+      return userDoc().data.get('businessRole', 'admin');
     }
 
-    // chat: thread id is "<providerId>_<customerId>"; only those two people
-    // can read or write. The translations field is written only by a Cloud
-    // Function, never by a client.
-    match /threads/{threadId} {
-      allow read: if signedIn() && request.auth.uid in threadId.split('_');
-      allow create, update: if signedIn() && request.auth.uid in threadId.split('_')
-        && request.resource.data.keys().hasOnly(['providerId', 'customerId', 'lastText', 'lastAt', 'lastSenderId'])
-        && threadId == request.resource.data.providerId + '_' + request.resource.data.customerId;
+    function isBizAdmin() {
+      return isSignedIn() && myRole() == 'provider' && myBusinessRole() == 'admin';
+    }
 
-      match /messages/{messageId} {
-        allow read: if signedIn() && request.auth.uid in threadId.split('_');
-        allow create: if signedIn() && request.auth.uid in threadId.split('_')
-          && request.resource.data.senderId == request.auth.uid
-          && request.resource.data.text is string
-          && request.resource.data.text.size() > 0
-          && request.resource.data.text.size() <= 2000
-          && request.resource.data.lang in ['en', 'es']
-          && !('translations' in request.resource.data);
-        allow update, delete: if false;
+    function sameBusiness(resourceData) {
+      return isSignedIn() && resourceData.businessId == myBusinessId();
+    }
+
+    // Platform-support role, provisioned by hand directly in Firebase (see
+    // docs/admin-access.md) - never selectable on the public sign-up form,
+    // so the only way to become an admin is for the app owner to create
+    // the account themselves. Gives read access across every business for
+    // support/debugging, plus the ability to manage (edit/delete) any
+    // customer record. It intentionally does NOT grant write access to
+    // jobs, messages, or businesses - an admin can look into a problem and
+    // fix a customer record, but can't rewrite service history or business
+    // billing details.
+    function isAdmin() {
+      return isSignedIn() && myRole() == 'admin';
+    }
+
+    // Users can read their own profile and any teammate in the same
+    // business (needed to show the service provider's name, chat
+    // counterparts, etc), or any user at all if they're an admin. A user
+    // can only be created/updated by themselves; role/businessId changes
+    // should go through a trusted server context (Cloud Function) in a
+    // later hardening pass.
+    match /users/{userId} {
+      // A customer (owner) can see their own profile and their provider's
+      // staff (needed for chat names), but NOT other customers' profiles -
+      // those hold name/email/phone. Providers can still see everyone in
+      // their business. Owner-side queries must therefore filter on
+      // role == "provider" (see firebase-jobs-store.tsx).
+      allow read: if isSignedIn() &&
+        (request.auth.uid == userId ||
+         (resource.data.businessId == myBusinessId() &&
+          (myRole() == 'provider' || resource.data.role == 'provider')) ||
+         isAdmin());
+      // SECURITY: self-created profiles may ONLY be a brand-new business's
+      // first admin. Previously any signed-in user could create their own
+      // users/{uid} with role "admin" (platform support - read/delete
+      // everything, impersonate any provider) or with any other business's
+      // businessId. Now: role must be "provider"/"admin", and the business
+      // must be one this same user just created (ownerUid == their uid).
+      // getAfter() so it also works if the business + profile are ever
+      // written in one batch. Owner (customer) profiles are created only by
+      // the claimInvite Cloud Function (Admin SDK) and platform-admin
+      // accounts only by hand in the console - neither goes through here.
+      allow create: if isSignedIn() && request.auth.uid == userId &&
+        request.resource.data.role == 'provider' &&
+        request.resource.data.get('businessRole', 'admin') == 'admin' &&
+        !('propertyId' in request.resource.data) &&
+        getAfter(/databases/$(database)/documents/businesses/$(request.resource.data.businessId)).data.get('ownerUid', null) == request.auth.uid;
+      // Self-update covers everyday profile edits (name, phone, chat
+      // read-markers) but must never let a technician promote themselves
+      // to admin, move themselves to a different business, or change
+      // their own role - those only ever happen server-side, via the
+      // createTechnician/updateTeamMemberRole Cloud Functions (Admin SDK,
+      // bypasses these rules), which check the CALLER's own admin status
+      // before touching anyone. See functions/team.js.
+      allow update: if isSignedIn() && request.auth.uid == userId &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.businessId == resource.data.businessId &&
+        request.resource.data.get('businessRole', 'admin') == resource.data.get('businessRole', 'admin') &&
+        // propertyId decides which customer's jobs/messages/invoices an
+        // owner can read - it must never be self-editable (otherwise any
+        // customer could point themselves at someone else's property).
+        request.resource.data.get('propertyId', null) == resource.data.get('propertyId', null);
+      // Admin-only, and only as part of removing an entire business (its
+      // provider/owner accounts stop having anywhere to sign into once the
+      // business is gone). Never available to a business's own members.
+      allow delete: if isAdmin();
+
+      // One doc per device that's turned on push notifications, keyed by
+      // that device's FCM token. Only the account owner can register or
+      // remove their own tokens - Cloud Functions read/write these with
+      // the Admin SDK when actually sending a push, which bypasses these
+      // rules entirely.
+      match /pushTokens/{tokenId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
       }
+    }
+
+    match /businesses/{businessId} {
+      allow read: if isSignedIn() && (businessId == myBusinessId() || isAdmin());
+      // Created client-side during provider (business) sign-up; tighten
+      // to a Cloud Function once one exists to mint businesses server-side.
+      // Created client-side during provider sign-up. ownerUid must be the
+      // creator - the users/{uid} create rule above relies on it to stop
+      // someone from attaching themselves to a business they don't own.
+      allow create: if isSignedIn() &&
+        request.resource.data.get('ownerUid', null) == request.auth.uid;
+      // A provider can edit their own business's profile - this is what
+      // lets them set up Payment Settings (Venmo/Zelle) from their
+      // profile page. Still nobody else's business, and still not an
+      // owner or admin (admin write access to business billing details
+      // is deliberately withheld, per the note above).
+      //
+      // The four stripe* fields are excluded from what a plain client
+      // write can change - they're status mirrors of the business's
+      // real Stripe Connect account, written only by Cloud Functions
+      // (createStripeConnectAccount / stripeConnectWebhook) using the
+      // Admin SDK, which bypasses these rules entirely. Without this, a
+      // business admin could set stripeChargesEnabled=true from the
+      // browser console without ever actually finishing Stripe
+      // onboarding - harmless to real money (a fake connected account
+      // id still can't move money server-side), but it would corrupt
+      // the UI's "are we actually ready to accept payments" state.
+      allow update: if isSignedIn() &&
+        businessId == myBusinessId() && isBizAdmin() &&
+        request.resource.data.get('ownerUid', null) == resource.data.get('ownerUid', null) &&
+        request.resource.data.get('stripeAccountId', null) == resource.data.get('stripeAccountId', null) &&
+        request.resource.data.get('stripeChargesEnabled', false) == resource.data.get('stripeChargesEnabled', false) &&
+        request.resource.data.get('stripePayoutsEnabled', false) == resource.data.get('stripePayoutsEnabled', false) &&
+        request.resource.data.get('stripeDetailsSubmitted', false) == resource.data.get('stripeDetailsSubmitted', false);
+      // Admin-only "remove this business" action from the support console.
+      allow delete: if isAdmin();
+    }
+
+    // A property represents one customer. It starts unclaimed (ownerId ==
+    // null) when the provider adds the customer, and gets claimed once the
+    // customer signs up with their invite code. Owners may only ever read
+    // or touch their own property, never a business-mate's. An admin can
+    // read, edit, or remove any customer across any business.
+    match /properties/{propertyId} {
+      allow read: if isSignedIn() &&
+        ((myRole() == 'provider' && resource.data.businessId == myBusinessId()) ||
+         (myRole() == 'owner' && resource.data.ownerId == request.auth.uid) ||
+         isAdmin());
+      allow create: if isSignedIn() &&
+        request.resource.data.businessId == myBusinessId() &&
+        isBizAdmin() &&
+        request.resource.data.ownerId == null;
+      // Owners no longer claim their property via a direct client write -
+      // that now happens inside the claimInvite Cloud Function (Admin SDK,
+      // bypasses these rules entirely) as one atomic transaction, which is
+      // also what fixed the intermittent "insufficient permissions" error
+      // customers hit signing up. So the only client-side writers left here
+      // are the provider (their own business's properties) and admin.
+      // A business admin can't re-home a customer to another business or
+      // hand it to a different owner account - businessId and ownerId are
+      // fixed by the claimInvite function / creation (platform admin exempt).
+      allow update: if isSignedIn() &&
+        (isAdmin() ||
+         (resource.data.businessId == myBusinessId() && isBizAdmin() &&
+          request.resource.data.businessId == resource.data.businessId &&
+          request.resource.data.get('ownerId', null) == resource.data.get('ownerId', null)));
+      allow delete: if isSignedIn() &&
+        (isAdmin() ||
+         (resource.data.businessId == myBusinessId() && isBizAdmin()));
+    }
+
+    // One-time invite codes minted by a provider when they add a customer.
+    // SECURITY: no client can read these any more. They used to be readable
+    // (including list) by every signed-in user, which let anyone enumerate
+    // every unused invite code and claim another business's customer. The
+    // claimInvite Cloud Function validates codes server-side (Admin SDK), so
+    // the browser never needs to read this collection.
+    match /inviteCodes/{code} {
+      allow read: if false;
+      allow create: if isSignedIn() &&
+        isBizAdmin() &&
+        request.resource.data.businessId == myBusinessId();
+      // Marking a code used now happens only inside the claimInvite Cloud
+      // Function (Admin SDK, bypasses these rules) as part of its atomic
+      // claim transaction, so no client write path needs to be open here.
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    match /jobs/{jobId} {
+      // Signed-in read: provider sees every job in their business, an
+      // owner only their own property's jobs.
+      //
+      // Public read (get only - never list): the emailed/texted report
+      // link opens a specific job by its (unguessable) auto-generated ID,
+      // with no login. Only completed jobs are exposed this way, and only
+      // the reportXxx snapshot fields + service details are shown - the
+      // page never reads the property/business docs, so nothing like a
+      // gate code is ever reachable through this path. `list` is never
+      // granted here, so this can't be used to browse a business's jobs.
+      allow get: if
+        (isSignedIn() &&
+         ((myRole() == 'provider' && resource.data.businessId == myBusinessId()) ||
+          (myRole() == 'owner' && resource.data.propertyId == myPropertyId()) ||
+          isAdmin())) ||
+        resource.data.status == 'completed';
+      allow list: if isSignedIn() &&
+        ((myRole() == 'provider' && resource.data.businessId == myBusinessId()) ||
+         (myRole() == 'owner' && resource.data.propertyId == myPropertyId()) ||
+         isAdmin());
+      // Scheduling a new visit is meant to be an admin-only action in the
+      // UI (the "Schedule Service" route is admin-gated) - but this rule
+      // itself stays open to any business member, admin or technician,
+      // because completing a RECURRING job auto-creates its next
+      // occurrence as a plain client-side write (see updateJob in
+      // firebase-jobs-store.tsx), and that has to keep working no matter
+      // who - admin or technician - is the one marking the job done.
+      allow create: if isSignedIn() &&
+        request.resource.data.businessId == myBusinessId() && myRole() == 'provider';
+      // Both an admin and a technician can edit a job (fill in the
+      // report, mark it complete) - admin still can't rewrite service
+      // history, per docs/admin-access.md. Admin CAN delete a job, needed
+      // only to clean up jobs when removing a business entirely.
+      // businessId can't be changed (otherwise a job could be pushed into
+      // another business's customer feed).
+      allow update: if sameBusiness(resource.data) && myRole() == 'provider' &&
+        request.resource.data.businessId == resource.data.businessId;
+      allow delete: if isAdmin() || (sameBusiness(resource.data) && isBizAdmin());
+    }
+
+    // An invoice the provider sends to one customer. Same public-link
+    // pattern as jobs: the emailed/texted invoice link opens a specific
+    // invoice by its unguessable auto-generated ID with no login, so the
+    // customer can view amount/period and pay via the snapshotted
+    // Venmo/Zelle info without ever reading the property or business docs
+    // directly. `list` is never granted publicly, so this can't be used to
+    // browse a business's invoices - only to open one you already have the
+    // link to. Only the provider can mark it paid/unpaid (there's no real
+    // payment processor here, so this is always a manual, honor-system
+    // status flip - see docs/architecture notes on the Invoice feature).
+    match /invoices/{invoiceId} {
+      // Any invoice can be fetched by its exact (unguessable) ID, signed in
+      // or not - that's what lets the emailed/texted invoice link work
+      // without requiring the customer to log in.
+      allow get: if true;
+      allow list: if isSignedIn() &&
+        ((myRole() == 'provider' && resource.data.businessId == myBusinessId()) ||
+         (myRole() == 'owner' && resource.data.propertyId == myPropertyId()) ||
+         isAdmin());
+      allow create: if isSignedIn() &&
+        request.resource.data.businessId == myBusinessId() && isBizAdmin();
+      allow update: if sameBusiness(resource.data) && isBizAdmin();
+      allow delete: if isAdmin() || (sameBusiness(resource.data) && isBizAdmin());
+    }
+
+    // One persistent conversation per customer relationship (keyed by
+    // propertyId), not per job - owners only ever see their own thread.
+    match /messages/{messageId} {
+      allow read: if isSignedIn() &&
+        ((myRole() == 'provider' && resource.data.businessId == myBusinessId()) ||
+         (myRole() == 'owner' && resource.data.propertyId == myPropertyId()) ||
+         isAdmin());
+      allow create: if isSignedIn() &&
+        request.resource.data.businessId == myBusinessId() &&
+        request.resource.data.senderId == request.auth.uid &&
+        (myRole() == 'provider' || request.resource.data.propertyId == myPropertyId());
+      allow update: if false;
+      // Admin-only, and only to clean up messages when removing a business.
+      allow delete: if isAdmin();
     }
   }
 }
