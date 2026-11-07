@@ -47,6 +47,8 @@ export interface Job {
   providerId: string
   customerId: string
   customerName: string
+  customerLang?: Lang
+  providerName?: string // copied when the report is sent, for the shared report page
   address: string
   date: string // YYYY-MM-DD
   startTime: string // HH:MM

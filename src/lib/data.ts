@@ -100,7 +100,7 @@ export const removeCustomerRecord = (id: string) => deleteDoc(doc(db, 'providerC
 
 export interface NewJobInput {
   providerId: string
-  customer: { id: string; name: string }
+  customer: { id: string; name: string; language?: Lang }
   address: string
   date: string
   startTime: string
@@ -115,6 +115,7 @@ export async function createJob(input: NewJobInput): Promise<string> {
     providerId: input.providerId,
     customerId: input.customer.id,
     customerName: input.customer.name,
+    customerLang: input.customer.language ?? 'en',
     address: input.address,
     date: input.date,
     startTime: input.startTime,

@@ -83,7 +83,12 @@ service cloud.firestore {
     // jobs: the provider who owns it and the customer it is for can read it.
     // Only the provider writes. Translations are written by Cloud Functions.
     match /jobs/{jobId} {
-      allow read: if signedIn() && (resource.data.providerId == request.auth.uid
+      // Once the report is sent, anyone holding the exact (unguessable) job id
+      // can open it: that is the shared report link. Lists stay private.
+      allow get: if (signedIn() && (resource.data.providerId == request.auth.uid
+        || resource.data.customerId == request.auth.uid))
+        || resource.data.get('reportSentAt', null) != null;
+      allow list: if signedIn() && (resource.data.providerId == request.auth.uid
         || resource.data.customerId == request.auth.uid);
       allow create: if signedIn() && request.resource.data.providerId == request.auth.uid
         && me().role == 'provider'

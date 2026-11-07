@@ -3,7 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Camera, Check, Copy, ExternalLink, Mic, MapPin, Send, Trash2, X } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
 import { clock, longDate } from '@/lib/date'
-import { deleteJobPhoto, patchJob, removeJob, textFor, uploadJobPhoto, useJob } from '@/lib/data'
+import { deleteJobPhoto, patchJob, removeJob, textFor, uploadJobPhoto, useCustomerBook, useJob } from '@/lib/data'
+import { translate } from '@/lib/i18n'
+import { ORIGIN, smsLink } from '@/lib/invite'
 import { compressImage } from '@/lib/image'
 import { canDictate, dictate } from '@/lib/speech'
 import type { Job, PhotoTag } from '@/lib/types'
@@ -23,7 +25,7 @@ export default function JobPage() {
 /* ---------------------------------------------------------------- provider */
 
 function ProviderJob({ job }: { job: Job }) {
-  const { t, lang } = useApp()
+  const { t, lang, profile } = useApp()
   const l = lang ?? 'en'
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -78,9 +80,10 @@ function ProviderJob({ job }: { job: Job }) {
         status: 'done',
         note: note.trim(),
         noteLang: l,
+        providerName: profile?.name ?? '',
         reportSentAt: new Date(),
       })
-      navigate('/')
+      setSending(false) // stay here: the share link appears below
     } catch {
       setError(t('somethingWrong'))
       setSending(false)
@@ -196,9 +199,34 @@ function ProviderJob({ job }: { job: Job }) {
           {confirmDelete && <p className="mt-2 text-center text-base text-muted">{t('deleteSure')}</p>}
         </div>
       ) : (
-        <ProviderPayment job={job} />
+        <>
+          <ShareReport job={job} />
+          <ProviderPayment job={job} />
+        </>
       )}
     </Screen>
+  )
+}
+
+function ShareReport({ job }: { job: Job }) {
+  const { t, profile } = useApp()
+  const book = useCustomerBook(profile?.uid)
+  const [copied, setCopied] = useState(false)
+  const link = `${ORIGIN}/report/${job.id}`
+  const lang = job.customerLang ?? 'en'
+  const phone = book?.find((c) => c.id === job.customerId)?.phone
+  const message = translate(lang, 'rptSms', { name: profile?.name ?? '', link })
+
+  async function copyLink() {
+    try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* link is in the text */ }
+  }
+  return (
+    <section className="mt-8 space-y-3">
+      <h2 className="text-2xl font-extrabold">{t('rptShare')}</h2>
+      <p className="text-lg text-muted">{t('rptShareHelp')}</p>
+      <Button onClick={() => { if (phone) window.location.href = smsLink(phone, message); else void copyLink() }} icon={<Send size={22} aria-hidden />}>{t('rptSend')}</Button>
+      <Button variant="secondary" onClick={copyLink} icon={copied ? <Check size={22} aria-hidden /> : <Copy size={22} aria-hidden />}>{copied ? t('copied') : t('copy')}</Button>
+    </section>
   )
 }
 

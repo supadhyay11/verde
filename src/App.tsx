@@ -19,6 +19,7 @@ import Billing from '@/pages/Billing'
 import NewInvoice from '@/pages/NewInvoice'
 import InvoiceDetail from '@/pages/InvoiceDetail'
 import InvoicePage from '@/pages/InvoicePage'
+import ReportPage from '@/pages/ReportPage'
 
 export default function App() {
   const { user, profile, lang, authReady, profileLoading, t, signOut } = useApp()
@@ -35,8 +36,10 @@ export default function App() {
   }, [user, profile])
 
   if (!authReady) return <Loading label="Verde" />
-  // A shared invoice link opens for anyone, signed in or not.
-  if (pathname.startsWith('/invoice/')) return <Routes><Route path="/invoice/:id" element={<InvoicePage />} /></Routes>
+  // Shared invoice and report links open for anyone, signed in or not.
+  if (pathname.startsWith('/invoice/') || pathname.startsWith('/report/')) {
+    return <Routes><Route path="/invoice/:id" element={<InvoicePage />} /><Route path="/report/:id" element={<ReportPage />} /></Routes>
+  }
   if (!lang || picking) return <LanguagePick onDone={() => setPicking(false)} />
   if (!user) return <Auth onChangeLanguage={() => setPicking(true)} />
   if (!profile) {

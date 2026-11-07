@@ -68,6 +68,14 @@ const en = {
   invPickCustomer: 'Customer',
   invSavedFirst: 'Add a customer first.',
 
+  // shared report
+  rptShare: 'Share the report',
+  rptShareHelp: 'Send your customer a link to this report. They do not need the app to open it.',
+  rptSend: 'Send report link',
+  rptSms: 'Hi! {name} finished your garden visit. See the report and photos here: {link}',
+  rptNotFound: 'This report is not available.',
+  rptBy: 'Service by',
+
   // auth
   signIn: 'Sign in',
   signUp: 'Create account',
@@ -320,6 +328,14 @@ const es: Record<Key, string> = {
   invNoPayInfo: 'Pregunta a tu jardinero cómo pagar.',
   invPickCustomer: 'Cliente',
   invSavedFirst: 'Primero agrega un cliente.',
+
+  // shared report
+  rptShare: 'Comparte el reporte',
+  rptShareHelp: 'Envía a tu cliente un enlace a este reporte. No necesita la app para abrirlo.',
+  rptSend: 'Enviar enlace del reporte',
+  rptSms: '¡Hola! {name} terminó la visita a tu jardín. Mira el reporte y las fotos aquí: {link}',
+  rptNotFound: 'Este reporte no está disponible.',
+  rptBy: 'Servicio de',
 
   signIn: 'Iniciar sesión',
   signUp: 'Crear cuenta',
