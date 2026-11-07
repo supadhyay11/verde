@@ -66,7 +66,7 @@ jobs:
           npx -y firebase-tools@15.34.1 deploy \
             --only functions,firestore:rules,firestore:indexes,storage \
             --project verde-gardener-app \
-            --non-interactive > "$RUNNER_TEMP/deploy.log" 2>&1
+            --non-interactive --force > "$RUNNER_TEMP/deploy.log" 2>&1
           code=$?
           set -e
           rm -f "$RUNNER_TEMP/sa.json"
