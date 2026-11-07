@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Check, Copy, Mail, MapPin, Pencil, Phone, Plus, Search, Send, Trash2 } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
-import { removeCustomerRecord, useCustomerBook } from '@/lib/data'
-import { inviteMessage, mailtoLink, smsLink } from '@/lib/invite'
-import { translate } from '@/lib/i18n'
+import { removeCustomerRecord, sendShareEmail, useCustomerBook } from '@/lib/data'
+import { inviteMessage, smsLink } from '@/lib/invite'
 import type { CustomerEntry } from '@/lib/types'
 import { Button, Card, Empty, Pill, Screen, cx } from '@/components/ui'
 
@@ -40,10 +39,12 @@ export default function Customers() {
     else void copy(c.code, c.language)
   }
 
-  function emailInvite(c: CustomerEntry) {
-    if (!c.code || !c.email) return
-    const l = c.language ?? 'en'
-    window.location.href = mailtoLink(c.email, translate(l, 'inviteEmailSubject'), inviteMessage(profile?.name, c.code, l))
+  const [mailState, setMailState] = useState<Record<string, 'sending' | 'sent' | 'failed'>>({})
+  async function emailInvite(c: CustomerEntry) {
+    if (!c.email) return
+    setMailState((m) => ({ ...m, [c.id]: 'sending' }))
+    try { await sendShareEmail('invite', c.id); setMailState((m) => ({ ...m, [c.id]: 'sent' })) }
+    catch { setMailState((m) => ({ ...m, [c.id]: 'failed' })) }
   }
 
   async function remove(id: string) {
@@ -99,7 +100,8 @@ export default function Customers() {
                   <p className="text-3xl font-extrabold tracking-widest text-green-dark">{c.code}</p>
                 </div>
                 <Button onClick={() => sendInvite(c)} icon={<Send size={22} aria-hidden />}>{t('sendInvite')}</Button>
-                {c.email && <Button variant="secondary" onClick={() => emailInvite(c)} icon={<Mail size={22} aria-hidden />}>{t('sendByEmail')}</Button>}
+                {c.email && <Button variant="secondary" disabled={mailState[c.id] === 'sending'} onClick={() => emailInvite(c)} icon={mailState[c.id] === 'sent' ? <Check size={22} aria-hidden /> : <Mail size={22} aria-hidden />}>{mailState[c.id] === 'sending' ? t('sending') : mailState[c.id] === 'sent' ? t('emailSent') : t('sendByEmail')}</Button>}
+                {mailState[c.id] === 'failed' && <p role="alert" className="text-lg font-semibold text-danger">{t('emailFailed')}</p>}
                 <button type="button" onClick={() => copy(c.code!, c.language)} className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-surface text-lg font-bold">
                   {copied === c.code ? <Check size={20} aria-hidden /> : <Copy size={20} aria-hidden />} {copied === c.code ? t('copied') : t('copy')}
                 </button>

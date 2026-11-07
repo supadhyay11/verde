@@ -3,9 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Camera, Check, Copy, ExternalLink, Mail, Mic, MapPin, Send, Trash2, X } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
 import { clock, longDate } from '@/lib/date'
-import { deleteJobPhoto, patchJob, removeJob, textFor, uploadJobPhoto, useCustomerBook, useJob } from '@/lib/data'
+import { deleteJobPhoto, patchJob, removeJob, sendShareEmail, textFor, uploadJobPhoto, useCustomerBook, useJob } from '@/lib/data'
 import { translate } from '@/lib/i18n'
-import { ORIGIN, mailtoLink, smsLink } from '@/lib/invite'
+import { ORIGIN, smsLink } from '@/lib/invite'
 import { compressImage } from '@/lib/image'
 import { canDictate, dictate } from '@/lib/speech'
 import type { Job, PhotoTag } from '@/lib/types'
@@ -212,6 +212,7 @@ function ShareReport({ job }: { job: Job }) {
   const { t, profile } = useApp()
   const book = useCustomerBook(profile?.uid)
   const [copied, setCopied] = useState(false)
+  const [mail, setMail] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
   const link = `${ORIGIN}/report/${job.id}`
   const lang = job.customerLang ?? 'en'
   const who = book?.find((c) => c.id === job.customerId)
@@ -227,7 +228,8 @@ function ShareReport({ job }: { job: Job }) {
       <h2 className="text-2xl font-extrabold">{t('rptShare')}</h2>
       <p className="text-lg text-muted">{t('rptShareHelp')}</p>
       {phone && <Button onClick={() => { window.location.href = smsLink(phone, message) }} icon={<Send size={22} aria-hidden />}>{t('rptSend')}</Button>}
-      {email && <Button variant={phone ? 'secondary' : 'primary'} onClick={() => { window.location.href = mailtoLink(email, translate(lang, 'rptEmailSubject'), message) }} icon={<Mail size={22} aria-hidden />}>{t('sendByEmail')}</Button>}
+      {email && <Button variant={phone ? 'secondary' : 'primary'} disabled={mail === 'sending'} onClick={async () => { setMail('sending'); try { await sendShareEmail('report', job.id); setMail('sent') } catch { setMail('failed') } }} icon={mail === 'sent' ? <Check size={22} aria-hidden /> : <Mail size={22} aria-hidden />}>{mail === 'sending' ? t('sending') : mail === 'sent' ? t('emailSent') : t('sendByEmail')}</Button>}
+      {mail === 'failed' && <p role="alert" className="text-lg font-semibold text-danger">{t('emailFailed')}</p>}
       {!phone && !email && <p className="rounded-2xl bg-sand px-4 py-3 text-lg">{t('noContactHelp')}</p>}
       <Button variant="secondary" onClick={copyLink} icon={copied ? <Check size={22} aria-hidden /> : <Copy size={22} aria-hidden />}>{copied ? t('copied') : t('copy')}</Button>
     </section>

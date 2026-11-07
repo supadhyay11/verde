@@ -77,6 +77,8 @@ const en = {
   rptBy: 'Service by',
 
   // email sharing
+  emailSent: 'Email sent',
+  emailFailed: 'The email could not be sent. Try again, or send the link by text.',
   emailOptional: 'Email (optional)',
   sendByEmail: 'Send by email',
   noContactHelp: 'Add a phone number or email to this customer to send it directly. You can still copy the link below.',
@@ -346,6 +348,8 @@ const es: Record<Key, string> = {
   rptBy: 'Servicio de',
 
   // email sharing
+  emailSent: 'Correo enviado',
+  emailFailed: 'No se pudo enviar el correo. Inténtalo de nuevo o envía el enlace por texto.',
   emailOptional: 'Correo (opcional)',
   sendByEmail: 'Enviar por correo',
   noContactHelp: 'Agrega un teléfono o correo a este cliente para enviarlo directamente. También puedes copiar el enlace abajo.',

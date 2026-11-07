@@ -3,8 +3,9 @@ import {
   deleteField, runTransaction, setDoc, updateDoc, where,
 } from 'firebase/firestore'
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { httpsCallable } from 'firebase/functions'
 import { useEffect, useState } from 'react'
-import { db, storage } from './firebase'
+import { db, functions, storage } from './firebase'
 import type { ChatMessage, CustomerEntry, CustomerRecord, Invoice, Job, JobPhoto, Lang, PhotoTag, Profile, TaskKey } from './types'
 
 export function threadIdFor(providerId: string, customerId: string) {
@@ -265,3 +266,8 @@ export const markInvoicePaid = (id: string, method: 'zelle' | 'venmo') =>
 export const markInvoiceUnpaid = (id: string) =>
   updateDoc(doc(db, 'invoices', id), { status: 'unpaid', method: deleteField(), paidAt: deleteField() })
 export const removeInvoice = (id: string) => deleteDoc(doc(db, 'invoices', id))
+
+/** Emails an invite, a report link or an invoice link to the customer, from the server, in their language. */
+export async function sendShareEmail(kind: 'invite' | 'report' | 'invoice', id: string): Promise<void> {
+  await httpsCallable<{ kind: string; id: string }, { ok: true }>(functions, 'sendShareEmail')({ kind, id })
+}

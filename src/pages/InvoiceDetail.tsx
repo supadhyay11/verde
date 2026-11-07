@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Check, Copy, Mail, Send, Trash2 } from 'lucide-react'
 import { useApp } from '@/lib/app-context'
-import { markInvoicePaid, markInvoiceUnpaid, removeInvoice, useCustomerBook, useInvoice } from '@/lib/data'
+import { markInvoicePaid, markInvoiceUnpaid, removeInvoice, sendShareEmail, useCustomerBook, useInvoice } from '@/lib/data'
 import { translate } from '@/lib/i18n'
-import { ORIGIN, mailtoLink, smsLink } from '@/lib/invite'
+import { ORIGIN, smsLink } from '@/lib/invite'
 import { money } from '@/lib/money'
 import InvoiceView from '@/components/InvoiceView'
 import { Button, Empty, Loading, Screen, cx } from '@/components/ui'
@@ -19,6 +19,7 @@ export default function InvoiceDetail() {
   const book = useCustomerBook(profile?.uid)
   const [method, setMethod] = useState<'zelle' | 'venmo'>('zelle')
   const [copied, setCopied] = useState(false)
+  const [mail, setMail] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle')
 
   if (invoice === undefined) return <Loading label={t('loading')} />
   if (invoice === null || invoice.providerId !== profile?.uid) {
@@ -50,7 +51,8 @@ export default function InvoiceDetail() {
       <InvoiceView invoice={invoice} lang={lang ?? 'en'} />
       <div className="mt-6 space-y-3">
         {phone && <Button onClick={send} icon={<Send size={22} aria-hidden />}>{t('invSend')}</Button>}
-        {email && <Button variant={phone ? 'secondary' : 'primary'} onClick={() => { window.location.href = mailtoLink(email, translate(invoice.customerLang, 'invEmailSubject', { n: invoice.number }), message) }} icon={<Mail size={22} aria-hidden />}>{t('sendByEmail')}</Button>}
+        {email && <Button variant={phone ? 'secondary' : 'primary'} disabled={mail === 'sending'} onClick={async () => { setMail('sending'); try { await sendShareEmail('invoice', invoice.id); setMail('sent') } catch { setMail('failed') } }} icon={mail === 'sent' ? <Check size={22} aria-hidden /> : <Mail size={22} aria-hidden />}>{mail === 'sending' ? t('sending') : mail === 'sent' ? t('emailSent') : t('sendByEmail')}</Button>}
+        {mail === 'failed' && <p role="alert" className="text-lg font-semibold text-danger">{t('emailFailed')}</p>}
         {!phone && !email && <p className="rounded-2xl bg-sand px-4 py-3 text-lg">{t('noContactHelp')}</p>}
         <Button variant="secondary" onClick={copyLink} icon={copied ? <Check size={22} aria-hidden /> : <Copy size={22} aria-hidden />}>{copied ? t('copied') : t('copy')}</Button>
         {invoice.status === 'unpaid' ? (

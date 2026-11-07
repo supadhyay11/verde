@@ -13,6 +13,7 @@
 
 const { onDocumentCreated, onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { defineSecret } = require('firebase-functions/params');
 const logger = require('firebase-functions/logger');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
@@ -156,5 +157,111 @@ exports.deleteMyAccount = onCall({ region: REGION, timeoutSeconds: 120 }, async 
 
   await meRef.delete().catch(() => {});
   await getAuth().deleteUser(uid);
+  return { ok: true };
+});
+
+// sendShareEmail: the gardener emails a customer an invite, a service report
+// or an invoice. Sent through Resend (same service as Tadpool), written in the
+// customer's language. The customer never needs the app: the email carries a
+// link that opens without signing in. Checks that the caller owns the record.
+const RESEND_API_KEY = defineSecret('RESEND_API_KEY');
+const RESEND_FROM_EMAIL = defineSecret('RESEND_FROM_EMAIL');
+const ORIGIN = 'https://verde-gardener-app.web.app';
+
+const MAIL = {
+  en: {
+    hi: (n) => `Hi ${n || 'there'}!`,
+    inviteSubject: 'Your Verde invitation',
+    inviteBody: (who, link, code) => `${who} invites you to Verde to see your garden visits, photos and messages.\n\nCreate your account here: ${link}\n\nYour code: ${code}`,
+    reportSubject: 'Your garden service report',
+    reportBody: (who, link) => `${who} finished your garden visit. See the report and photos here (no app or account needed):\n\n${link}`,
+    invoiceSubject: (n) => `Invoice #${n}`,
+    invoiceBody: (who, amount, period, link) => `${who} sent you an invoice for ${amount} (${period}).\n\nSee it and how to pay (Zelle or Venmo) here:\n\n${link}`,
+  },
+  es: {
+    hi: (n) => `¡Hola${n ? ' ' + n : ''}!`,
+    inviteSubject: 'Tu invitación a Verde',
+    inviteBody: (who, link, code) => `${who} te invita a Verde para ver tus visitas de jardín, fotos y mensajes.\n\nCrea tu cuenta aquí: ${link}\n\nTu código: ${code}`,
+    reportSubject: 'Tu reporte de servicio de jardín',
+    reportBody: (who, link) => `${who} terminó la visita a tu jardín. Mira el reporte y las fotos aquí (no necesitas app ni cuenta):\n\n${link}`,
+    invoiceSubject: (n) => `Factura #${n}`,
+    invoiceBody: (who, amount, period, link) => `${who} te envió una factura por ${amount} (${period}).\n\nMírala y mira cómo pagar (Zelle o Venmo) aquí:\n\n${link}`,
+  },
+};
+
+async function resendSend({ apiKey, from, to, subject, text }) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from, to, subject, text }),
+  });
+  if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`);
+}
+
+exports.sendShareEmail = onCall({ region: REGION, secrets: [RESEND_API_KEY, RESEND_FROM_EMAIL] }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in first.');
+  const uid = request.auth.uid;
+  const kind = request.data && request.data.kind;
+  const id = request.data && request.data.id;
+  if (!['invite', 'report', 'invoice'].includes(kind) || typeof id !== 'string' || !id) {
+    throw new HttpsError('invalid-argument', 'Bad request.');
+  }
+
+  const me = await db.doc(`users/${uid}`).get();
+  if (!me.exists || me.data().role !== 'provider') throw new HttpsError('permission-denied', 'Gardeners only.');
+  const gardener = me.data().name || 'Your gardener';
+
+  // The customer behind a job/invoice is either a hand-added record or a signed-up account.
+  const contactFor = async (customerId) => {
+    const rec = await db.doc(`providerCustomers/${customerId}`).get();
+    if (rec.exists && rec.data().providerId === uid) return { name: rec.data().name, email: rec.data().email };
+    const u = await db.doc(`users/${customerId}`).get();
+    if (u.exists && u.data().providerId === uid) return { name: u.data().name, email: u.data().email };
+    return null;
+  };
+
+  let to, lang, subject, body, name;
+  if (kind === 'invite') {
+    const snap = await db.doc(`providerCustomers/${id}`).get();
+    if (!snap.exists || snap.data().providerId !== uid) throw new HttpsError('not-found', 'Customer not found.');
+    const r = snap.data();
+    if (r.claimedBy) throw new HttpsError('failed-precondition', 'Already joined.');
+    to = r.email; name = r.name; lang = LANGS.includes(r.language) ? r.language : 'en';
+    const m = MAIL[lang];
+    subject = m.inviteSubject;
+    body = m.inviteBody(gardener, `${ORIGIN}/?code=${r.code}&lang=${lang}`, r.code);
+  } else if (kind === 'report') {
+    const snap = await db.doc(`jobs/${id}`).get();
+    if (!snap.exists || snap.data().providerId !== uid) throw new HttpsError('not-found', 'Job not found.');
+    const j = snap.data();
+    if (!j.reportSentAt) throw new HttpsError('failed-precondition', 'Send the report first.');
+    const c = await contactFor(j.customerId);
+    to = c && c.email; name = (c && c.name) || j.customerName; lang = LANGS.includes(j.customerLang) ? j.customerLang : 'en';
+    const m = MAIL[lang];
+    subject = m.reportSubject;
+    body = m.reportBody(gardener, `${ORIGIN}/report/${id}`);
+  } else {
+    const snap = await db.doc(`invoices/${id}`).get();
+    if (!snap.exists || snap.data().providerId !== uid) throw new HttpsError('not-found', 'Invoice not found.');
+    const inv = snap.data();
+    const c = await contactFor(inv.customerId);
+    to = c && c.email; name = (c && c.name) || inv.customerName; lang = LANGS.includes(inv.customerLang) ? inv.customerLang : 'en';
+    const m = MAIL[lang];
+    const amount = new Intl.NumberFormat(lang === 'es' ? 'es-US' : 'en-US', { style: 'currency', currency: 'USD' }).format(inv.amount);
+    subject = m.invoiceSubject(inv.number);
+    body = m.invoiceBody(gardener, amount, inv.period, `${ORIGIN}/invoice/${id}`);
+  }
+
+  if (!to) throw new HttpsError('failed-precondition', 'This customer has no email on file.');
+  const apiKey = (RESEND_API_KEY.value() || '').trim();
+  const from = (RESEND_FROM_EMAIL.value() || '').trim();
+  if (!apiKey || !from) throw new HttpsError('failed-precondition', 'Email is not set up yet.');
+
+  try {
+    await resendSend({ apiKey, from, to, subject, text: `${MAIL[lang].hi(name)}\n\n${body}` });
+  } catch (err) {
+    logger.error('sendShareEmail failed', { kind, message: err.message });
+    throw new HttpsError('internal', 'Could not send the email.');
+  }
   return { ok: true };
 });
