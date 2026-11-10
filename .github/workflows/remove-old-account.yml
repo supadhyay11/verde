@@ -1,0 +1,17 @@
+name: Remove old test account (one-off)
+on:
+  push:
+    branches: [cleanup-old-account]
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+      - run: cd functions && npm ci
+      - run: NODE_PATH=functions/node_modules node scripts/remove-old-account.js
