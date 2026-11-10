@@ -1,0 +1,17 @@
+name: Read function logs (one-off)
+on:
+  push:
+    branches: [cleanup-old-account]
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: |
+          gcloud logging read 'resource.type="cloud_run_revision" AND (resource.labels.service_name="sendemailcode" OR resource.labels.service_name="sendemailcode") AND timestamp>="2026-11-10T20:30:00Z"' --project=verde-gardener-app --limit=15 --format='value(timestamp,severity,textPayload,jsonPayload.message)' || true
+          echo ---SECRETS---
+          for S in RESEND_API_KEY RESEND_FROM_EMAIL; do gcloud secrets versions access latest --secret=$S --project=verde-gardener-app | wc -c; done
+          gcloud secrets versions access latest --secret=RESEND_FROM_EMAIL --project=verde-gardener-app | sed 's/.*@/@/' || true
