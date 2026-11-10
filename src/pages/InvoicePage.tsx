@@ -1,4 +1,4 @@
-import { useT, locale } from "@/lib/i18n"
+import { LanguageToggle, useI18n, useT, locale } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useParams } from "react-router-dom"
@@ -19,6 +19,7 @@ import type { Invoice } from "@/types"
 // finishes the payment by hand and the provider marks it Paid manually.
 export function InvoicePage() {
   const t = useT()
+  const { setLang } = useI18n()
   const { invoiceId } = useParams()
   const [invoice, setInvoice] = React.useState<Invoice | null | undefined>(undefined)
   const [error, setError] = React.useState<string | null>(null)
@@ -33,7 +34,14 @@ export function InvoicePage() {
           setInvoice(null)
           return
         }
-        setInvoice({ id: snap.id, ...snap.data() } as Invoice)
+        const loaded = { id: snap.id, ...snap.data() } as Invoice
+        setInvoice(loaded)
+        // Open in the customer's language unless this visitor already chose one.
+        try {
+          if (!localStorage.getItem("verde-lang") && loaded.snapLanguage) setLang(loaded.snapLanguage)
+        } catch {
+          // ignore
+        }
       })
       .catch(() => {
         if (!cancelled) setError(t("This invoice link isn't available right now."))
@@ -78,6 +86,7 @@ export function InvoicePage() {
 
   return (
     <div className="min-h-dvh bg-muted/30 pb-10">
+      <div className="mx-auto flex max-w-lg justify-end px-4 pt-3 print:hidden"><LanguageToggle /></div>
       <div className="bg-primary px-5 pb-14 pt-8 text-primary-foreground">
         <div className="mx-auto flex max-w-lg items-start justify-between gap-3">
           <div className="flex items-center gap-3">

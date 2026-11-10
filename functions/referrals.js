@@ -99,7 +99,7 @@ exports.getMyReferral = onCall(async (request) => {
       const r = d.data()
       const biz = await db.collection("businesses").doc(r.referredBusinessId).get()
       return {
-        businessName: (biz.exists && biz.data().name) || "A new pool business",
+        businessName: (biz.exists && biz.data().name) || "A new garden business",
         joinedAt: toMillis(r.createdAt),
       }
     })

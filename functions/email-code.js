@@ -1,3 +1,4 @@
+const { L } = require("./lang")
 const crypto = require("crypto")
 const { withSenderName } = require("./sender-name")
 const { onCall, HttpsError } = require("firebase-functions/v2/https")
@@ -101,6 +102,7 @@ exports.sendEmailCode = onCall(
       throw new HttpsError("failed-precondition", "Verification email isn't set up yet - try again shortly.")
     }
 
+    const l = L(request.data?.language === "es" ? "es" : "en")
     const code = newCode()
     const salt = crypto.randomBytes(16).toString("hex")
     try {
@@ -108,14 +110,16 @@ exports.sendEmailCode = onCall(
         apiKey,
         from,
         to: user.email,
-        subject: `${code} is your Verde verification code`,
+        subject: l(`${code} is your Verde verification code`, `${code} es su código de verificación de Verde`),
         text: [
-          `Hi ${user.displayName || "there"}!`,
+          l(`Hi ${user.displayName || "there"}!`, `¡Hola ${user.displayName || ""}!`),
           "",
-          `Your Verde verification code is: ${code}`,
+          l(`Your Verde verification code is: ${code}`, `Su código de verificación de Verde es: ${code}`),
           "",
-          "It expires in 10 minutes. If you didn't create a Verde account,",
-          "you can safely ignore this email.",
+          ...l(
+            ["It expires in 10 minutes. If you didn't create a Verde account,", "you can safely ignore this email."],
+            ["Vence en 10 minutos. Si usted no creó una cuenta de Verde,", "puede ignorar este correo."]
+          ),
         ].join("\n"),
       })
     } catch (err) {

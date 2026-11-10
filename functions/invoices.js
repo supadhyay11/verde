@@ -1,3 +1,4 @@
+const { L } = require("./lang")
 const { onDocumentCreated } = require("firebase-functions/v2/firestore")
 const { onSchedule } = require("firebase-functions/v2/scheduler")
 const { defineSecret } = require("firebase-functions/params")
@@ -66,7 +67,7 @@ function todayIsoPacific() {
  * format so the PDF and the web page always point to the same place. */
 function venmoLink(invoice) {
   if (!invoice.snapVenmoUsername) return null
-  const note = `${invoice.snapBusinessName || "Pool service"} - ${invoice.period || ""}`
+  const note = `${invoice.snapBusinessName || "Garden service"} - ${invoice.period || ""}`
   return `https://venmo.com/${encodeURIComponent(invoice.snapVenmoUsername)}?txn=pay&amount=${invoice.amount}&note=${encodeURIComponent(note)}`
 }
 
@@ -102,7 +103,7 @@ async function buildInvoicePdf(invoice) {
       style: "currency",
       currency: "USD",
     })
-    const businessName = invoice.snapBusinessName || "Pool Service Invoice"
+    const businessName = invoice.snapBusinessName || "Garden Service Invoice"
     const invoiceDateObj = new Date(invoice.createdAt || Date.now())
     const invoiceDate = invoiceDateObj.toLocaleDateString("en-US", {
       month: "short",
@@ -120,7 +121,7 @@ async function buildInvoicePdf(invoice) {
     const venmo = venmoLink(invoice)
 
     const NAVY = "#0f2b46"
-    const BLUE = "#0369a1"
+    const BLUE = "#1F7A3D"
     const LIGHT_BLUE = "#eaf3fb"
     const GRAY = "#555555"
     const DARK = "#111111"
@@ -212,7 +213,7 @@ async function buildInvoicePdf(invoice) {
     doc.rect(PAGE_LEFT, y + 22, PAGE_WIDTH, 32).fill("#f7f9fb")
     doc.fillColor(DARK).font("Helvetica").fontSize(9.5)
     doc.text(invoice.period || "", PAGE_LEFT + 10, rowY)
-    const description = invoice.notes?.trim() || "Monthly pool service & maintenance"
+    const description = invoice.notes?.trim() || "Monthly garden service & maintenance"
     doc.text(description, PAGE_LEFT + 260, rowY, { width: 190 })
     doc.font("Helvetica-Bold")
     doc.text(amountStr, PAGE_LEFT, rowY, { width: PAGE_WIDTH - 10, align: "right" })
@@ -319,12 +320,13 @@ async function sendViaResend({ apiKey, from, to, subject, text, html, attachment
  */
 async function sendInvoicePdfEmail({ apiKey, from, invoice, invoiceId }) {
   if (!invoice.snapCustomerEmail) return false
+  const l = L(invoice.snapLanguage)
 
   const amountStr = Number(invoice.amount || 0).toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
   })
-  const businessName = invoice.snapBusinessName || "Your pool service provider"
+  const businessName = invoice.snapBusinessName || l("Your garden service provider", "Su proveedor de jardinería")
   const pdfBuffer = await buildInvoicePdf(invoice)
   const invoiceNo = invoice.invoiceNumber != null ? invoice.invoiceNumber : null
   const invoiceLink = `${PUBLIC_APP_URL}/invoice/${invoiceId}`
@@ -334,36 +336,36 @@ async function sendInvoicePdfEmail({ apiKey, from, invoice, invoiceId }) {
     apiKey,
     from,
     to: invoice.snapCustomerEmail,
-    subject: `Invoice${invoiceNo != null ? ` #${invoiceNo}` : ""} from ${businessName} - ${amountStr}`,
+    subject: l(`Invoice${invoiceNo != null ? ` #${invoiceNo}` : ""} from ${businessName} - ${amountStr}`, `Factura${invoiceNo != null ? ` #${invoiceNo}` : ""} de ${businessName} - ${amountStr}`),
     text: [
-      `Hi ${invoice.snapCustomerName || "there"},`,
+      l(`Hi ${invoice.snapCustomerName || "there"},`, `Hola ${invoice.snapCustomerName || ""},`),
       "",
-      `Your ${invoice.period} pool service invoice${invoiceNo != null ? ` (#${invoiceNo})` : ""} from ${businessName} is ${amountStr}.`,
+      l(`Your ${invoice.period} garden service invoice${invoiceNo != null ? ` (#${invoiceNo})` : ""} from ${businessName} is ${amountStr}.`, `Su factura de servicio de jardinería de ${invoice.period}${invoiceNo != null ? ` (#${invoiceNo})` : ""} de ${businessName} es de ${amountStr}.`),
       "",
-      `View & pay online: ${invoiceLink}`,
-      ...(venmo ? [`Pay with Venmo (${invoice.snapVenmoUsername}): ${venmo}`] : []),
+      `${l("View & pay online", "Ver y pagar en línea")}: ${invoiceLink}`,
+      ...(venmo ? [`${l("Pay with Venmo", "Pagar con Venmo")} (${invoice.snapVenmoUsername}): ${venmo}`] : []),
       "",
-      "A PDF copy is attached as well.",
+      l("A PDF copy is attached as well.", "También se adjunta una copia en PDF."),
       ...appLinkTextLines("See your service history and invoices in the Verde app:"),
       "",
-      "Thanks!",
+      l("Thanks!", "¡Gracias!"),
     ].join("\n"),
     html: [
       `<div style="font-family:-apple-system,Helvetica,Arial,sans-serif;max-width:480px;margin:0 auto;color:#111111;">`,
       invoice.snapBusinessLogoUrl
         ? `<p style="text-align:center;margin:0 0 16px;"><img src="${escapeHtml(invoice.snapBusinessLogoUrl)}" alt="${escapeHtml(businessName)}" style="max-height:48px;max-width:200px;" /></p>`
         : "",
-      `<p>Hi ${escapeHtml(invoice.snapCustomerName || "there")},</p>`,
-      `<p>Your ${escapeHtml(invoice.period)} pool service invoice${invoiceNo != null ? ` (#${invoiceNo})` : ""} from ${escapeHtml(businessName)} is <strong>${amountStr}</strong>.</p>`,
+      `<p>${l("Hi", "Hola")} ${escapeHtml(invoice.snapCustomerName || l("there", ""))},</p>`,
+      `<p>${l(`Your ${escapeHtml(invoice.period)} garden service invoice${invoiceNo != null ? ` (#${invoiceNo})` : ""} from ${escapeHtml(businessName)} is <strong>${amountStr}</strong>.`, `Su factura de servicio de jardinería de ${escapeHtml(invoice.period)}${invoiceNo != null ? ` (#${invoiceNo})` : ""} de ${escapeHtml(businessName)} es de <strong>${amountStr}</strong>.`)}</p>`,
       `<p style="text-align:center;margin:28px 0;">`,
-      `<a href="${invoiceLink}" style="background:#0369a1;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">View &amp; Pay Invoice</a>`,
+      `<a href="${invoiceLink}" style="background:#1F7A3D;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">${l("View &amp; Pay Invoice", "Ver y pagar factura")}</a>`,
       `</p>`,
       venmo
-        ? `<p style="text-align:center;margin:8px 0 0;font-size:13px;color:#555555;">Venmo: ${escapeHtml(invoice.snapVenmoUsername)}</p><p style="text-align:center;margin:2px 0 0;"><a href="${escapeHtml(venmo)}" style="color:#0369a1;font-weight:600;text-decoration:underline;">Pay with Venmo -></a></p>`
+        ? `<p style="text-align:center;margin:8px 0 0;font-size:13px;color:#555555;">Venmo: ${escapeHtml(invoice.snapVenmoUsername)}</p><p style="text-align:center;margin:2px 0 0;"><a href="${escapeHtml(venmo)}" style="color:#1F7A3D;font-weight:600;text-decoration:underline;">${l("Pay with Venmo", "Pagar con Venmo")} -></a></p>`
         : "",
-      `<p style="font-size:13px;color:#666666;">A PDF copy of this invoice is attached as well.</p>`,
+      `<p style="font-size:13px;color:#666666;">${l("A PDF copy of this invoice is attached as well.", "También se adjunta una copia en PDF de esta factura.")}</p>`,
       appLinkHtml("See your service history and invoices in the Verde app:"),
-      `<p>Thanks!</p>`,
+      `<p>${l("Thanks!", "¡Gracias!")}</p>`,
       `</div>`,
     ].join(""),
     attachment: {
@@ -510,6 +512,7 @@ exports.autoGenerateMonthlyInvoices = onSchedule(
         createdAt: new Date().toISOString(),
         notes: "Auto-generated monthly invoice",
         snapCustomerName: property.customerName ?? null,
+        snapLanguage: property.language ?? "en",
         snapCustomerEmail: property.email ?? null,
         snapCustomerPhone: property.phone ?? null,
         snapSmsConsent: property.smsConsent ?? false,

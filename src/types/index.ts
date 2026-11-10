@@ -341,6 +341,8 @@ export interface Invoice {
    * business docs directly (gate codes, etc. live there), so everything it
    * needs to render is copied onto the invoice itself when it's created. */
   snapCustomerName?: string
+  /** Language the customer reads this invoice in. */
+  snapLanguage?: "en" | "es"
   snapCustomerEmail?: string
   snapAddress?: string
   snapBusinessName?: string

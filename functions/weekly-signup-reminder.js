@@ -104,7 +104,7 @@ exports.sendWeeklySignupReminders = onSchedule(
           text: [
             `Hi ${property.customerName || "there"}!`,
             "",
-            `Just a reminder - ${who}Verde has you set up to track your pool service online, but your account isn't created yet.`,
+            `Just a reminder - ${who}Verde has you set up to track your garden service online, but your account isn't created yet.`,
             "",
             `Create your account here: ${inviteLink(property.inviteCode)}`,
             "",

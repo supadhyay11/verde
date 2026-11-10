@@ -1,4 +1,4 @@
-import { tr } from "@/lib/i18n/core"
+import { tr, getLang } from "@/lib/i18n/core"
 import * as React from "react"
 import {
   createUserWithEmailAndPassword,
@@ -299,7 +299,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // be blocked from finishing sign-up just because this happened
           // to fail (rate limits, a transient hiccup). The verify-email
           // banner's "Resend" button covers this either way.
-          httpsCallable(functions, "sendEmailCode")({}).catch(() => {})
+          httpsCallable(functions, "sendEmailCode")({ language: getLang() }).catch(() => {})
 
           await setDoc(doc(db, "businesses", businessId), {
             name: input.businessName,

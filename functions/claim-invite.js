@@ -58,7 +58,7 @@ exports.claimInvite = onCall(async (request) => {
       if (!inviteSnap.exists || inviteSnap.data().used) {
         throw new HttpsError(
           "failed-precondition",
-          "That invite code is invalid or has already been used. Double-check it with your pool service provider."
+          "That invite code is invalid or has already been used. Double-check it with your garden service provider."
         )
       }
       const invite = inviteSnap.data()
@@ -69,7 +69,7 @@ exports.claimInvite = onCall(async (request) => {
       if (!propertySnap.exists) {
         throw new HttpsError(
           "failed-precondition",
-          "That invite code no longer has a matching account. Ask your pool service provider for a new invite."
+          "That invite code no longer has a matching account. Ask your garden service provider for a new invite."
         )
       }
       // SECURITY: an invite must only ever unlock a property of the SAME
@@ -79,13 +79,13 @@ exports.claimInvite = onCall(async (request) => {
       if (propertySnap.data().businessId !== businessId) {
         throw new HttpsError(
           "failed-precondition",
-          "That invite code is invalid or has already been used. Double-check it with your pool service provider."
+          "That invite code is invalid or has already been used. Double-check it with your garden service provider."
         )
       }
       if (propertySnap.data().ownerId) {
         throw new HttpsError(
           "failed-precondition",
-          "That invite code has already been claimed. Ask your pool service provider for a new invite."
+          "That invite code has already been claimed. Ask your garden service provider for a new invite."
         )
       }
 
@@ -108,7 +108,7 @@ exports.claimInvite = onCall(async (request) => {
     console.error("claimInvite failed", err)
     throw new HttpsError(
       "internal",
-      "Something went wrong finishing your sign-up. Please try again, and if it keeps happening let your pool service provider know."
+      "Something went wrong finishing your sign-up. Please try again, and if it keeps happening let your garden service provider know."
     )
   }
 })

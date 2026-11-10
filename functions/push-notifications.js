@@ -58,7 +58,7 @@ exports.onNewChatMessageSendPush = onDocumentCreated("messages/{messageId}", asy
   ])
   const providerUid = businessSnap.data()?.ownerUid
   const ownerUid = propertySnap.data()?.ownerId
-  const businessName = businessSnap.data()?.name || "Your pool service provider"
+  const businessName = businessSnap.data()?.name || "Your garden service provider"
   const customerName = propertySnap.data()?.customerName || "Your customer"
 
   const recipientUid = message.senderId === providerUid ? ownerUid : providerUid
@@ -89,7 +89,7 @@ exports.onJobScheduledSendPush = onDocumentCreated("jobs/{jobId}", async (event)
   const ownerUid = propertySnap.data()?.ownerId
   if (!ownerUid) return
 
-  const businessName = businessSnap.data()?.name || "Your pool service provider"
+  const businessName = businessSnap.data()?.name || "Your garden service provider"
   const dateStr = new Date(job.scheduledDate).toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
@@ -120,7 +120,7 @@ exports.onJobCompletedSendPush = onDocumentUpdated("jobs/{jobId}", async (event)
   const ownerUid = propertySnap.data()?.ownerId
   if (!ownerUid) return
 
-  const businessName = after.reportBusinessName || "Your pool service provider"
+  const businessName = after.reportBusinessName || "Your garden service provider"
 
   await sendPushToUser(ownerUid, {
     title: "Your service report is ready",

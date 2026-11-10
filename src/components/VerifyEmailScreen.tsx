@@ -1,4 +1,4 @@
-import { useT, tr } from "@/lib/i18n"
+import { useI18n, useT, tr } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
@@ -37,6 +37,7 @@ const REASON_TEXT: Record<string, string> = {
  */
 export function VerifyEmailScreen({ required = false }: { required?: boolean }) {
   const t = useT()
+  const { lang } = useI18n()
   const { user, emailVerified, refreshEmailVerified, logout } = useAuth()
   const navigate = useNavigate()
   const [code, setCode] = React.useState("")
@@ -59,7 +60,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
     setMessage("")
     setInfo("")
     try {
-      const res = await httpsCallable<{ force: boolean }, SendResult>(functions, "sendEmailCode")({ force })
+      const res = await httpsCallable<{ force: boolean; language: string }, SendResult>(functions, "sendEmailCode")({ force, language: lang })
       if (res.data.alreadyVerified) {
         await refreshEmailVerified()
         return

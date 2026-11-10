@@ -1,3 +1,4 @@
+const { L } = require("./lang")
 const { onCall, HttpsError } = require("firebase-functions/v2/https")
 const { defineSecret } = require("firebase-functions/params")
 const { getFirestore } = require("firebase-admin/firestore")
@@ -11,8 +12,8 @@ const { getFirestore } = require("firebase-admin/firestore")
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY")
 const RESEND_INVITE_FROM_EMAIL = defineSecret("RESEND_INVITE_FROM_EMAIL")
 
-function inviteLink(code) {
-  return `https://verde-gardener-app.web.app/signup?code=${encodeURIComponent(code)}`
+function inviteLink(code, lang = "en") {
+  return `https://verde-gardener-app.web.app/signup?code=${encodeURIComponent(code)}&lang=${lang}`
 }
 
 async function sendViaResend({ apiKey, from, to, subject, text }) {
@@ -85,25 +86,36 @@ exports.sendInviteEmail = onCall(
       throw new HttpsError("failed-precondition", "Invite email isn't set up yet - try again shortly.")
     }
 
-    const who = businessName ? `${businessName} on ` : ""
+    const l = L(property.language)
+    const who = businessName ? l(`${businessName} on `, `${businessName} en `) : ""
     await sendViaResend({
       apiKey,
       from,
       to: property.email,
-      subject: `${who}Verde has you set up - create your account`,
+      subject: l(`${who}Verde has you set up - create your account`, `${who}Verde le tiene registrado - cree su cuenta`),
       text: [
-        `Hi ${property.customerName || "there"}!`,
+        l(`Hi ${property.customerName || "there"}!`, `¡Hola ${property.customerName || ""}!`),
         "",
-        `${who}Verde has you set up to track your pool service online.`,
+        l(`${who}Verde has you set up to track your garden service online.`, `${who}Verde le tiene registrado para seguir su servicio de jardinería en línea.`),
         "",
-        `Create your account here: ${inviteLink(property.inviteCode)}`,
+        `${l("Create your account here", "Cree su cuenta aquí")}: ${inviteLink(property.inviteCode, property.language)}`,
         "",
-        `Your invite code: ${property.inviteCode}`,
+        `${l("Your invite code", "Su código de invitación")}: ${property.inviteCode}`,
         "",
-        "One tip once you're signed in: on iPhone, tap the Share icon in Safari",
-        "and choose \"Add to Home Screen.\" That puts a Verde icon right on your",
-        "home screen and opens the app full-screen, just like any other app -",
-        "no need to open Safari and find the link again next time.",
+        ...l(
+          [
+            "One tip once you're signed in: on iPhone, tap the Share icon in Safari",
+            "and choose \"Add to Home Screen.\" That puts a Verde icon right on your",
+            "home screen and opens the app full-screen, just like any other app -",
+            "no need to open Safari and find the link again next time.",
+          ],
+          [
+            "Un consejo al iniciar sesión: en iPhone, toque el ícono de Compartir en Safari",
+            "y elija \"Añadir a pantalla de inicio\". Así tendrá un ícono de Verde en su",
+            "pantalla de inicio y la app se abrirá en pantalla completa, como cualquier otra -",
+            "sin tener que volver a buscar el enlace en Safari.",
+          ]
+        ),
       ].join("\n"),
     })
 

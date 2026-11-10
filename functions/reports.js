@@ -1,3 +1,4 @@
+const { L } = require("./lang")
 const { onDocumentUpdated } = require("firebase-functions/v2/firestore")
 const { defineSecret } = require("firebase-functions/params")
 const { appLinkTextLines } = require("./app-link")
@@ -69,23 +70,24 @@ exports.onJobCompletedSendReportEmail = onDocumentUpdated(
       return
     }
 
-    const dateStr = new Date(after.scheduledDate).toDateString()
-    const businessName = after.reportBusinessName || "Your pool service provider"
+    const l = L(after.reportLanguage)
+    const dateStr = new Date(after.scheduledDate).toLocaleDateString(after.reportLanguage === "es" ? "es-US" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    const businessName = after.reportBusinessName || l("Your garden service provider", "Su proveedor de jardinería")
 
     try {
       await sendViaResend({
         apiKey,
         from,
         to: after.reportCustomerEmail,
-        subject: `Your pool service report - ${dateStr}`,
+        subject: l(`Your garden service report - ${dateStr}`, `Su informe de servicio de jardinería - ${dateStr}`),
         text: [
-          `Hi ${after.reportCustomerName || "there"},`,
+          l(`Hi ${after.reportCustomerName || "there"},`, `Hola ${after.reportCustomerName || ""},`),
           "",
-          `Here's your pool service report from ${businessName} for ${dateStr}:`,
+          l(`Here's your garden service report from ${businessName} for ${dateStr}:`, `Aquí está su informe de servicio de jardinería de ${businessName} del ${dateStr}:`),
           reportLink(event.params.jobId),
           ...appLinkTextLines("Track every visit in the Verde app:"),
           "",
-          "Thanks!",
+          l("Thanks!", "¡Gracias!"),
         ].join("\n"),
       })
     } catch (err) {

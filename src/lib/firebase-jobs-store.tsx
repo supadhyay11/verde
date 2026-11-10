@@ -487,6 +487,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
           sentByUid: user?.id ?? null,
           sentByName: user?.name ?? null,
           snapCustomerName: property.customerName,
+          snapLanguage: property.language ?? "en",
           // Lets the onInvoiceCreatedSendEmail Cloud Function auto-email
           // this invoice the moment it's created - see functions/invoices.js.
           snapCustomerEmail: property.email,
