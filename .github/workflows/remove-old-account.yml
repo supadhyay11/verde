@@ -14,4 +14,4 @@ jobs:
         with:
           credentials_json: "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}"
       - run: cd functions && npm ci
-      - run: NODE_PATH=functions/node_modules node scripts/remove-old-account.js
+      - run: NODE_PATH=functions/node_modules node scripts/remove-old-account.cjs
