@@ -1,5 +1,5 @@
 import { pickText } from "@/lib/i18n/text"
-import { useI18n, useT } from "@/lib/i18n"
+import { useI18n, useT, locale } from "@/lib/i18n"
 import * as React from "react"
 import { useParams } from "react-router-dom"
 import { ImagePlus, Loader2, Send } from "lucide-react"
@@ -85,7 +85,7 @@ export function ChatThreadPage() {
     try {
       await uploadChatPhoto(propertyId, file)
     } catch (err) {
-      setPhotoError(err instanceof Error ? err.message : "Couldn't send that photo.")
+      setPhotoError(err instanceof Error ? err.message : t("Couldn't send that photo."))
     } finally {
       setUploadingPhoto(false)
     }
@@ -149,7 +149,7 @@ export function ChatThreadPage() {
                     "mt-1 text-right text-[10px] opacity-70"
                   )}
                 >
-                  {new Date(message.createdAt).toLocaleTimeString([], {
+                  {new Date(message.createdAt).toLocaleTimeString(locale(), {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}

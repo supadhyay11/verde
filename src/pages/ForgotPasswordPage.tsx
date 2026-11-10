@@ -47,8 +47,8 @@ export function ForgotPasswordPage() {
           </h1>
           <p className="mt-1.5 text-sm text-primary-foreground/75">
             {sent
-              ? "Check your inbox for a reset link."
-              : "We'll email you a link to set a new one."}
+              ? t("Check your inbox for a reset link.")
+              : t("We'll email you a link to set a new one.")}
           </p>
         </div>
       </div>
@@ -96,7 +96,7 @@ export function ForgotPasswordPage() {
                 className="w-full"
                 disabled={submitting}
               >
-                {submitting ? "Sending..." : "Send reset link"}{" "}
+                {submitting ? t("Sending...") : t("Send reset link")}{" "}
                 <ArrowRight className="size-4" />
               </Button>
 

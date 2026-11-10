@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, tr } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { CalendarDays, Clock, MapPin, User as UserIcon } from "lucide-react"
@@ -15,10 +15,11 @@ import type { RecurrenceRule, ServiceType } from "@/types"
 
 const SERVICE_TYPES: ServiceType[] = [
   "Full Service",
-  "Chem Check",
-  "Filter Cleaning",
-  "Weekly Maintenance",
-  "One-Time Cleaning",
+  "Lawn Mowing",
+  "Garden Maintenance",
+  "Hedge & Shrub Trimming",
+  "Seasonal Cleanup",
+  "One-Time Visit",
 ]
 
 export function AssignJobPage() {
@@ -49,7 +50,7 @@ export function AssignJobPage() {
   // Blank forces an explicit choice, same as the date field beside it.
   const [time, setTime] = React.useState("")
   const [serviceType, setServiceType] = React.useState<ServiceType>(
-    "Weekly Maintenance"
+    "Garden Maintenance"
   )
   const [extraTasks, setExtraTasks] = React.useState<Record<string, boolean>>({})
   const [submitting, setSubmitting] = React.useState(false)
@@ -60,7 +61,7 @@ export function AssignJobPage() {
   }, [properties, propertyId])
 
   const recurrence: RecurrenceRule =
-    serviceType === "Weekly Maintenance" ? "weekly" : "none"
+    serviceType === "Garden Maintenance" ? "weekly" : "none"
 
   const selectedProperty = properties.find((p) => p.id === propertyId)
   const availableExtraTasks = extraTasksFor(selectedProperty?.hasSpa)
@@ -73,7 +74,7 @@ export function AssignJobPage() {
     e.preventDefault()
     if (!user || !selectedProperty) return
     if (!date || !time) {
-      setError("Pick both a date and a time for this visit.")
+      setError(t("Pick both a date and a time for this visit."))
       return
     }
     setError(null)
@@ -103,7 +104,7 @@ export function AssignJobPage() {
       })
       navigate("/jobs")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't assign the job.")
+      setError(err instanceof Error ? err.message : t("Couldn't assign the job."))
     } finally {
       setSubmitting(false)
     }
@@ -224,7 +225,7 @@ export function AssignJobPage() {
           >
             {SERVICE_TYPES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {tr(s)}
               </option>
             ))}
           </select>
@@ -251,7 +252,7 @@ export function AssignJobPage() {
                   checked={!!extraTasks[t.id]}
                   onCheckedChange={() => toggleExtraTask(t.id)}
                 />
-                {t.label}
+                {tr(t.label)}
               </label>
             ))}
           </div>
@@ -265,7 +266,7 @@ export function AssignJobPage() {
           className="h-14 w-full text-base"
           disabled={submitting}
         >
-          {submitting ? "Scheduling..." : "Schedule Service"}
+          {submitting ? t("Scheduling...") : t("Schedule Service")}
         </Button>
       </form>
     </div>

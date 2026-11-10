@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, tr } from "@/lib/i18n"
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import {
@@ -50,9 +50,9 @@ function diffDaysFromToday(isoDate: string, todayIso: string) {
  * grouping below, so a day reads the same way in either tab. */
 function dayHeaderLabel(isoDate: string, todayIso: string) {
   const d = diffDaysFromToday(isoDate, todayIso)
-  if (d === 0) return "Today"
-  if (d === 1) return "Tomorrow"
-  if (d === -1) return "Yesterday"
+  if (d === 0) return tr("Today")
+  if (d === 1) return tr("Tomorrow")
+  if (d === -1) return tr("Yesterday")
   return weekdayLabel(isoDate)
 }
 
@@ -185,7 +185,7 @@ function JobCard({
               </select>
             )}
             <Button size="sm" className="h-8 px-2.5" disabled={saving} onClick={handleSave}>
-              {saving ? "..." : "Save"}
+              {saving ? "..." : t("Save")}
             </Button>
             <Button
               size="sm"
@@ -204,7 +204,7 @@ function JobCard({
               <button
                 type="button"
                 onClick={startEdit}
-                aria-label={canReassign ? "Edit date, time, and assignee" : "Edit date and time"}
+                aria-label={canReassign ? t("Edit date, time, and assignee") : t("Edit date and time")}
                 className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <Pencil className="size-3.5" />
@@ -234,7 +234,7 @@ function JobCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  aria-label={`Open ${property.customerName}'s address in Maps`}
+                  aria-label={t("Open {name}'s address in Maps", { name: property.customerName })}
                   className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
                 >
                   <MapPin className="size-3.5" />
@@ -245,7 +245,7 @@ function JobCard({
                   <a
                     href={`tel:${property.phone}`}
                     onClick={(e) => e.stopPropagation()}
-                    aria-label={`Call ${property.customerName}`}
+                    aria-label={t("Call {name}", { name: property.customerName })}
                     className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
                   >
                     <Phone className="size-3.5" />
@@ -253,7 +253,7 @@ function JobCard({
                   <a
                     href={`sms:${property.phone}`}
                     onClick={(e) => e.stopPropagation()}
-                    aria-label={`Text ${property.customerName}`}
+                    aria-label={t("Text {name}", { name: property.customerName })}
                     className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
                   >
                     <MessageSquare className="size-3.5" />
@@ -268,7 +268,7 @@ function JobCard({
       )}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span className="flex items-center gap-1">
-          <Clock className="size-3.5" /> {job.serviceType}
+          <Clock className="size-3.5" /> {tr(job.serviceType)}
         </span>
         {job.distanceMiles != null && (
           <span className="flex items-center gap-1">
@@ -284,7 +284,7 @@ function JobCard({
           }
         >
           <Eye className="size-3" />
-          {job.reportFirstViewedAt ? "Report viewed" : "Report not yet viewed"}
+          {job.reportFirstViewedAt ? t("Report viewed") : t("Report not yet viewed")}
         </p>
       )}
     </Card>
@@ -320,7 +320,7 @@ function MissedJobs({
       await Promise.all(ids.map((id) => deleteJob(id)))
       setConfirmId(null)
     } catch {
-      setError("Couldn't delete. Please try again.")
+      setError(t("Couldn't delete. Please try again."))
     } finally {
       setBusy(false)
     }
@@ -341,7 +341,7 @@ function MissedJobs({
           <p className="text-xs text-muted-foreground">
             {t("These were scheduled for a past day and never completed. Reschedule a job with the pencil on its card, or delete the ones you won't do.")}
             {repeating > 0 &&
-              ` ${repeating} of them repeat: deleting a repeating job doesn't schedule its next visit, so reschedule those instead if you want the series to continue.`}
+              " " + t("{n} of them repeat: deleting a repeating job doesn't schedule its next visit, so reschedule those instead if you want the series to continue.", { n: repeating })}
           </p>
           {confirmId === "all" ? (
             <div className="flex items-center gap-2">
@@ -351,7 +351,7 @@ function MissedJobs({
                 disabled={busy}
                 onClick={() => remove(jobs.map((j) => j.id))}
               >
-                {busy ? "Deleting..." : `Yes, delete ${jobs.length}`}
+                {busy ? t("Deleting...") : t("Yes, delete {n}", { n: jobs.length })}
               </Button>
               <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmId(null)}>
                 {t("Cancel")}
@@ -389,7 +389,7 @@ function MissedJobs({
                       disabled={busy}
                       onClick={() => remove([job.id])}
                     >
-                      {busy ? "Deleting..." : "Yes, delete this job"}
+                      {busy ? t("Deleting...") : t("Yes, delete this job")}
                     </Button>
                     <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmId(null)}>
                       {t("Cancel")}
@@ -565,21 +565,21 @@ export function JobsListPage() {
   const subtitleText =
     tab === "today"
       ? todayTotal > 0
-        ? `${todayCompleted.length} of ${todayTotal} done today`
+        ? t("{a} of {b} done today", { a: todayCompleted.length, b: todayTotal })
         : searchQuery
-          ? `No jobs today match "${search}"`
-          : "Nothing scheduled for today"
+          ? t("No jobs today match \"{q}\"", { q: search })
+          : t("Nothing scheduled for today")
       : tab === "completed"
-        ? `${completedJobs.length} completed`
-        : `${upcomingJobs.length} upcoming`
+        ? t("{n} completed", { n: completedJobs.length })
+        : t("{n} upcoming", { n: upcomingJobs.length })
 
   const tabs: { key: Tab; label: string; count: number }[] = [
     // The Today badge counts REMAINING work (what still needs doing),
     // not the full day's total - that's the number worth a provider's
     // attention at a glance, while the full picture (including what's
     // already done) lives in the subtitle and the tab body itself.
-    { key: "today", label: "Today", count: todayRemaining.length },
-    { key: "completed", label: "Completed", count: completedJobs.length },
+    { key: "today", label: t("Today"), count: todayRemaining.length },
+    { key: "completed", label: t("Completed"), count: completedJobs.length },
     { key: "upcoming", label: "Upcoming", count: upcomingJobs.length },
   ]
 
@@ -594,7 +594,7 @@ export function JobsListPage() {
       <div className="flex items-center justify-between px-4 pt-4">
         <div>
           <h2 className="text-xl font-bold">
-            {isProvider ? "Jobs" : "My Service Visits"}
+            {isProvider ? t("Jobs") : t("My Service Visits")}
           </h2>
           <p className="text-sm text-muted-foreground">
             {isProvider
@@ -662,7 +662,7 @@ export function JobsListPage() {
             <option value="all">{t("Everyone")}</option>
             {team.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.id === user?.id ? `${t.name} (you)` : t.name}
+                {t.id === user?.id ? tr("{name} (you)", { name: t.name }) : t.name}
               </option>
             ))}
           </select>
@@ -685,7 +685,7 @@ export function JobsListPage() {
                     : "bg-muted text-muted-foreground")
                 }
               >
-                {t.label}
+                {tr(t.label)}
                 {t.count > 0 && <span className="opacity-80">({t.count})</span>}
               </button>
             )
@@ -745,7 +745,7 @@ export function JobsListPage() {
               )}
               {todayJobs.length === 0 && (
                 <p className="py-10 text-center text-sm text-muted-foreground">
-                  {searchQuery ? `No jobs today match "${search}".` : "Nothing scheduled for today."}
+                  {searchQuery ? t("No jobs today match \"{q}\".", { q: search }) : t("Nothing scheduled for today.")}
                 </p>
               )}
               {isAdmin && missedJobs.length > 0 && (
@@ -796,7 +796,7 @@ export function JobsListPage() {
               })}
               {completedSections.length === 0 && (
                 <p className="py-10 text-center text-sm text-muted-foreground">
-                  {searchQuery ? `No completed jobs match "${search}".` : "No completed jobs yet."}
+                  {searchQuery ? t("No completed jobs match \"{q}\".", { q: search }) : t("No completed jobs yet.")}
                 </p>
               )}
             </>
@@ -844,7 +844,7 @@ export function JobsListPage() {
               })}
               {sections.length === 0 && (
                 <p className="py-10 text-center text-sm text-muted-foreground">
-                  {searchQuery ? `No upcoming jobs match "${search}".` : "Nothing coming up this week."}
+                  {searchQuery ? t("No upcoming jobs match \"{q}\".", { q: search }) : t("Nothing coming up this week.")}
                 </p>
               )}
             </>

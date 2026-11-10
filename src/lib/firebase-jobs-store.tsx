@@ -1,3 +1,4 @@
+import { tr } from "@/lib/i18n/core"
 import * as React from "react"
 import {
   addDoc,
@@ -319,7 +320,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
 
   const addCustomer = React.useCallback(
     async (input: AddCustomerInput) => {
-      if (!businessId) throw new Error("No business found for this account.")
+      if (!businessId) throw new Error(tr("No business found for this account."))
       const propertyRef = await addDoc(collection(db, "properties"), {
         businessId,
         customerName: input.name,
@@ -372,7 +373,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
 
   const uploadJobPhoto = React.useCallback(
     async (jobId: string, file: File) => {
-      if (!businessId) throw new Error("No business found for this account.")
+      if (!businessId) throw new Error(tr("No business found for this account."))
       const ext = file.type === "image/png" ? "png" : "jpg"
       const path = `jobs/${businessId}/${jobId}/photo-${Date.now()}.${ext}`
       const storageRef = ref(storage, path)
@@ -390,7 +391,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
   // is written onto the business doc instead of a job doc.
   const uploadBusinessLogo = React.useCallback(
     async (file: File) => {
-      if (!businessId) throw new Error("No business found for this account.")
+      if (!businessId) throw new Error(tr("No business found for this account."))
       const ext = file.type === "image/png" ? "png" : "jpg"
       const path = `logos/${businessId}/logo-${Date.now()}.${ext}`
       const storageRef = ref(storage, path)
@@ -416,7 +417,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
 
   const uploadChatPhoto = React.useCallback(
     async (propertyId: string, file: File) => {
-      if (!businessId || !user) throw new Error("No business found for this account.")
+      if (!businessId || !user) throw new Error(tr("No business found for this account."))
       const ext = file.type === "image/png" ? "png" : "jpg"
       const path = `chat/${businessId}/${propertyId}/${Date.now()}.${ext}`
       const storageRef = ref(storage, path)
@@ -455,9 +456,9 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
   // if the provider edits their Venmo/Zelle settings after sending it.
   const createInvoice = React.useCallback(
     async (input: CreateInvoiceInput) => {
-      if (!businessId || !business) throw new Error("No business found for this account.")
+      if (!businessId || !business) throw new Error(tr("No business found for this account."))
       const property = properties.find((p) => p.id === input.propertyId)
-      if (!property) throw new Error("Customer not found.")
+      if (!property) throw new Error(tr("Customer not found."))
 
       // Assigned inside a transaction so two invoices created back-to-back
       // (or from two devices) can never collide on the same number - each
@@ -559,7 +560,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
 
   const updateBusiness = React.useCallback(
     async (patch: Partial<Business>) => {
-      if (!businessId) throw new Error("No business found for this account.")
+      if (!businessId) throw new Error(tr("No business found for this account."))
       const { id: _id, ...rest } = patch
       void _id
       await updateDoc(doc(db, "businesses", businessId), stripUndefined(rest))

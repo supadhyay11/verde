@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, locale, tr } from "@/lib/i18n"
 import * as React from "react"
 import {
   Calendar,
@@ -34,13 +34,13 @@ function currentMonthValue(): string {
 function monthValueLabel(value: string): string {
   const [y, m] = value.split("-").map(Number)
   if (!y || !m) return value
-  return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" })
+  return new Date(y, m - 1, 1).toLocaleDateString(locale(), { month: "long", year: "numeric" })
 }
 
 // Full date + time, e.g. "Oct 18, 2026, 2:30 PM" - used for sentAt/
 // paidAt, which are ISO timestamps (not just a date).
 function formatSentAt(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
+  return new Date(iso).toLocaleString(locale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -53,7 +53,7 @@ function formatSentAt(iso: string): string {
 // parsed as a local date (not UTC) to avoid an off-by-one day.
 function formatScheduledDate(ymd: string): string {
   const [y, m, d] = ymd.split("-").map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+  return new Date(y, m - 1, d).toLocaleDateString(locale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -61,20 +61,20 @@ function formatScheduledDate(ymd: string): string {
 }
 
 function money(amount: number): string {
-  return amount.toLocaleString(undefined, { style: "currency", currency: "USD" })
+  return amount.toLocaleString(locale(), { style: "currency", currency: "USD" })
 }
 
 /** What one property's billing currently looks like, derived from its
  * invoice history - used both for the summary stats at the top and the
  * status badge on each customer row. */
 function propertyBillingStatus(invoices: Invoice[]) {
-  if (invoices.length === 0) return { label: "No invoices yet", tone: "muted" as const }
+  if (invoices.length === 0) return { label: tr("No invoices yet"), tone: "muted" as const }
   const latest = invoices[0]
   if (latest.scheduledSendAt && !latest.sentAt) {
-    return { label: `Scheduled ${latest.scheduledSendAt}`, tone: "info" as const }
+    return { label: tr("Scheduled {date}", { date: latest.scheduledSendAt }), tone: "info" as const }
   }
-  if (latest.status === "paid") return { label: "Paid", tone: "success" as const }
-  return { label: "Unpaid", tone: "destructive" as const }
+  if (latest.status === "paid") return { label: tr("Paid"), tone: "success" as const }
+  return { label: tr("Unpaid"), tone: "destructive" as const }
 }
 
 function SendInvoiceForm({
@@ -105,20 +105,20 @@ function SendInvoiceForm({
   async function submit(scheduled: boolean) {
     const numericAmount = Number(amount)
     if (!amount.trim() || Number.isNaN(numericAmount) || numericAmount <= 0) {
-      setError("Enter a valid amount.")
+      setError(t("Enter a valid amount."))
       return
     }
     const period = periodMode === "month" ? monthValueLabel(monthValue) : customPeriod.trim()
     if (periodMode === "month" && !monthValue) {
-      setError("Pick a service month.")
+      setError(t("Pick a service month."))
       return
     }
     if (periodMode === "custom" && !period) {
-      setError('Describe this invoice, e.g. "One-time algae treatment".')
+      setError(t("Describe this invoice, e.g. \"One-time mulch and planting\"."))
       return
     }
     if (scheduled && !scheduledDate) {
-      setError("Pick a date to send this invoice.")
+      setError(t("Pick a date to send this invoice."))
       return
     }
     setError(null)
@@ -133,7 +133,7 @@ function SendInvoiceForm({
       })
       onCreated({ propertyId: property.id, invoiceId, scheduled })
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't create that invoice.")
+      setError(err instanceof Error ? err.message : t("Couldn't create that invoice."))
     } finally {
       setSubmitting(null)
     }
@@ -196,7 +196,7 @@ function SendInvoiceForm({
             />
           ) : (
             <Input
-              placeholder={t("One-time algae treatment")}
+              placeholder={t("One-time mulch and planting")}
               value={customPeriod}
               onChange={(e) => setCustomPeriod(e.target.value)}
             />
@@ -229,7 +229,7 @@ function SendInvoiceForm({
             onClick={() => submit(false)}
             className="flex-1"
           >
-            {submitting === "now" ? "Sending..." : "Send Now"}
+            {submitting === "now" ? t("Sending...") : t("Send Now")}
           </Button>
           <Button
             type="button"
@@ -238,7 +238,7 @@ function SendInvoiceForm({
             onClick={() => submit(true)}
             className="flex-1"
           >
-            {submitting === "scheduled" ? "Scheduling..." : "Schedule"}
+            {submitting === "scheduled" ? t("Scheduling...") : "Schedule"}
           </Button>
         </div>
       </div>
@@ -277,12 +277,12 @@ function EditInvoiceForm({
   async function submit() {
     const numericAmount = Number(amount)
     if (!amount.trim() || Number.isNaN(numericAmount) || numericAmount <= 0) {
-      setError("Enter a valid amount.")
+      setError(t("Enter a valid amount."))
       return
     }
     const period = periodMode === "month" ? monthValueLabel(monthValue) : customPeriod.trim()
     if (periodMode === "custom" && !period) {
-      setError('Describe this invoice, e.g. "One-time algae treatment".')
+      setError(t("Describe this invoice, e.g. \"One-time mulch and planting\"."))
       return
     }
     setError(null)
@@ -296,7 +296,7 @@ function EditInvoiceForm({
       })
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't save those changes.")
+      setError(err instanceof Error ? err.message : t("Couldn't save those changes."))
     } finally {
       setSubmitting(false)
     }
@@ -361,7 +361,7 @@ function EditInvoiceForm({
             <Input type="month" value={monthValue} onChange={(e) => setMonthValue(e.target.value)} />
           ) : (
             <Input
-              placeholder={t("One-time algae treatment")}
+              placeholder={t("One-time mulch and planting")}
               value={customPeriod}
               onChange={(e) => setCustomPeriod(e.target.value)}
             />
@@ -388,7 +388,7 @@ function EditInvoiceForm({
         )}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button type="button" disabled={submitting} onClick={submit}>
-          {submitting ? "Saving..." : "Save Changes"}
+          {submitting ? t("Saving...") : t("Save Changes")}
         </Button>
       </div>
     </Card>
@@ -432,8 +432,8 @@ function CustomerBillingRow({
           <p className="font-bold">{property.customerName}</p>
           <p className="text-xs text-muted-foreground">
             {property.monthlyRate != null
-              ? `${money(property.monthlyRate)} / month`
-              : "No monthly rate set"}
+              ? t("{amount} / month", { amount: money(property.monthlyRate) })
+              : t("No monthly rate set")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -503,7 +503,7 @@ function CustomerBillingRow({
               >
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-semibold">
-                    {inv.invoiceNumber != null ? `Invoice #${inv.invoiceNumber}` : "Invoice"}
+                    {inv.invoiceNumber != null ? t("Invoice #{n}", { n: inv.invoiceNumber }) : t("Invoice")}
                     {" · "}
                     {inv.period} · {money(inv.amount)}
                   </p>
@@ -523,19 +523,19 @@ function CustomerBillingRow({
                         {formatScheduledDate(inv.scheduledSendAt!)} {t("as a PDF")}
                       </>
                     ) : inv.status === "paid" ? (
-                      "Marked as paid"
+                      t("Marked as paid")
                     ) : (
-                      "Sent · not yet paid"
+                      t("Sent · not yet paid")
                     )}
                   </p>
                   <p className="text-muted-foreground">
                     {pendingSend
                       ? inv.sentByName
-                        ? `Set up by ${inv.sentByName}`
-                        : "Set up automatically"
+                        ? t("Set up by {name}", { name: inv.sentByName })
+                        : t("Set up automatically")
                       : inv.sentAt
-                        ? `Sent ${formatSentAt(inv.sentAt)}${inv.sentByName ? ` by ${inv.sentByName}` : " automatically"}`
-                        : "Not sent yet"}
+                        ? (inv.sentByName ? t("Sent {when} by {name}", { when: formatSentAt(inv.sentAt), name: inv.sentByName }) : t("Sent {when} automatically", { when: formatSentAt(inv.sentAt) }))
+                        : t("Not sent yet")}
                   </p>
                   {inv.status === "paid" && inv.paidAt && (
                     <p className="text-success">{t("Paid")} {formatSentAt(inv.paidAt)}</p>
@@ -572,8 +572,8 @@ function CustomerBillingRow({
                       onClick={() => {
                         const warning =
                           inv.status === "paid"
-                            ? `Permanently delete invoice #${inv.invoiceNumber ?? ""}? It's marked paid, so deleting it will also reduce your reported revenue totals. This can't be undone.`
-                            : `Permanently delete invoice #${inv.invoiceNumber ?? ""}? This can't be undone.`
+                            ? t("Permanently delete invoice #{n}? It's marked paid, so deleting it will also reduce your reported revenue totals. This can't be undone.", { n: inv.invoiceNumber ?? "" })
+                            : t("Permanently delete invoice #{n}? This can't be undone.", { n: inv.invoiceNumber ?? "" })
                         if (window.confirm(warning)) {
                           deleteInvoice(inv.id)
                         }
@@ -590,7 +590,7 @@ function CustomerBillingRow({
                       onClick={() => {
                         if (
                           window.confirm(
-                            "Cancel this scheduled invoice? It hasn't been sent yet, so canceling removes it completely."
+                            t("Cancel this scheduled invoice? It hasn't been sent yet, so canceling removes it completely.")
                           )
                         ) {
                           deleteInvoice(inv.id)
@@ -607,7 +607,7 @@ function CustomerBillingRow({
                     size="sm"
                     onClick={() => markInvoicePaid(inv.id, inv.status !== "paid")}
                   >
-                    {t("Mark")} {inv.status === "paid" ? "Unpaid" : "Paid"}
+                    {t("Mark")} {inv.status === "paid" ? t("Unpaid") : t("Paid")}
                   </Button>
                 </div>
               </div>
@@ -635,8 +635,8 @@ export function BillingPage() {
   }) {
     setNote(
       scheduled
-        ? "Invoice created - it'll email as a PDF automatically on the date you chose."
-        : "Invoice created and emailed as a PDF."
+        ? t("Invoice created - it'll email as a PDF automatically on the date you chose.")
+        : t("Invoice created and emailed as a PDF.")
     )
   }
 
@@ -750,8 +750,8 @@ export function BillingPage() {
             >
               <Calendar className="size-3.5" />
               {statusFilter === "unpaid"
-                ? "Showing customers with an unpaid invoice"
-                : "Showing customers with a scheduled invoice"}
+                ? t("Showing customers with an unpaid invoice")
+                : t("Showing customers with a scheduled invoice")}
             </p>
             <Button variant="outline" size="sm" onClick={() => setStatusFilter(null)}>
               {t("Clear")}
@@ -791,10 +791,10 @@ export function BillingPage() {
           {visibleProperties.length === 0 && properties.length > 0 && (
             <p className="py-6 text-center text-sm text-muted-foreground lg:col-span-2">
               {search.trim()
-                ? `No customers match "${search}".`
+                ? t("No customers match \"{q}\".", { q: search })
                 : statusFilter === "unpaid"
-                  ? "No customers have an unpaid invoice right now."
-                  : "No customers have a scheduled invoice right now."}
+                  ? t("No customers have an unpaid invoice right now.")
+                  : t("No customers have a scheduled invoice right now.")}
             </p>
           )}
           {properties.length === 0 && (

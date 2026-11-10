@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, tr, locale } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -16,12 +16,12 @@ import { useJobsStore } from "@/lib/jobs-store"
 import type { ServiceJob } from "@/types"
 
 function money(amount: number): string {
-  return amount.toLocaleString(undefined, { style: "currency", currency: "USD" })
+  return amount.toLocaleString(locale(), { style: "currency", currency: "USD" })
 }
 
 // Full date + time, e.g. "Oct 18, 2026, 2:30 PM" - for ISO timestamps.
 function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
+  return new Date(iso).toLocaleString(locale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -34,7 +34,7 @@ function formatDateTime(iso: string): string {
 // plain "YYYY-MM-DD" date-only string (both parse fine through `new
 // Date` for display purposes here).
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString(locale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -48,13 +48,13 @@ function daysSince(iso: string): number {
 // "Oct 18, 2026 (3 months ago)" - falls back to "Unknown" for customers
 // added before Property.createdAt existed (see its doc comment).
 function customerSinceLabel(createdAt: string | undefined): string {
-  if (!createdAt) return "Unknown"
+  if (!createdAt) return tr("Unknown")
   const days = daysSince(createdAt)
-  if (days < 30) return `${formatDate(createdAt)} (${days} day${days === 1 ? "" : "s"} ago)`
+  if (days < 30) return tr(days === 1 ? "{date} ({n} day ago)" : "{date} ({n} days ago)", { date: formatDate(createdAt), n: days })
   const months = Math.floor(days / 30)
-  if (months < 24) return `${formatDate(createdAt)} (${months} month${months === 1 ? "" : "s"} ago)`
+  if (months < 24) return tr(months === 1 ? "{date} ({n} month ago)" : "{date} ({n} months ago)", { date: formatDate(createdAt), n: months })
   const years = Math.floor(months / 12)
-  return `${formatDate(createdAt)} (${years} year${years === 1 ? "" : "s"} ago)`
+  return tr(years === 1 ? "{date} ({n} year ago)" : "{date} ({n} years ago)", { date: formatDate(createdAt), n: years })
 }
 
 const SENTIMENT_BANDS = [
@@ -204,7 +204,7 @@ export function CustomerProfilePage() {
           <span>{t("Neutral")}</span>
           <span>{t("Happy")}</span>
         </div>
-        <p className={"text-center text-sm font-semibold " + sentiment.className}>{sentiment.label}</p>
+        <p className={"text-center text-sm font-semibold " + sentiment.className}>{tr(sentiment.label)}</p>
       </Card>
 
       <Card className="gap-2 p-4">
@@ -233,7 +233,7 @@ export function CustomerProfilePage() {
                   <CheckCircle2 className="size-3" /> {t("Completed")} {formatDateTime(job.completedAt)}
                 </p>
               )}
-              {job.notes && <p className="text-muted-foreground">{t("&ldquo;")}{job.notes}{t("&rdquo;")}</p>}
+              {job.notes && <p className="text-muted-foreground">“{job.notes}”</p>}
             </button>
           )
         })}
@@ -249,7 +249,7 @@ export function CustomerProfilePage() {
           return (
             <div key={inv.id} className="flex flex-col gap-1 rounded-md border bg-muted/40 px-3 py-2.5 text-xs">
               <p className="text-sm font-semibold">
-                {inv.invoiceNumber != null ? `Invoice #${inv.invoiceNumber}` : "Invoice"}
+                {inv.invoiceNumber != null ? t("Invoice #{n}", { n: inv.invoiceNumber }) : t("Invoice")}
                 {" · "}
                 {inv.period} · {money(inv.amount)}
               </p>
@@ -258,16 +258,16 @@ export function CustomerProfilePage() {
                   pendingSend ? "text-primary" : inv.status === "paid" ? "text-success" : "text-muted-foreground"
                 }
               >
-                {pendingSend ? "Scheduled to send" : inv.status === "paid" ? "Marked as paid" : "Sent · not yet paid"}
+                {pendingSend ? t("Scheduled to send") : inv.status === "paid" ? t("Marked as paid") : t("Sent · not yet paid")}
               </p>
               <p className="text-muted-foreground">
                 {pendingSend
                   ? inv.sentByName
-                    ? `Set up by ${inv.sentByName}`
-                    : "Set up automatically"
+                    ? t("Set up by {name}", { name: inv.sentByName })
+                    : t("Set up automatically")
                   : inv.sentAt
-                    ? `Sent ${formatDateTime(inv.sentAt)}${inv.sentByName ? ` by ${inv.sentByName}` : " automatically"}`
-                    : "Not sent yet"}
+                    ? (inv.sentByName ? t("Sent {when} by {name}", { when: formatDateTime(inv.sentAt), name: inv.sentByName }) : t("Sent {when} automatically", { when: formatDateTime(inv.sentAt) }))
+                    : t("Not sent yet")}
               </p>
               {inv.status === "paid" && inv.paidAt && (
                 <p className="text-success">{t("Paid")} {formatDateTime(inv.paidAt)}</p>

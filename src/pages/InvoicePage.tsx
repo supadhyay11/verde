@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, locale } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useParams } from "react-router-dom"
@@ -36,7 +36,7 @@ export function InvoicePage() {
         setInvoice({ id: snap.id, ...snap.data() } as Invoice)
       })
       .catch(() => {
-        if (!cancelled) setError("This invoice link isn't available right now.")
+        if (!cancelled) setError(t("This invoice link isn't available right now."))
       })
     return () => {
       cancelled = true
@@ -59,20 +59,20 @@ export function InvoicePage() {
         <VerdeMark className="size-8 text-primary" />
         <p className="font-semibold">{t("Invoice not available")}</p>
         <p className="max-w-xs text-sm text-muted-foreground">
-          {error ?? "This link may be incorrect or the invoice may have been removed."}
+          {error ?? t("This link may be incorrect or the invoice may have been removed.")}
         </p>
       </div>
     )
   }
 
-  const amountStr = invoice.amount.toLocaleString(undefined, {
+  const amountStr = invoice.amount.toLocaleString(locale(), {
     style: "currency",
     currency: "USD",
   })
 
   const venmoLink = invoice.snapVenmoUsername
     ? `https://venmo.com/${encodeURIComponent(invoice.snapVenmoUsername)}?txn=pay&amount=${invoice.amount}&note=${encodeURIComponent(
-        `${invoice.snapBusinessName || "Garden service"} - ${invoice.period}`
+        `${invoice.snapBusinessName || t("Garden service")} - ${invoice.period}`
       )}`
     : null
 
@@ -90,7 +90,7 @@ export function InvoicePage() {
             </span>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-primary-foreground/70">
-                {invoice.snapBusinessName || "Garden Service Invoice"}
+                {invoice.snapBusinessName || t("Garden Service Invoice")}
               </p>
               <p className="text-lg font-bold">{t("Invoice")}</p>
               {invoice.invoiceNumber != null && (
@@ -118,7 +118,7 @@ export function InvoicePage() {
 
         <Card className="gap-1 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("Bill to")}</p>
-          <p className="text-lg font-bold">{invoice.snapCustomerName || "Customer"}</p>
+          <p className="text-lg font-bold">{invoice.snapCustomerName || t("Customer")}</p>
           {invoice.snapAddress && <p className="text-sm text-muted-foreground">{invoice.snapAddress}</p>}
         </Card>
 
@@ -143,7 +143,7 @@ export function InvoicePage() {
           }
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {invoice.status === "paid" ? "Total paid" : "Balance due"}
+            {invoice.status === "paid" ? t("Total paid") : t("Balance due")}
           </p>
           <p className={"text-3xl font-bold " + (invoice.status === "paid" ? "text-green-600" : "text-primary")}>
             {amountStr}
@@ -204,7 +204,7 @@ export function InvoicePage() {
         )}
 
         <p className="px-2 text-center text-xs text-muted-foreground">
-          {invoice.snapBusinessName ? `Sent by ${invoice.snapBusinessName}` : "Thanks for your business!"}
+          {invoice.snapBusinessName ? t("Sent by {name}", { name: invoice.snapBusinessName }) : t("Thanks for your business!")}
           {invoice.snapBusinessPhone ? `  ${invoice.snapBusinessPhone}` : ""}
         </p>
       </div>

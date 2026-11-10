@@ -1,3 +1,4 @@
+import { tr } from "@/lib/i18n"
 import type { JobStatus } from "@/types"
 import { cn } from "@/lib/utils"
 
@@ -44,7 +45,7 @@ export function StatusBadge({
       )}
     >
       <span className={cn("size-1.5 rounded-full", config.dotClassName)} />
-      {config.label}
+      {tr(config.label)}
     </span>
   )
 }

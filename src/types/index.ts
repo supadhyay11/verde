@@ -137,10 +137,11 @@ export type JobStatus = "pending" | "in-progress" | "completed" | "scheduled"
 
 export type ServiceType =
   | "Full Service"
-  | "Chem Check"
-  | "Filter Cleaning"
-  | "Weekly Maintenance"
-  | "One-Time Cleaning"
+  | "Lawn Mowing"
+  | "Garden Maintenance"
+  | "Hedge & Shrub Trimming"
+  | "Seasonal Cleanup"
+  | "One-Time Visit"
 
 export type RecurrenceRule = "none" | "weekly" | "biweekly" | "monthly"
 

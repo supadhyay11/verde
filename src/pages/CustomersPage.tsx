@@ -202,7 +202,7 @@ function CustomerFields({
                 values.language === l ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"
               }`}
             >
-              {l === "en" ? "English" : "Español"}
+              {l === "en" ? "English" : t("Español")}
             </button>
           ))}
         </div>
@@ -240,7 +240,7 @@ function EditCustomerCard({
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!values.name.trim() || !isAddressComplete(values.addr)) {
-      setError("Give the customer a name and a complete address.")
+      setError(t("Give the customer a name and a complete address."))
       return
     }
     setError(null)
@@ -257,7 +257,7 @@ function EditCustomerCard({
       })
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't save those changes.")
+      setError(err instanceof Error ? err.message : t("Couldn't save those changes."))
     } finally {
       setSubmitting(false)
     }
@@ -276,7 +276,7 @@ function EditCustomerCard({
         {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="flex gap-2">
           <Button type="submit" disabled={submitting} className="flex-1">
-            {submitting ? "Saving..." : "Save Changes"}
+            {submitting ? t("Saving...") : t("Save Changes")}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>
             {t("Cancel")}
@@ -355,7 +355,7 @@ export function CustomersPage() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     if (!newValues.name.trim() || !isAddressComplete(newValues.addr)) {
-      setError("Give the customer a name and a complete address.")
+      setError(t("Give the customer a name and a complete address."))
       return
     }
     setError(null)
@@ -374,7 +374,7 @@ export function CustomersPage() {
       setNewValues(EMPTY_FORM)
       setShowForm(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't add that customer.")
+      setError(err instanceof Error ? err.message : t("Couldn't add that customer."))
     } finally {
       setSubmitting(false)
     }
@@ -397,7 +397,7 @@ export function CustomersPage() {
       await httpsCallable(functions, "resetCustomerAccess")({ propertyId })
       setConfirmResetId(null)
     } catch {
-      setResetError("Couldn't reset access. Please try again.")
+      setResetError(t("Couldn't reset access. Please try again."))
     } finally {
       setResetting(false)
     }
@@ -512,7 +512,7 @@ export function CustomersPage() {
                 }}
               >
                 <Send className="size-3.5" />
-                {inviteSendingId === justAdded.id ? "Sending..." : "Send Invite"}
+                {inviteSendingId === justAdded.id ? t("Sending...") : t("Send Invite")}
               </Button>
               <Button
                 variant="outline"
@@ -527,13 +527,13 @@ export function CustomersPage() {
             {inviteSentNote?.propertyId === justAdded.id && (
               <p className="text-xs text-muted-foreground">
                 {inviteSentNote.result === "texted-and-emailed" &&
-                  "Text opened to send, and emailed automatically in the background."}
+                  t("Text opened to send, and emailed automatically in the background.")}
                 {inviteSentNote.result === "texted" &&
-                  "Text opened to send. (No email on file for this customer.)"}
+                  t("Text opened to send. (No email on file for this customer.)")}
                 {inviteSentNote.result === "emailed" &&
-                  "Emailed automatically in the background - no phone on file for this customer."}
+                  t("Emailed automatically in the background - no phone on file for this customer.")}
                 {inviteSentNote.result === "copied" &&
-                  "No phone or email on file - invite message copied to your clipboard instead."}
+                  t("No phone or email on file - invite message copied to your clipboard instead.")}
               </p>
             )}
             {qrOpenId === justAdded.id && <InviteQrCode code={justAdded.code} lang={newValues.language} />}
@@ -559,7 +559,7 @@ export function CustomersPage() {
               <CustomerFields values={newValues} onChange={setNewValues} />
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={submitting}>
-                {submitting ? "Adding..." : "Add Customer & Generate Code"}
+                {submitting ? t("Adding...") : t("Add Customer & Generate Code")}
               </Button>
             </form>
           </Card>
@@ -587,8 +587,8 @@ export function CustomersPage() {
           {visibleProperties.length === 0 && properties.length > 0 && (
             <p className="lg:col-span-2 py-6 text-center text-sm text-muted-foreground">
               {search.trim()
-                ? `No customers match "${search}".`
-                : `No ${statusFilter} customers right now.`}
+                ? t("No customers match \"{q}\".", { q: search })
+                : t(statusFilter === "active" ? "No active customers right now." : "No pending customers right now.")}
             </p>
           )}
           {visibleProperties.map((property) =>
@@ -614,7 +614,7 @@ export function CustomersPage() {
                       <button
                         type="button"
                         onClick={() => setEditingId(property.id)}
-                        aria-label={`Edit ${property.customerName}`}
+                        aria-label={t("Edit {name}", { name: property.customerName })}
                         className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
                         <Pencil className="size-3.5" />
@@ -670,7 +670,7 @@ export function CustomersPage() {
                         onClick={() => handleSendInvite(property)}
                       >
                         <Send className="size-3.5" />
-                        {inviteSendingId === property.id ? "Sending..." : "Send Invite"}
+                        {inviteSendingId === property.id ? t("Sending...") : t("Send Invite")}
                       </Button>
                       <Button
                         variant="outline"
@@ -685,13 +685,13 @@ export function CustomersPage() {
                     {inviteSentNote?.propertyId === property.id && (
                       <p className="text-xs text-muted-foreground">
                         {inviteSentNote.result === "texted-and-emailed" &&
-                          "Text opened to send, and emailed automatically in the background."}
+                          t("Text opened to send, and emailed automatically in the background.")}
                         {inviteSentNote.result === "texted" &&
-                          "Text opened to send. (No email on file for this customer.)"}
+                          t("Text opened to send. (No email on file for this customer.)")}
                         {inviteSentNote.result === "emailed" &&
-                          "Emailed automatically in the background - no phone on file for this customer."}
+                          t("Emailed automatically in the background - no phone on file for this customer.")}
                         {inviteSentNote.result === "copied" &&
-                          "No phone or email on file - invite message copied to your clipboard instead."}
+                          t("No phone or email on file - invite message copied to your clipboard instead.")}
                       </p>
                     )}
                     {qrOpenId === property.id && <InviteQrCode code={property.inviteCode} lang={property.language} />}
@@ -713,7 +713,7 @@ export function CustomersPage() {
                           disabled={resetting}
                           onClick={() => handleResetAccess(property.id)}
                         >
-                          {resetting ? "Resetting..." : "Reset Access"}
+                          {resetting ? t("Resetting...") : t("Reset Access")}
                         </Button>
                         <Button
                           type="button"
@@ -754,7 +754,7 @@ export function CustomersPage() {
                         disabled={deleting}
                         onClick={() => handleDelete(property.id)}
                       >
-                        {deleting ? "Removing..." : "Remove Customer"}
+                        {deleting ? t("Removing...") : t("Remove Customer")}
                       </Button>
                       <Button
                         type="button"

@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, tr } from "@/lib/i18n"
 import * as React from "react"
 import { httpsCallable } from "firebase/functions"
 import { Check, Copy, Dices, Plus, ShieldCheck, Trash2, UserCog, Users, X } from "lucide-react"
@@ -116,7 +116,7 @@ export function TeamPage() {
     const trimmedIdentifier = identifier.trim()
     if (!name.trim() || !trimmedIdentifier) return
     if (password && password.length < 6) {
-      setError("Password should be at least 6 characters.")
+      setError(t("Password should be at least 6 characters."))
       return
     }
     const isEmail = trimmedIdentifier.includes("@")
@@ -136,7 +136,7 @@ export function TeamPage() {
       setAdding(false)
       resetAddForm()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't add that teammate.")
+      setError(err instanceof Error ? err.message : t("Couldn't add that teammate."))
     } finally {
       setSubmitting(false)
     }
@@ -148,7 +148,7 @@ export function TeamPage() {
     try {
       await httpsCallable(functions, "updateTeamMemberRole")({ uid, businessRole: role })
     } catch (err) {
-      setRowError(err instanceof Error ? err.message : "Couldn't update that role.")
+      setRowError(err instanceof Error ? err.message : t("Couldn't update that role."))
     } finally {
       setBusyUid(null)
     }
@@ -161,7 +161,7 @@ export function TeamPage() {
       await httpsCallable(functions, "removeTeamMember")({ uid })
       setConfirmRemoveUid(null)
     } catch (err) {
-      setRowError(err instanceof Error ? err.message : "Couldn't remove that teammate.")
+      setRowError(err instanceof Error ? err.message : t("Couldn't remove that teammate."))
     } finally {
       setBusyUid(null)
     }
@@ -195,8 +195,8 @@ export function TeamPage() {
             {atLimit && (
               <p className="pt-1 text-xs text-muted-foreground">
                 {plan.plan === "pro"
-                  ? "You're at the limit for Pro. Premium covers up to 10 technicians."
-                  : "You're at the limit for Premium."}{" "}
+                  ? t("You're at the limit for Pro. Premium covers up to 10 technicians.")
+                  : t("You're at the limit for Premium.")}{" "}
                 <Link to="/support" className="font-medium text-primary underline-offset-2 hover:underline">
                   {t("Contact us to")} {plan.plan === "pro" ? "upgrade" : "add more"}
                 </Link>
@@ -220,10 +220,10 @@ export function TeamPage() {
               {t("Share these sign-in details with")} {created.name} {t("- they should change the password from Profile once they've signed in.")}
               {created.signInWith.includes("@")
                 ? ""
-                : " They'll sign in with this phone number - email-based password reset won't work for this account, so if they forget it, come back here and remove/re-add them with a new password instead."}
+                : " " + t("They'll sign in with this phone number - email-based password reset won't work for this account, so if they forget it, come back here and remove/re-add them with a new password instead.")}
             </p>
             <CopyableCredential
-              label={created.signInWith.includes("@") ? "Email" : "Phone Number"}
+              label={created.signInWith.includes("@") ? t("Email") : t("Phone Number")}
               value={created.signInWith}
             />
             <CopyableCredential label={t("Password")} value={created.password} />
@@ -254,7 +254,7 @@ export function TeamPage() {
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {ROLE_LABEL[role]}
+                    {tr(ROLE_LABEL[role])}
                   </span>
                 </div>
 
@@ -380,7 +380,7 @@ export function TeamPage() {
                   {t("Cancel")}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? "Adding..." : "Add Teammate"}
+                  {submitting ? t("Adding...") : t("Add Teammate")}
                 </Button>
               </div>
             </form>

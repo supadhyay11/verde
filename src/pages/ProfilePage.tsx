@@ -92,7 +92,7 @@ export function ProfilePage() {
     try {
       await uploadBusinessLogo(file)
     } catch (err) {
-      setLogoError(err instanceof Error ? err.message : "Couldn't upload logo.")
+      setLogoError(err instanceof Error ? err.message : t("Couldn't upload logo."))
     } finally {
       setLogoUploading(false)
     }
@@ -173,7 +173,7 @@ export function ProfilePage() {
       await deleteMyAccount()
       navigate("/login", { replace: true })
     } catch {
-      setDeleteError("Couldn't delete your account. Try again in a moment, or contact support.")
+      setDeleteError(t("Couldn't delete your account. Try again in a moment, or contact support."))
       setDeletingAccount(false)
     }
   }
@@ -204,9 +204,9 @@ export function ProfilePage() {
         <p className="text-sm capitalize text-muted-foreground">
           {user.role === "provider"
             ? isBizAdmin(user)
-              ? "Service Provider · Admin"
-              : "Technician"
-            : "Property Owner"}
+              ? t("Service Provider · Admin")
+              : t("Technician")
+            : t("Property Owner")}
         </p>
       </div>
 
@@ -284,7 +284,7 @@ export function ProfilePage() {
                   onClick={handleSaveAccount}
                   disabled={savingAccount || !accountName.trim()}
                 >
-                  {savingAccount ? "Saving..." : "Save"}
+                  {savingAccount ? t("Saving...") : t("Save")}
                 </Button>
               </div>
             </div>
@@ -306,7 +306,7 @@ export function ProfilePage() {
           <Card className="gap-2 p-4">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold">
-                {user.role === "provider" ? "Your Business" : "Serviced By"}
+                {user.role === "provider" ? t("Your Business") : t("Serviced By")}
               </p>
               {isBizAdmin(user) && !editingBusiness && (
                 <Button variant="ghost" size="sm" onClick={startEditingBusiness}>
@@ -335,7 +335,7 @@ export function ProfilePage() {
                     onClick={() => logoInputRef.current?.click()}
                     disabled={logoUploading}
                   >
-                    {logoUploading ? "Uploading..." : business.logoUrl ? "Change logo" : "Add a logo"}
+                    {logoUploading ? t("Uploading...") : business.logoUrl ? t("Change logo") : t("Add a logo")}
                   </Button>
                   <input
                     ref={logoInputRef}
@@ -409,7 +409,7 @@ export function ProfilePage() {
                     onClick={handleSaveBusiness}
                     disabled={savingBusiness || !businessName.trim() || !businessAddress.trim()}
                   >
-                    {savingBusiness ? "Saving..." : "Save"}
+                    {savingBusiness ? t("Saving...") : t("Save")}
                   </Button>
                 </div>
               </div>
@@ -485,14 +485,14 @@ export function ProfilePage() {
                     {t("Cancel")}
                   </Button>
                   <Button className="flex-1" onClick={handleSavePayment} disabled={savingPayment}>
-                    {savingPayment ? "Saving..." : "Save"}
+                    {savingPayment ? t("Saving...") : t("Save")}
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                <p>{t("Venmo:")} {business.venmoUsername || "Not set"}</p>
-                <p>{t("Zelle:")} {business.zelleContact || "Not set"}</p>
+                <p>{t("Venmo:")} {business.venmoUsername || t("Not set")}</p>
+                <p>{t("Zelle:")} {business.zelleContact || t("Not set")}</p>
               </div>
             )}
           </Card>
@@ -505,7 +505,7 @@ export function ProfilePage() {
           disabled={resetState === "sending"}
         >
           <KeyRound className="size-4" />
-          {resetState === "sending" ? "Sending..." : "Change Password"}
+          {resetState === "sending" ? t("Sending...") : t("Change Password")}
         </Button>
         {resetState === "sent" && (
           <p className="text-center text-xs text-success">
@@ -525,8 +525,8 @@ export function ProfilePage() {
             </p>
             <p className="text-xs text-muted-foreground">
               {user.role === "provider"
-                ? "Get notified about new customer messages the moment they come in."
-                : "Get notified when your provider messages you, schedules a new visit, or finishes a job."}
+                ? t("Get notified about new customer messages the moment they come in.")
+                : t("Get notified when your provider messages you, schedules a new visit, or finishes a job.")}
             </p>
             {pushState === "denied" ? (
               <p className="text-xs text-muted-foreground">
@@ -540,10 +540,10 @@ export function ProfilePage() {
                 disabled={pushBusy || pushState === "checking"}
               >
                 {pushBusy
-                  ? "Working..."
+                  ? t("Working...")
                   : pushState === "granted"
-                    ? "Turn off notifications on this device"
-                    : "Turn on notifications"}
+                    ? t("Turn off notifications on this device")
+                    : t("Turn on notifications")}
               </Button>
             )}
           </Card>
@@ -568,9 +568,9 @@ export function ProfilePage() {
               <p className="text-xs text-muted-foreground">
                 {user.role === "provider"
                   ? isBizAdmin(user)
-                    ? "Permanently deletes your login. If you're the only admin on this business, this also deletes the whole business - every customer, job, and message tied to it. This can't be undone."
-                    : "Permanently deletes your login. Your business's customers, jobs, and other team accounts are not affected."
-                  : "Permanently deletes your login and disconnects you from your provider. Your service history stays with your provider's records."}
+                    ? t("Permanently deletes your login. If you're the only admin on this business, this also deletes the whole business - every customer, job, and message tied to it. This can't be undone.")
+                    : t("Permanently deletes your login. Your business's customers, jobs, and other team accounts are not affected.")
+                  : t("Permanently deletes your login and disconnects you from your provider. Your service history stays with your provider's records.")}
               </p>
               <Button
                 variant="outline"
@@ -584,8 +584,8 @@ export function ProfilePage() {
             <div className="flex flex-col gap-3">
               <p className="text-xs text-destructive">
                 {user.role === "provider" && isBizAdmin(user)
-                  ? `If you're the only admin, this deletes your account and every customer, job, and message in your business. Type DELETE to confirm.`
-                  : `This permanently deletes your account. Type DELETE to confirm.`}
+                  ? t("If you're the only admin, this deletes your account and every customer, job, and message in your business. Type DELETE to confirm.")
+                  : t("This permanently deletes your account. Type DELETE to confirm.")}
               </p>
               <Input
                 value={deleteConfirmText}
@@ -613,7 +613,7 @@ export function ProfilePage() {
                   disabled={deletingAccount || deleteConfirmText.trim() !== "DELETE"}
                   onClick={handleDeleteAccount}
                 >
-                  {deletingAccount ? "Deleting..." : "Permanently Delete"}
+                  {deletingAccount ? t("Deleting...") : t("Permanently Delete")}
                 </Button>
               </div>
             </div>

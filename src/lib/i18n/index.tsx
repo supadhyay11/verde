@@ -1,8 +1,11 @@
 import * as React from "react"
 import { useAuth } from "@/lib/auth-context"
 import { ES } from "@/lib/i18n/es"
+import { fill, setCurrentLang, type Lang, type Vars } from "@/lib/i18n/core"
 
-export type Lang = "en" | "es"
+export { getLang, tr, trIn, locale } from "@/lib/i18n/core"
+export type { Lang }
+
 
 const STORAGE_KEY = "verde-lang"
 
@@ -21,7 +24,6 @@ function browserLang(): Lang {
     : "en"
 }
 
-type Vars = Record<string, string | number>
 
 interface I18nValue {
   lang: Lang
@@ -36,10 +38,6 @@ interface I18nValue {
 
 const I18nContext = React.createContext<I18nValue | undefined>(undefined)
 
-function fill(text: string, vars?: Vars) {
-  if (!vars) return text
-  return text.replace(/\{(\w+)\}/g, (_, k) => (k in vars ? String(vars[k]) : `{${k}}`))
-}
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const { user, updateUserProfile } = useAuth()
@@ -58,6 +56,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   })
   // A signed-in person's saved language wins over this device's choice.
   const lang: Lang = user?.language ?? local
+  setCurrentLang(lang)
 
   // First time we see this account, remember the language they were using
   // (picked at sign-up or on the invite link) on their profile.

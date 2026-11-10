@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, locale, tr } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { httpsCallable } from "firebase/functions"
@@ -38,9 +38,9 @@ function shiftDay(iso: string, days: number): string {
 
 function dayLabel(iso: string, todayIso: string): string {
   const d = new Date(`${iso}T12:00:00`)
-  const text = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
-  if (iso === todayIso) return `Today · ${text}`
-  if (iso === shiftDay(todayIso, 1)) return `Tomorrow · ${text}`
+  const text = d.toLocaleDateString(locale(), { weekday: "short", month: "short", day: "numeric" })
+  if (iso === todayIso) return tr("Today · {text}", { text })
+  if (iso === shiftDay(todayIso, 1)) return tr("Tomorrow · {text}", { text })
   return text
 }
 
@@ -207,9 +207,9 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
       const order = [...preview, ...unlocated.map((r) => r.job.id)]
       await Promise.all(order.map((id, i) => updateJob(id, { routeOrder: i })))
       setPreview(null)
-      setNotice({ kind: "ok", text: "Saved. This order now shows on the List too." })
+      setNotice({ kind: "ok", text: t("Saved. This order now shows on the List too.") })
     } catch {
-      setNotice({ kind: "error", text: "Couldn't save the new order. Please try again." })
+      setNotice({ kind: "error", text: t("Couldn't save the new order. Please try again.") })
     } finally {
       setSaving(false)
     }
@@ -225,9 +225,9 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
           .map((r) => updateJob(r.job.id, { routeOrder: null }))
       )
       setPreview(null)
-      setNotice({ kind: "ok", text: "Back to scheduled-time order." })
+      setNotice({ kind: "ok", text: t("Back to scheduled-time order.") })
     } catch {
-      setNotice({ kind: "error", text: "Couldn't reset the order. Please try again." })
+      setNotice({ kind: "error", text: t("Couldn't reset the order. Please try again.") })
     } finally {
       setSaving(false)
     }
@@ -278,7 +278,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
               <option value="all">{t("Everyone")}</option>
               {technicians.map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.id === user?.id ? `${t.name} (you)` : t.name}
+                  {t.id === user?.id ? tr("{name} (you)", { name: t.name }) : t.name}
                 </option>
               ))}
             </select>
@@ -324,7 +324,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
                   onClick={() => setPreview(null)}
                   disabled={saving}
                 >
-                  {alreadyShort ? "Close" : "Keep current"}
+                  {alreadyShort ? t("Close") : t("Keep current")}
                 </Button>
               </div>
             </div>
@@ -376,9 +376,9 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
                     <Loader2 className="size-3 animate-spin" /> {t("Finding addresses on the map…")}
                   </span>
                 ) : hasSavedOrder || preview ? (
-                  "In route order. Tap a stop to open the job."
+                  t("In route order. Tap a stop to open the job.")
                 ) : (
-                  "In scheduled-time order. Tap a stop to open the job."
+                  t("In scheduled-time order. Tap a stop to open the job.")
                 )}
               </p>
             </div>
@@ -437,9 +437,9 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
                         <span className="text-muted-foreground">
                           {leg == null
                             ? origin
-                              ? `~${formatMiles(approxDriveMiles(origin, pointOf(r)))} mi from your business address`
-                              : "First stop"
-                            : `~${formatMiles(leg)} mi from previous`}
+                              ? tr("~{mi} mi from your business address", { mi: formatMiles(approxDriveMiles(origin, pointOf(r))) })
+                              : t("First stop")
+                            : tr("~{mi} mi from previous", { mi: formatMiles(leg) })}
                         </span>
                         {done && <span className="font-medium text-green-700">{t("Done")}</span>}
                         <a
@@ -463,13 +463,13 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
                 className="rounded-xl border border-dashed p-3 text-xs text-muted-foreground"
               >
                 <span className="font-semibold text-foreground">
-                  {r.property?.customerName ?? "Customer"}
+                  {r.property?.customerName ?? t("Customer")}
                 </span>{" "}
                 · {r.job.scheduledTime}
                 <span className="block">
                   {locating && needsLookup(r.property)
-                    ? "Finding this address…"
-                    : "Couldn't place this address on the map. Check it on the customer's profile."}
+                    ? t("Finding this address…")
+                    : t("Couldn't place this address on the map. Check it on the customer's profile.")}
                 </span>
               </li>
             ))}

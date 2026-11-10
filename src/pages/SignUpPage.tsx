@@ -1,4 +1,4 @@
-import { LanguageToggle, useT } from "@/lib/i18n"
+import { LanguageToggle, useT, tr } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
@@ -83,7 +83,7 @@ function ChoiceChips({
               : "border-input text-muted-foreground hover:border-primary/40")
           }
         >
-          {opt}
+          {tr(opt)}
         </button>
       ))}
     </div>
@@ -180,18 +180,18 @@ export function SignUpPage() {
 
   const headerCopy: Record<string, { title: string; subtitle: string }> = {
     role: {
-      title: "Create Account",
-      subtitle: "Set up your Verde account.",
+      title: t("Create Account"),
+      subtitle: t("Set up your Verde account."),
     },
     "owner-form": {
-      title: "Create Account",
-      subtitle: "Set up your Verde account.",
+      title: t("Create Account"),
+      subtitle: t("Set up your Verde account."),
     },
-    "provider-1": { title: "Create Your Account", subtitle: "Let's start with the basics." },
-    "provider-2": { title: "Your Business", subtitle: "Where customers will find you." },
-    "provider-3": { title: "Business Size", subtitle: "Helps us tailor Verde for you." },
-    "provider-4": { title: "Contact Details", subtitle: "Shown on invoices and reports." },
-    "provider-5": { title: "Review & Confirm", subtitle: "Make sure everything looks right." },
+    "provider-1": { title: t("Create Your Account"), subtitle: t("Let's start with the basics.") },
+    "provider-2": { title: t("Your Business"), subtitle: t("Where customers will find you.") },
+    "provider-3": { title: t("Business Size"), subtitle: t("Helps us tailor Verde for you.") },
+    "provider-4": { title: t("Contact Details"), subtitle: t("Shown on invoices and reports.") },
+    "provider-5": { title: t("Review & Confirm"), subtitle: t("Make sure everything looks right.") },
   }
   const headerKey = screen === "provider-wizard" ? `provider-${providerStep}` : screen
   const header = headerCopy[headerKey]
@@ -294,7 +294,7 @@ export function SignUpPage() {
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-              {submitting ? "Creating account..." : "Create Account"} <ArrowRight className="size-4" />
+              {submitting ? t("Creating account...") : t("Create Account")} <ArrowRight className="size-4" />
             </Button>
 
             {!codeFromLink && (
@@ -315,7 +315,7 @@ export function SignUpPage() {
               step={providerStep}
               total={PROVIDER_STEPS}
               label={
-                ["Account", "Business", "Business Size", "Contact Details", "Review"][
+                [t("Account"), t("Business"), t("Business Size"), t("Contact Details"), t("Review")][
                   providerStep - 1
                 ]
               }
@@ -479,7 +479,7 @@ export function SignUpPage() {
                   disabled={submitting}
                   onClick={submitProvider}
                 >
-                  {submitting ? "Creating account..." : "Create Account"}{" "}
+                  {submitting ? t("Creating account...") : t("Create Account")}{" "}
                   <Check className="size-4" />
                 </Button>
               )}

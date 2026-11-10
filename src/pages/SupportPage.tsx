@@ -63,7 +63,7 @@ export function SupportPage() {
             />
             <Button type="submit" disabled={status === "sending" || !message.trim()}>
               <Send className="size-4" />
-              {status === "sending" ? "Sending..." : "Send Message"}
+              {status === "sending" ? t("Sending...") : t("Send Message")}
             </Button>
           </form>
           {status === "sent" && (

@@ -1,3 +1,4 @@
+import { tr } from "@/lib/i18n/core"
 import * as React from "react"
 import {
   createUserWithEmailAndPassword,
@@ -210,14 +211,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null)
         setLoading(false)
         setError(
-          "We couldn't find an account profile for this login. This can happen if a sign-up didn't finish completely - try signing up again, or double-check you're using the right email if you have more than one account."
+          tr("We couldn't find an account profile for this login. This can happen if a sign-up didn't finish completely - try signing up again, or double-check you're using the right email if you have more than one account.")
         )
         signOut(auth).catch(() => {})
       },
       () => {
         setUser(null)
         setLoading(false)
-        setError("We couldn't load your account. Please try signing in again.")
+        setError(tr("We couldn't load your account. Please try signing in again."))
         signOut(auth).catch(() => {})
       }
     )
@@ -394,7 +395,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateUserProfile = React.useCallback(
     async (patch: { name?: string; phone?: string; language?: "en" | "es" }) => {
-      if (!firebaseUser) throw new Error("Not signed in.")
+      if (!firebaseUser) throw new Error(tr("Not signed in."))
       const updates: Record<string, string | null> = {}
       if (patch.name !== undefined) updates.name = patch.name
       if (patch.phone !== undefined) updates.phone = patch.phone || null
@@ -423,7 +424,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const resendVerificationEmail = React.useCallback(async () => {
-    if (!firebaseUser) throw new Error("Not signed in.")
+    if (!firebaseUser) throw new Error(tr("Not signed in."))
     const send = httpsCallable(functions, "sendVerificationEmail")
     await send({})
   }, [firebaseUser])
@@ -492,16 +493,16 @@ function mapAuthError(err: unknown): string {
   // check below - "auth/user-not-found" contains the substring
   // "not-found" too, so a generic check would misfire on it.
   if (code.includes("functions/not-found"))
-    return "No account found with that phone number."
+    return tr("No account found with that phone number.")
   if (code.includes("email-already-in-use"))
-    return "An account with that email already exists."
+    return tr("An account with that email already exists.")
   if (code.includes("invalid-credential") || code.includes("wrong-password"))
-    return "Incorrect email or password."
-  if (code.includes("user-not-found")) return "No account found with that email."
+    return tr("Incorrect email or password.")
+  if (code.includes("user-not-found")) return tr("No account found with that email.")
   if (code.includes("weak-password"))
-    return "Password should be at least 6 characters."
-  if (code.includes("invalid-email")) return "That email address looks invalid."
-  return err instanceof Error ? err.message : "Something went wrong."
+    return tr("Password should be at least 6 characters.")
+  if (code.includes("invalid-email")) return tr("That email address looks invalid.")
+  return err instanceof Error ? err.message : tr("Something went wrong.")
 }
 
 export function useAuth() {

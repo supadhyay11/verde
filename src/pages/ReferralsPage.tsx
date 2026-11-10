@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, locale } from "@/lib/i18n"
 import * as React from "react"
 import { httpsCallable } from "firebase/functions"
 import { Check, Copy, Gift, Mail, MessageCircle, MessageSquare, Share2 } from "lucide-react"
@@ -31,7 +31,7 @@ export function ReferralsPage() {
         if (!cancelled) setInfo(res.data)
       })
       .catch(() => {
-        if (!cancelled) setError("We couldn't load your referral link. Please try again in a moment.")
+        if (!cancelled) setError(t("We couldn't load your referral link. Please try again in a moment."))
       })
     return () => {
       cancelled = true
@@ -56,7 +56,7 @@ export function ReferralsPage() {
   async function nativeShare() {
     if (!info) return
     try {
-      await navigator.share({ title: "Try Verde", text: message, url: info.link })
+      await navigator.share({ title: t("Try Verde"), text: message, url: info.link })
     } catch {
       // Closing the share sheet counts as an error - nothing to do.
     }
@@ -95,7 +95,7 @@ export function ReferralsPage() {
               <div className="grid grid-cols-2 gap-2">
                 <Button type="button" onClick={copyLink}>
                   {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-                  {copied ? "Copied" : "Copy link"}
+                  {copied ? "Copied" : t("Copy link")}
                 </Button>
                 {canNativeShare ? (
                   <Button type="button" variant="outline" onClick={nativeShare}>
@@ -144,7 +144,7 @@ export function ReferralsPage() {
                     <li key={i} className="flex items-center justify-between px-3 py-2 text-sm">
                       <span className="font-medium">{j.businessName}</span>
                       <span className="text-xs text-muted-foreground">
-                        {j.joinedAt ? new Date(j.joinedAt).toLocaleDateString() : ""}
+                        {j.joinedAt ? new Date(j.joinedAt).toLocaleDateString(locale()) : ""}
                       </span>
                     </li>
                   ))}

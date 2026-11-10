@@ -131,7 +131,7 @@ export function LoginPage() {
                 />
                 <button
                   type="button"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? t("Hide password") : t("Show password")}
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute top-1 right-1 flex size-11 items-center justify-center rounded-[10px] text-[#4B5E50]"
                 >
@@ -147,7 +147,7 @@ export function LoginPage() {
               disabled={submitting}
               className="mt-1 flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#1F7A3D] text-[17px] font-bold text-white disabled:opacity-60"
             >
-              {submitting ? "Signing in..." : "Sign in"}
+              {submitting ? t("Signing in...") : t("Sign in")}
               <ArrowRight className="size-5" />
             </button>
           </form>

@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, tr } from "@/lib/i18n"
 import * as React from "react"
 import { Loader2, MapPinOff } from "lucide-react"
 import { loadGoogleMaps } from "@/lib/google-maps"
@@ -119,7 +119,7 @@ export function RouteMap({ stops, selectedId, ghostPath, origin, onSelect, class
             strokeColor: "#FFFFFF",
             strokeWeight: 3,
           },
-          title: "Business address (start)",
+          title: t("Business address (start)"),
           zIndex: 0,
         })
       )
@@ -140,7 +140,7 @@ export function RouteMap({ stops, selectedId, ghostPath, origin, onSelect, class
           strokeWeight: 3,
         },
         zIndex: selected ? 10 : 1,
-        title: `Stop ${s.num}`,
+        title: tr("Stop {n}", { n: s.num }),
       })
       marker.addListener("click", () => onSelectRef.current(s.id))
       overlaysRef.current.push(marker)
@@ -179,12 +179,12 @@ export function RouteMap({ stops, selectedId, ghostPath, origin, onSelect, class
             <>
               <MapPinOff className="size-6 text-muted-foreground" />
               <p className="text-sm font-semibold">
-                {state === "no-key" ? "The map isn't switched on yet" : "The map couldn't load"}
+                {state === "no-key" ? t("The map isn't switched on yet") : t("The map couldn't load")}
               </p>
               <p className="max-w-xs text-xs text-muted-foreground">
                 {state === "no-key"
-                  ? "Your stops are listed below, and each opens in Google Maps."
-                  : "Check your connection and reopen this screen. Your stops are listed below."}
+                  ? t("Your stops are listed below, and each opens in Google Maps.")
+                  : t("Check your connection and reopen this screen. Your stops are listed below.")}
               </p>
             </>
           )}

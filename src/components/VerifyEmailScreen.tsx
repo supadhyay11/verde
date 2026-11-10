@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, tr } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
@@ -65,9 +65,9 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
         return
       }
       if (res.data.resendAfter) setResendAt(res.data.resendAfter)
-      if (res.data.sent) setInfo("We sent you a new code.")
+      if (res.data.sent) setInfo(t("We sent you a new code."))
     } catch (err) {
-      setMessage(err instanceof Error ? err.message.slice(0, 200) : "Couldn't send the code. Please try again.")
+      setMessage(err instanceof Error ? err.message.slice(0, 200) : t("Couldn't send the code. Please try again."))
     }
   }, [refreshEmailVerified])
 
@@ -96,12 +96,12 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
         await refreshEmailVerified()
         if (!required) navigate("/jobs", { replace: true })
       } else if (d.reason === "wrong-code") {
-        setMessage(`That code isn't right. ${d.attemptsLeft ?? 0} ${d.attemptsLeft === 1 ? "try" : "tries"} left.`)
+        setMessage(tr(d.attemptsLeft === 1 ? "That code isn't right. {n} try left." : "That code isn't right. {n} tries left.", { n: d.attemptsLeft ?? 0 }))
       } else {
-        setMessage(REASON_TEXT[d.reason ?? ""] ?? "That didn't work. Please try again.")
+        setMessage((REASON_TEXT[d.reason ?? ""] ? tr(REASON_TEXT[d.reason ?? ""]) : t("That didn't work. Please try again.")))
       }
     } catch (err) {
-      setMessage(err instanceof Error ? err.message.slice(0, 200) : "That didn't work. Please try again.")
+      setMessage(err instanceof Error ? err.message.slice(0, 200) : t("That didn't work. Please try again."))
     } finally {
       setBusy(false)
     }
@@ -124,7 +124,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
       setResendAt(0)
       await sendCode(true)
     } catch (err) {
-      setMessage(err instanceof Error ? err.message.slice(0, 200) : "Couldn't change the email. Please try again.")
+      setMessage(err instanceof Error ? err.message.slice(0, 200) : t("Couldn't change the email. Please try again."))
     } finally {
       setChanging(false)
     }
@@ -161,7 +161,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
           {message && <p className="text-sm text-destructive">{message}</p>}
           {info && !message && <p className="text-sm text-muted-foreground">{info}</p>}
           <Button type="submit" size="lg" className="w-full" disabled={busy || code.length !== 6}>
-            {busy ? "Checking..." : "Verify email"}
+            {busy ? t("Checking...") : t("Verify email")}
           </Button>
         </form>
 
@@ -179,7 +179,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
             />
             <div className="flex gap-2">
               <Button type="submit" size="sm" disabled={changing || !newEmail.trim()}>
-                {changing ? "Saving..." : "Save and send code"}
+                {changing ? t("Saving...") : t("Save and send code")}
               </Button>
               <Button type="button" size="sm" variant="outline" onClick={() => setEditing(false)}>
                 {t("Cancel")}
@@ -206,7 +206,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
             disabled={waitSeconds > 0}
             className="font-medium text-primary underline underline-offset-2 disabled:text-muted-foreground disabled:no-underline"
           >
-            {waitSeconds > 0 ? `Send a new code in ${waitSeconds}s` : "Send a new code"}
+            {waitSeconds > 0 ? t("Send a new code in {s}s", { s: waitSeconds }) : t("Send a new code")}
           </button>
           {required ? (
             <button type="button" onClick={() => void logout()} className="text-muted-foreground underline underline-offset-2">

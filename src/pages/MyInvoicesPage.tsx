@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, locale } from "@/lib/i18n"
 import { Navigate } from "react-router-dom"
 import { CheckCircle2, FileText } from "lucide-react"
 import { TopBar } from "@/components/TopBar"
@@ -9,7 +9,7 @@ import { useJobsStore } from "@/lib/jobs-store"
 import type { Invoice } from "@/types"
 
 function money(amount: number): string {
-  return amount.toLocaleString(undefined, { style: "currency", currency: "USD" })
+  return amount.toLocaleString(locale(), { style: "currency", currency: "USD" })
 }
 
 function InvoiceRow({ invoice }: { invoice: Invoice }) {
@@ -37,7 +37,7 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
         )}
         <Button asChild size="sm" variant="outline">
           <a href={`/invoice/${invoice.id}`} target="_blank" rel="noreferrer">
-            {invoice.status === "paid" ? "View invoice" : "View & pay"}
+            {invoice.status === "paid" ? t("View invoice") : t("View & pay")}
           </a>
         </Button>
       </div>

@@ -1,5 +1,5 @@
 import { BilingualNote, pickText } from "@/lib/i18n/text"
-import { useI18n, useT } from "@/lib/i18n"
+import { useI18n, useT, tr, locale, trIn } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -293,7 +293,7 @@ export function JobDetailPage() {
       // options below.
     } catch (err) {
       setCompleteError(
-        err instanceof Error ? err.message : "Couldn't mark this job complete. Try again."
+        err instanceof Error ? err.message : t("Couldn't mark this job complete. Try again.")
       )
     } finally {
       setCompleting(false)
@@ -339,21 +339,23 @@ export function JobDetailPage() {
   function handleSendEmail() {
     if (!property?.email) return
     const dateStr = new Date(`${currentJob.scheduledDate}T00:00:00`).toDateString()
-    const subject = `Your garden service report - ${dateStr}`
+    const cl = property.language ?? "en"
+    const subject = trIn(cl, "Your garden service report - {date}", { date: dateStr })
     const body = [
-      `Hi ${property.customerName || "there"},`,
+      trIn(cl, "Hi {name},", { name: property.customerName || trIn(cl, "there") }),
       "",
-      `Here's your garden service report from ${business?.name || "us"} for ${dateStr}:`,
+      trIn(cl, "Here's your garden service report from {biz} for {date}:", { biz: business?.name || trIn(cl, "us"), date: dateStr }),
       reportLink(),
       "",
-      "Thanks!",
+      trIn(cl, "Thanks!"),
     ].join("\n")
     window.open(`mailto:${property.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank")
   }
 
   function handleSendText() {
     if (!property?.phone) return
-    const body = `Your garden service report from ${business?.name || "us"}: ${reportLink()}`
+    const cl = property.language ?? "en"
+    const body = trIn(cl, "Your garden service report from {biz}: {link}", { biz: business?.name || trIn(cl, "us"), link: reportLink() })
     window.open(smsLink(property.phone, body), "_blank")
   }
 
@@ -367,7 +369,7 @@ export function JobDetailPage() {
   // offer right when the provider is already sending them a report.
   function handleInviteEmail() {
     if (!property?.email) return
-    const subject = "Create your free Verde account"
+    const subject = trIn(property.language ?? "en", "Create your free Verde account")
     const body = inviteMessage(business?.name, property.inviteCode, property.language)
     window.open(`mailto:${property.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank")
   }
@@ -405,7 +407,7 @@ export function JobDetailPage() {
             </p>
             {job.completedAt && (
               <p className="text-xs text-muted-foreground">
-                {t("Completed")} {new Date(job.completedAt).toLocaleString(undefined, {
+                {t("Completed")} {new Date(job.completedAt).toLocaleString(locale(), {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
@@ -420,11 +422,15 @@ export function JobDetailPage() {
               >
                 <Eye className="size-3.5" />
                 {job.reportFirstViewedAt
-                  ? `Report viewed by customer ${new Date(job.reportLastViewedAt ?? job.reportFirstViewedAt).toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}${job.reportViewCount && job.reportViewCount > 1 ? ` (${job.reportViewCount}x)` : ""}`
-                  : "Report not yet viewed by customer"}
+                  ? t("Report viewed by customer {when}", {
+                      when:
+                        new Date(job.reportLastViewedAt ?? job.reportFirstViewedAt).toLocaleString(locale(), {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        }) +
+                        (job.reportViewCount && job.reportViewCount > 1 ? ` (${job.reportViewCount}x)` : ""),
+                    })
+                  : t("Report not yet viewed by customer")}
               </p>
             )}
             <div className="grid grid-cols-2 gap-3 border-t pt-3 text-sm">
@@ -436,7 +442,7 @@ export function JobDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t("Service Type")}</p>
-                <p className="font-medium">{job.serviceType}</p>
+                <p className="font-medium">{tr(job.serviceType)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t("Duration")}</p>
@@ -522,7 +528,7 @@ export function JobDetailPage() {
                             <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
                               <CheckCircle2 className="size-4" />
                             </span>
-                            <span className="text-sm font-medium">{task.label}</span>
+                            <span className="text-sm font-medium">{tr(task.label)}</span>
                           </div>
                           <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success whitespace-nowrap">
                             {t("Completed")}
@@ -538,8 +544,8 @@ export function JobDetailPage() {
                 <h3 className="mb-2 text-sm font-semibold">{t("Tools & Equipment")}</h3>
                 <p className="text-sm text-muted-foreground">
                   {job.report.equipmentStatus === "running"
-                    ? "✓ Running smoothly"
-                    : `⚠ Attention needed: ${job.report.attentionNotes ? pickText(job.report.attentionNotes, job.attentionNotesI18n, lang).shown : "—"}`}
+                    ? t("✓ Running smoothly")
+                    : t("⚠ Attention needed: {note}", { note: job.report.attentionNotes ? pickText(job.report.attentionNotes, job.attentionNotesI18n, lang).shown : "—" })}
                 </p>
               </div>
             </Card>
@@ -559,10 +565,10 @@ export function JobDetailPage() {
               </h3>
               <p className="mb-2 text-xs text-muted-foreground">
                 {property?.email
-                  ? "The report email was sent automatically when this job was marked complete. "
+                  ? t("The report email was sent automatically when this job was marked complete. ")
                   : ""}
                 {property?.phone && property?.smsConsent
-                  ? "A text with the report link was sent automatically too. "
+                  ? t("A text with the report link was sent automatically too. ")
                   : ""}
                 {t("Use these buttons any time to resend, or if the customer's contact info was added after this job was completed.")}
               </p>
@@ -680,7 +686,7 @@ export function JobDetailPage() {
               </div>
               <StatusBadge status={job.status} />
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">{job.serviceType}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{tr(job.serviceType)}</p>
             {editingSchedule ? (
               <div className="mt-2 flex items-end gap-2">
                 <input
@@ -696,7 +702,7 @@ export function JobDetailPage() {
                   className="h-10 rounded-lg border border-input bg-transparent px-2 text-sm"
                 />
                 <Button size="sm" disabled={savingSchedule} onClick={handleSaveSchedule}>
-                  {savingSchedule ? "Saving..." : "Save"}
+                  {savingSchedule ? t("Saving...") : t("Save")}
                 </Button>
                 <Button
                   size="sm"
@@ -746,7 +752,7 @@ export function JobDetailPage() {
                       task.done && "text-muted-foreground line-through"
                     )}
                   >
-                    {task.label}
+                    {tr(task.label)}
                   </span>
                 </label>
               ))}
@@ -771,7 +777,7 @@ export function JobDetailPage() {
                           onClick={() => addStandardTask(t.id, t.label)}
                           className="flex items-center gap-1 rounded-full border border-dashed border-primary/40 px-3 py-2 text-sm font-medium text-primary"
                         >
-                          <Plus className="size-3.5" /> {t.label}
+                          <Plus className="size-3.5" /> {tr(t.label)}
                         </button>
                       ))}
                     </div>
@@ -910,7 +916,7 @@ export function JobDetailPage() {
             }}
             onClick={handleComplete}
           >
-            {completing ? "Completing..." : "Complete & Send Report"}
+            {completing ? t("Completing...") : t("Complete & Send Report")}
           </Button>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, tr } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { NavLink, Outlet } from "react-router-dom"
@@ -175,7 +175,7 @@ export function AppShell() {
                         </span>
                       )}
                     </span>
-                    {label}
+                    {tr(label)}
                   </>
                 )}
               </NavLink>
@@ -244,7 +244,7 @@ export function AppShell() {
                     </span>
                   )}
                 </span>
-                {label}
+                {tr(label)}
               </>
             )}
           </NavLink>

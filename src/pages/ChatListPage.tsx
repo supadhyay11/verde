@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, locale } from "@/lib/i18n"
 import { Link } from "react-router-dom"
 import { TopBar } from "@/components/TopBar"
 import { Card } from "@/components/ui/card"
@@ -77,7 +77,7 @@ export function ChatListPage() {
                   </p>
                   {last && (
                     <p className="text-xs text-muted-foreground">
-                      {new Date(last.createdAt).toLocaleTimeString([], {
+                      {new Date(last.createdAt).toLocaleTimeString(locale(), {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -100,7 +100,7 @@ export function ChatListPage() {
                       ? last.photoUrl && !last.text
                         ? "📷 Photo"
                         : last.text
-                      : "No messages yet"}
+                      : t("No messages yet")}
                   </p>
                   {unreadCount > 0 && (
                     <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">

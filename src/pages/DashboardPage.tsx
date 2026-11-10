@@ -1,4 +1,4 @@
-import { useT } from "@/lib/i18n"
+import { useT, locale } from "@/lib/i18n"
 import { Link } from "react-router-dom"
 import {
   CheckCircle2,
@@ -22,7 +22,7 @@ const MS_PER_DAY = 86_400_000
 const OVERDUE_INVOICE_AFTER_DAYS = 14
 
 function money(n: number) {
-  return n.toLocaleString(undefined, {
+  return n.toLocaleString(locale(), {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
@@ -366,7 +366,7 @@ export function DashboardPage() {
               <p className="text-xs font-semibold text-muted-foreground">{t("Outstanding")}</p>
               <p className="font-display text-2xl font-bold">{money(outstandingTotal)}</p>
               <p className={"text-xs font-semibold " + (overdueInvoices.length > 0 ? "text-red-600" : "text-muted-foreground")}>
-                {unpaidInvoices.length} {t("unpaid")}{overdueInvoices.length > 0 ? `, ${overdueInvoices.length} overdue` : ""}
+                {unpaidInvoices.length} {t("unpaid")}{overdueInvoices.length > 0 ? t(", {n} overdue", { n: overdueInvoices.length }) : ""}
               </p>
             </Card>
           </Link>
@@ -408,10 +408,10 @@ export function DashboardPage() {
                   >
                     <div>
                       <p className="text-sm font-semibold">
-                        {invoice.snapCustomerName || "Customer"}
+                        {invoice.snapCustomerName || t("Customer")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {invoice.invoiceNumber != null ? `Invoice #${invoice.invoiceNumber} · ` : ""}
+                        {invoice.invoiceNumber != null ? t("Invoice #{n}", { n: invoice.invoiceNumber }) + " · " : ""}
                         {money(invoice.amount)}
                       </p>
                     </div>
@@ -421,7 +421,7 @@ export function DashboardPage() {
                         (overdue ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700")
                       }
                     >
-                      {age <= 0 ? "Sent today" : `${age}d unpaid`}
+                      {age <= 0 ? t("Sent today") : t("{n}d unpaid", { n: age })}
                     </span>
                   </Link>
                 )

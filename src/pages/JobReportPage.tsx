@@ -1,5 +1,5 @@
 import { BilingualNote, pickText } from "@/lib/i18n/text"
-import { LanguageToggle, useI18n, useT } from "@/lib/i18n"
+import { LanguageToggle, useI18n, useT, tr, locale } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useParams } from "react-router-dom"
@@ -60,7 +60,7 @@ export function JobReportPage() {
         }
       })
       .catch(() => {
-        if (!cancelled) setError("This report link isn't available right now.")
+        if (!cancelled) setError(t("This report link isn't available right now."))
       })
     return () => {
       cancelled = true
@@ -83,7 +83,7 @@ export function JobReportPage() {
         <VerdeMark className="size-8 text-primary" />
         <p className="font-semibold">{t("Report not available")}</p>
         <p className="max-w-xs text-sm text-muted-foreground">
-          {error ?? "This link may be expired, or the service hasn't been marked complete yet."}
+          {error ?? t("This link may be expired, or the service hasn't been marked complete yet.")}
         </p>
       </div>
     )
@@ -116,7 +116,7 @@ export function JobReportPage() {
               {t("Garden Service Report")}
             </p>
             <p className="text-sm font-bold">
-              {job.reportBusinessName || "Your Garden Service Provider"}
+              {job.reportBusinessName || t("Your Garden Service Provider")}
             </p>
           </div>
         </div>
@@ -139,10 +139,10 @@ export function JobReportPage() {
                   <CheckCircle2 className="size-4" />
                 </span>
               )}
-              {job.report ? "All Done & Looking Great" : "Service Complete"}
+              {job.report ? t("All Done & Looking Great") : t("Service Complete")}
             </h1>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {job.reportCustomerName || "Customer"}
+              {job.reportCustomerName || t("Customer")}
               {job.reportAddress ? ` • ${job.reportAddress}` : ""}
             </p>
             {job.report && !isReady && (
@@ -183,7 +183,7 @@ export function JobReportPage() {
               <Clock className="size-3.5" />
               {dateStr}
               {job.completedAt &&
-                ` • ${new Date(job.completedAt).toLocaleTimeString(undefined, {
+                ` • ${new Date(job.completedAt).toLocaleTimeString(locale(), {
                   hour: "numeric",
                   minute: "2-digit",
                 })}`}
@@ -215,7 +215,7 @@ export function JobReportPage() {
                           <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
                             <CheckCircle2 className="size-4" />
                           </span>
-                          <span className="text-sm font-medium">{task.label}</span>
+                          <span className="text-sm font-medium">{tr(task.label)}</span>
                         </div>
                         <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success whitespace-nowrap">
                           {t("Completed")}
@@ -243,8 +243,8 @@ export function JobReportPage() {
                     </span>
                     <span className="text-sm font-medium">
                       {job.report.equipmentStatus === "running"
-                        ? "Mower, tools & equipment"
-                        : (job.report.attentionNotes ? pickText(job.report.attentionNotes, job.attentionNotesI18n, lang).shown : "See technician for details")}
+                        ? t("Mower, tools & equipment")
+                        : (job.report.attentionNotes ? pickText(job.report.attentionNotes, job.attentionNotesI18n, lang).shown : t("See technician for details"))}
                     </span>
                   </div>
                   <span
@@ -254,7 +254,7 @@ export function JobReportPage() {
                         : "bg-warning/10 text-warning"
                     }`}
                   >
-                    {job.report.equipmentStatus === "running" ? "Running Smoothly" : "Needs Attention"}
+                    {job.report.equipmentStatus === "running" ? t("Running Smoothly") : t("Needs Attention")}
                   </span>
                 </div>
               </div>
@@ -305,7 +305,7 @@ export function JobReportPage() {
 
         <div className="flex flex-col items-center gap-1.5 px-2 pt-1 text-center">
           <p className="text-xs text-muted-foreground">
-            {job.reportBusinessName ? `Sent by ${job.reportBusinessName}` : "Thanks for your business!"}
+            {job.reportBusinessName ? t("Sent by {name}", { name: job.reportBusinessName }) : t("Thanks for your business!")}
             {job.reportBusinessPhone ? ` · ${job.reportBusinessPhone}` : ""}
           </p>
           <a

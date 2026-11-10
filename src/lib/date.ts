@@ -1,3 +1,5 @@
+import { getLang } from "@/lib/i18n/core"
+const MONTHS_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
 const MONTHS = [
   "Jan",
   "Feb",
@@ -15,6 +17,7 @@ const MONTHS = [
 
 export function format(date: Date, pattern: "MMM d, yyyy" = "MMM d, yyyy") {
   void pattern
+  if (getLang() === "es") return `${date.getDate()} ${MONTHS_ES[date.getMonth()]} ${date.getFullYear()}`
   return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
 }
 
