@@ -8,7 +8,7 @@ const { getFirestore } = require("firebase-admin/firestore")
 // RESEND_API_KEY (already set and verified against tadpool.app) plus one
 // new "from" secret:
 //   firebase functions:secrets:set RESEND_SUPPORT_FROM_EMAIL
-// e.g. "TadPool Support <support@tadpool.app>"
+// e.g. "Verde Support <support@tadpool.app>"
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY")
 const RESEND_SUPPORT_FROM_EMAIL = defineSecret("RESEND_SUPPORT_FROM_EMAIL")
 
@@ -16,7 +16,7 @@ const RESEND_SUPPORT_FROM_EMAIL = defineSecret("RESEND_SUPPORT_FROM_EMAIL")
 // not sensitive - just the inboxes that read these. Resend accepts
 // multiple "to" addresses in one send, so both get every message rather
 // than picking one.
-const SUPPORT_INBOXES = ["admin@tadpool.app"]
+const SUPPORT_INBOXES = ["support@verde-gardener-app.web.app"]
 
 async function sendViaResend({ apiKey, from, to, subject, text, replyTo }) {
   const res = await fetch("https://api.resend.com/emails", {
@@ -41,7 +41,7 @@ async function sendViaResend({ apiKey, from, to, subject, text, replyTo }) {
 
 /**
  * Sends a "Contact Us" message from a signed-in user (provider or owner)
- * straight to admin@tadpool.app, with the sender's name/email/role
+ * straight to support@verde-gardener-app.web.app, with the sender's name/email/role
  * attached and reply-to set to their own email so replying just works
  * normally in any mail client.
  *
@@ -68,7 +68,7 @@ exports.sendSupportMessage = onCall(
     const db = getFirestore()
     const callerSnap = await db.collection("users").doc(callerUid).get()
     const caller = callerSnap.exists ? callerSnap.data() : null
-    const name = caller?.name || "A TadPool user"
+    const name = caller?.name || "A Verde user"
     const email = caller?.email || null
     const role = caller?.role || "unknown"
 
@@ -83,7 +83,7 @@ exports.sendSupportMessage = onCall(
       from,
       to: SUPPORT_INBOXES,
       replyTo: email ?? undefined,
-      subject: `TadPool support request from ${name} (${role})`,
+      subject: `Verde support request from ${name} (${role})`,
       text: [
         `From: ${name}${email ? ` <${email}>` : ""}`,
         `Role: ${role}`,

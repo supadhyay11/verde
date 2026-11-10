@@ -10,13 +10,13 @@ const { appLinkTextLines } = require("./app-link")
 // account - it's just a second "from" secret under the same Resend
 // account:
 //   firebase functions:secrets:set RESEND_REPORT_FROM_EMAIL
-// e.g. "TadPool Reports <reports@tadpool.app>" (as long as that address's
+// e.g. "Verde Reports <reports@tadpool.app>" (as long as that address's
 // domain is verified in the same Resend account used for invoices).
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY")
 const RESEND_REPORT_FROM_EMAIL = defineSecret("RESEND_REPORT_FROM_EMAIL")
 
 function reportLink(jobId) {
-  return `https://app.tadpool.app/report/${jobId}`
+  return `https://verde-gardener-app.web.app/report/${jobId}`
 }
 
 async function sendViaResend({ apiKey, from, to, subject, text }) {
@@ -83,7 +83,7 @@ exports.onJobCompletedSendReportEmail = onDocumentUpdated(
           "",
           `Here's your pool service report from ${businessName} for ${dateStr}:`,
           reportLink(event.params.jobId),
-          ...appLinkTextLines("Track every visit in the TadPool app:"),
+          ...appLinkTextLines("Track every visit in the Verde app:"),
           "",
           "Thanks!",
         ].join("\n"),

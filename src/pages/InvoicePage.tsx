@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useParams } from "react-router-dom"
@@ -17,6 +18,7 @@ import type { Invoice } from "@/types"
 // no way to accept a pre-filled request at all, so the customer always
 // finishes the payment by hand and the provider marks it Paid manually.
 export function InvoicePage() {
+  const t = useT()
   const { invoiceId } = useParams()
   const [invoice, setInvoice] = React.useState<Invoice | null | undefined>(undefined)
   const [error, setError] = React.useState<string | null>(null)
@@ -55,7 +57,7 @@ export function InvoicePage() {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-2 bg-background px-6 text-center">
         <VerdeMark className="size-8 text-primary" />
-        <p className="font-semibold">Invoice not available</p>
+        <p className="font-semibold">{t("Invoice not available")}</p>
         <p className="max-w-xs text-sm text-muted-foreground">
           {error ?? "This link may be incorrect or the invoice may have been removed."}
         </p>
@@ -90,7 +92,7 @@ export function InvoicePage() {
               <p className="text-xs font-medium uppercase tracking-wide text-primary-foreground/70">
                 {invoice.snapBusinessName || "Garden Service Invoice"}
               </p>
-              <p className="text-lg font-bold">Invoice</p>
+              <p className="text-lg font-bold">{t("Invoice")}</p>
               {invoice.invoiceNumber != null && (
                 <p className="text-xs text-primary-foreground/70">#{invoice.invoiceNumber}</p>
               )}
@@ -110,20 +112,20 @@ export function InvoicePage() {
       <div className="mx-auto -mt-8 flex max-w-lg flex-col gap-4 px-4">
         <div className="flex justify-end print:hidden">
           <Button variant="outline" size="sm" onClick={() => window.print()}>
-            <Printer className="size-4" /> Print
+            <Printer className="size-4" /> {t("Print")}
           </Button>
         </div>
 
         <Card className="gap-1 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Bill to</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("Bill to")}</p>
           <p className="text-lg font-bold">{invoice.snapCustomerName || "Customer"}</p>
           {invoice.snapAddress && <p className="text-sm text-muted-foreground">{invoice.snapAddress}</p>}
         </Card>
 
         <Card className="gap-0 overflow-hidden p-0">
           <div className="flex items-center justify-between bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
-            <span>Service period</span>
-            <span>Amount</span>
+            <span>{t("Service period")}</span>
+            <span>{t("Amount")}</span>
           </div>
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-sm font-medium">{invoice.period}</span>
@@ -151,31 +153,30 @@ export function InvoicePage() {
         {invoice.status === "paid" ? (
           <Card className="gap-1 border-green-500/30 bg-green-500/10 p-4 text-center">
             <CheckCircle2 className="mx-auto size-6 text-green-600" />
-            <p className="text-sm font-semibold text-green-700">This invoice has been marked as paid.</p>
-            <p className="text-xs text-muted-foreground">Thank you!</p>
+            <p className="text-sm font-semibold text-green-700">{t("This invoice has been marked as paid.")}</p>
+            <p className="text-xs text-muted-foreground">{t("Thank you!")}</p>
           </Card>
         ) : (
           <>
             {(venmoLink || invoice.snapZelleContact) && (
               <p className="px-1 text-center text-xs text-muted-foreground">
-                Pay however&apos;s easiest - payment is completed on your end; your provider
-                will mark this invoice paid once it comes through.
+                {t("Pay however's easiest - payment is completed on your end; your provider will mark this invoice paid once it comes through.")}
               </p>
             )}
 
             {venmoLink && (
               <Card className="gap-2 p-4">
                 <h3 className="flex items-center gap-1.5 text-sm font-semibold">
-                  <Wallet className="size-4" /> Pay with Venmo
+                  <Wallet className="size-4" /> {t("Pay with Venmo")}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Opens Venmo with the amount and note pre-filled.
+                  {t("Opens Venmo with the amount and note pre-filled.")}
                 </p>
                 <p className="rounded-md bg-muted px-3 py-2 text-center text-sm font-semibold">
                   {invoice.snapVenmoUsername}
                 </p>
                 <Button asChild className="mt-1 w-full">
-                  <a href={venmoLink}>Pay {amountStr} with Venmo</a>
+                  <a href={venmoLink}>{t("Pay")} {amountStr} {t("with Venmo")}</a>
                 </Button>
               </Card>
             )}
@@ -183,10 +184,10 @@ export function InvoicePage() {
             {invoice.snapZelleContact && (
               <Card className="gap-2 p-4">
                 <h3 className="flex items-center gap-1.5 text-sm font-semibold">
-                  <Landmark className="size-4" /> Pay with Zelle
+                  <Landmark className="size-4" /> {t("Pay with Zelle")}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Send {amountStr} via Zelle in your banking app to:
+                  {t("Send")} {amountStr} {t("via Zelle in your banking app to:")}
                 </p>
                 <p className="rounded-md bg-muted px-3 py-2 text-center text-sm font-semibold">
                   {invoice.snapZelleContact}
@@ -196,7 +197,7 @@ export function InvoicePage() {
 
             {!venmoLink && !invoice.snapZelleContact && (
               <Card className="gap-1 p-4 text-center text-sm text-muted-foreground">
-                Contact {invoice.snapBusinessName || "your provider"} to arrange payment.
+                {t("Contact")} {invoice.snapBusinessName || "your provider"} {t("to arrange payment.")}
               </Card>
             )}
           </>

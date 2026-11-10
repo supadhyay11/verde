@@ -4,7 +4,7 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore")
 /**
  * Keeps businesses/{businessId}.customerCount in sync with how many
  * properties (customers) that business actually has - a cached count for
- * display and reporting. TadPool has no customer limit: it's $19.99/month
+ * display and reporting. Verde has no customer limit: it's $19.99/month
  * flat (first 3 months free) for unlimited pools and customers.
  * FieldValue.increment is used instead of a read-then-write so two devices
  * adding/removing customers for the same business at the same moment can

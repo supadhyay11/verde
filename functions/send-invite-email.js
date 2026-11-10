@@ -7,12 +7,12 @@ const { getFirestore } = require("firebase-admin/firestore")
 // one so invite emails can look distinct from invoices/reports if
 // wanted:
 //   firebase functions:secrets:set RESEND_INVITE_FROM_EMAIL
-// e.g. "TadPool <invites@tadpool.app>"
+// e.g. "Verde <invites@tadpool.app>"
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY")
 const RESEND_INVITE_FROM_EMAIL = defineSecret("RESEND_INVITE_FROM_EMAIL")
 
 function inviteLink(code) {
-  return `https://app.tadpool.app/signup?code=${encodeURIComponent(code)}`
+  return `https://verde-gardener-app.web.app/signup?code=${encodeURIComponent(code)}`
 }
 
 async function sendViaResend({ apiKey, from, to, subject, text }) {
@@ -31,7 +31,7 @@ async function sendViaResend({ apiKey, from, to, subject, text }) {
 }
 
 /**
- * Auto-sends a "create your TadPool account" invite email to a
+ * Auto-sends a "create your Verde account" invite email to a
  * not-yet-claimed customer, as an alternative to the existing "Send
  * Invite" button (which opens the provider's own text/email app). This
  * one fires immediately in the background, same as invoice/report
@@ -90,18 +90,18 @@ exports.sendInviteEmail = onCall(
       apiKey,
       from,
       to: property.email,
-      subject: `${who}TadPool has you set up - create your account`,
+      subject: `${who}Verde has you set up - create your account`,
       text: [
         `Hi ${property.customerName || "there"}!`,
         "",
-        `${who}TadPool has you set up to track your pool service online.`,
+        `${who}Verde has you set up to track your pool service online.`,
         "",
         `Create your account here: ${inviteLink(property.inviteCode)}`,
         "",
         `Your invite code: ${property.inviteCode}`,
         "",
         "One tip once you're signed in: on iPhone, tap the Share icon in Safari",
-        "and choose \"Add to Home Screen.\" That puts a TadPool icon right on your",
+        "and choose \"Add to Home Screen.\" That puts a Verde icon right on your",
         "home screen and opens the app full-screen, just like any other app -",
         "no need to open Safari and find the link again next time.",
       ].join("\n"),

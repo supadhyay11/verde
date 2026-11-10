@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { Link } from "react-router-dom"
@@ -7,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth-context"
 
 export function ForgotPasswordPage() {
+  const t = useT()
   const [email, setEmail] = React.useState("")
   const [submitting, setSubmitting] = React.useState(false)
   const [sent, setSent] = React.useState(false)
@@ -41,7 +43,7 @@ export function ForgotPasswordPage() {
             <VerdeMark className="size-8" />
           </span>
           <h1 className="font-display text-3xl font-bold tracking-tight">
-            Reset your password
+            {t("Reset your password")}
           </h1>
           <p className="mt-1.5 text-sm text-primary-foreground/75">
             {sent
@@ -60,27 +62,25 @@ export function ForgotPasswordPage() {
               </span>
               <div>
                 <p className="font-semibold text-foreground">
-                  Reset link sent to {email}
+                  {t("Reset link sent to")} {email}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Click the link in that email to choose a new password. It
-                  can take a couple of minutes to arrive — check spam if you
-                  don't see it.
+                  {t("Click the link in that email to choose a new password. It can take a couple of minutes to arrive — check spam if you don't see it.")}
                 </p>
               </div>
               <Button asChild size="lg" className="w-full">
-                <Link to="/login">Back to Sign In</Link>
+                <Link to="/login">{t("Back to Sign In")}</Link>
               </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">
-                  Email Address
+                  {t("Email Address")}
                 </label>
                 <Input
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("you@example.com")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -102,7 +102,7 @@ export function ForgotPasswordPage() {
 
               <p className="text-center text-sm text-muted-foreground">
                 <Link to="/login" className="font-semibold text-primary hover:underline">
-                  Back to Sign In
+                  {t("Back to Sign In")}
                 </Link>
               </p>
             </form>

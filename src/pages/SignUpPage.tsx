@@ -1,3 +1,4 @@
+import { LanguageToggle, useT } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
@@ -31,6 +32,7 @@ function StepProgress({
   total: number
   label: string
 }) {
+  const t = useT()
   return (
     <div className="mb-5 flex flex-col items-center gap-2">
       <div className="flex items-center gap-1.5">
@@ -49,7 +51,7 @@ function StepProgress({
         ))}
       </div>
       <p className="text-xs font-medium text-muted-foreground">
-        Step {step} of {total} · {label}
+        {t("Step")} {step} {t("of")} {total} · {label}
       </p>
     </div>
   )
@@ -91,6 +93,7 @@ function ChoiceChips({
 type Screen = "role" | "owner-form" | "provider-wizard"
 
 export function SignUpPage() {
+  const t = useT()
   const [searchParams] = useSearchParams()
   const codeFromLink = searchParams.get("code")
 
@@ -196,6 +199,7 @@ export function SignUpPage() {
   return (
     <div className="flex min-h-full flex-col bg-background">
       <div className="bg-brand-gradient relative overflow-hidden px-6 pt-10 pb-8 text-primary-foreground">
+        <LanguageToggle dark className="absolute top-4 right-4 z-10" />
         <div
           className="pointer-events-none absolute inset-0 opacity-40"
           style={{
@@ -204,7 +208,7 @@ export function SignUpPage() {
           }}
         />
         <div className="relative mx-auto flex w-full max-w-sm flex-col items-center text-center">
-          <a href="https://verde-gardener-app.web.app" aria-label="Go to Verde homepage">
+          <a href="https://verde-gardener-app.web.app" aria-label={t("Go to Verde homepage")}>
             <span className="shadow-elevated mb-3 flex size-14 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur-sm">
               <VerdeMark className="size-7" />
             </span>
@@ -222,9 +226,9 @@ export function SignUpPage() {
               onClick={() => setScreen("provider-wizard")}
               className="shadow-elevated flex flex-col items-start gap-1 rounded-2xl border border-border/70 bg-card p-4 text-left transition-colors hover:border-primary/50"
             >
-              <p className="font-semibold">I'm a Service Provider</p>
+              <p className="font-semibold">{t("I'm a Service Provider")}</p>
               <p className="text-sm text-muted-foreground">
-                I run a gardening or landscaping business and want to manage customers, jobs, and billing.
+                {t("I run a gardening or landscaping business and want to manage customers, jobs, and billing.")}
               </p>
             </button>
             <button
@@ -232,9 +236,9 @@ export function SignUpPage() {
               onClick={() => setScreen("owner-form")}
               className="shadow-elevated flex flex-col items-start gap-1 rounded-2xl border border-border/70 bg-card p-4 text-left transition-colors hover:border-primary/50"
             >
-              <p className="font-semibold">I'm a Property Owner</p>
+              <p className="font-semibold">{t("I'm a Property Owner")}</p>
               <p className="text-sm text-muted-foreground">
-                My garden service provider gave me an invite code to track my service.
+                {t("My garden service provider gave me an invite code to track my service.")}
               </p>
             </button>
           </div>
@@ -243,11 +247,11 @@ export function SignUpPage() {
         {screen === "owner-form" && (
           <form onSubmit={handleOwnerSubmit} className="w-full space-y-4">
             <div className="space-y-1.5">
-              <Label>Full Name</Label>
+              <Label>{t("Full Name")}</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
             <div className="space-y-1.5">
-              <Label>Email Address</Label>
+              <Label>{t("Email Address")}</Label>
               <Input
                 type="email"
                 value={email}
@@ -256,7 +260,7 @@ export function SignUpPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Phone (optional)</Label>
+              <Label>{t("Phone (optional)")}</Label>
               <Input
                 type="tel"
                 placeholder="+1 555 123 4567"
@@ -265,7 +269,7 @@ export function SignUpPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Password</Label>
+              <Label>{t("Password")}</Label>
               <Input
                 type="password"
                 value={password}
@@ -275,16 +279,15 @@ export function SignUpPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Invite Code</Label>
+              <Label>{t("Invite Code")}</Label>
               <Input
-                placeholder="Ask your garden service provider for this code"
+                placeholder={t("Ask your garden service provider for this code")}
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Your garden service provider gives you a unique code when they add you as a
-                customer.
+                {t("Your garden service provider gives you a unique code when they add you as a customer.")}
               </p>
             </div>
 
@@ -300,7 +303,7 @@ export function SignUpPage() {
                 onClick={() => setScreen("role")}
                 className="flex w-full items-center justify-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft className="size-3.5" /> Back
+                <ArrowLeft className="size-3.5" /> {t("Back")}
               </button>
             )}
           </form>
@@ -321,11 +324,11 @@ export function SignUpPage() {
             {providerStep === 1 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Full Name</Label>
+                  <Label>{t("Full Name")}</Label>
                   <Input value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Email Address</Label>
+                  <Label>{t("Email Address")}</Label>
                   <Input
                     type="email"
                     value={email}
@@ -334,7 +337,7 @@ export function SignUpPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Phone (optional)</Label>
+                  <Label>{t("Phone (optional)")}</Label>
                   <Input
                     type="tel"
                     placeholder="+1 555 123 4567"
@@ -343,7 +346,7 @@ export function SignUpPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Password</Label>
+                  <Label>{t("Password")}</Label>
                   <Input
                     type="password"
                     value={password}
@@ -351,7 +354,7 @@ export function SignUpPage() {
                     minLength={6}
                     required
                   />
-                  <p className="text-xs text-muted-foreground">At least 6 characters.</p>
+                  <p className="text-xs text-muted-foreground">{t("At least 6 characters.")}</p>
                 </div>
               </div>
             )}
@@ -359,16 +362,16 @@ export function SignUpPage() {
             {providerStep === 2 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Business Name</Label>
+                  <Label>{t("Business Name")}</Label>
                   <Input
-                    placeholder="e.g. Green Thumb Gardens"
+                    placeholder={t("e.g. Green Thumb Gardens")}
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Business Address</Label>
+                  <Label>{t("Business Address")}</Label>
                   <AddressFields value={businessAddr} onChange={setBusinessAddr} />
                 </div>
               </div>
@@ -377,7 +380,7 @@ export function SignUpPage() {
             {providerStep === 3 && (
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <Label>About how many customers do you currently manage?</Label>
+                  <Label>{t("About how many customers do you currently manage?")}</Label>
                   <ChoiceChips
                     options={CUSTOMER_RANGES}
                     value={customerCountRange}
@@ -385,11 +388,11 @@ export function SignUpPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>How many people are on your team (including you)?</Label>
+                  <Label>{t("How many people are on your team (including you)?")}</Label>
                   <ChoiceChips options={TEAM_RANGES} value={teamSizeRange} onChange={setTeamSizeRange} />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Just for us to get a sense of your business - doesn't affect your account.
+                  {t("Just for us to get a sense of your business - doesn't affect your account.")}
                 </p>
               </div>
             )}
@@ -397,7 +400,7 @@ export function SignUpPage() {
             {providerStep === 4 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Business Phone (optional)</Label>
+                  <Label>{t("Business Phone (optional)")}</Label>
                   <Input
                     type="tel"
                     placeholder="+1 555 987 6543"
@@ -406,17 +409,17 @@ export function SignUpPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Website (optional)</Label>
+                  <Label>{t("Website (optional)")}</Label>
                   <Input
-                    placeholder="www.sunnypoolcare.com"
+                    placeholder={t("www.sunnypoolcare.com")}
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Hours (optional)</Label>
+                  <Label>{t("Hours (optional)")}</Label>
                   <Input
-                    placeholder="Mon-Fri 8am-5pm"
+                    placeholder={t("Mon-Fri 8am-5pm")}
                     value={hours}
                     onChange={(e) => setHours(e.target.value)}
                   />
@@ -427,17 +430,17 @@ export function SignUpPage() {
             {providerStep === 5 && (
               <div className="space-y-4">
                 <div className="shadow-elevated flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-4">
-                  <ReviewRow label="Name" value={name} />
-                  <ReviewRow label="Email" value={email} />
-                  {phone && <ReviewRow label="Phone" value={phone} />}
+                  <ReviewRow label={t("Name")} value={name} />
+                  <ReviewRow label={t("Email")} value={email} />
+                  {phone && <ReviewRow label={t("Phone")} value={phone} />}
                   <div className="h-px bg-border" />
-                  <ReviewRow label="Business" value={businessName} />
-                  <ReviewRow label="Address" value={composeAddress(businessAddr)} />
-                  {customerCountRange && <ReviewRow label="Customers" value={customerCountRange} />}
-                  {teamSizeRange && <ReviewRow label="Team size" value={teamSizeRange} />}
-                  {businessPhone && <ReviewRow label="Business phone" value={businessPhone} />}
-                  {website && <ReviewRow label="Website" value={website} />}
-                  {hours && <ReviewRow label="Hours" value={hours} />}
+                  <ReviewRow label={t("Business")} value={businessName} />
+                  <ReviewRow label={t("Address")} value={composeAddress(businessAddr)} />
+                  {customerCountRange && <ReviewRow label={t("Customers")} value={customerCountRange} />}
+                  {teamSizeRange && <ReviewRow label={t("Team size")} value={teamSizeRange} />}
+                  {businessPhone && <ReviewRow label={t("Business phone")} value={businessPhone} />}
+                  {website && <ReviewRow label={t("Website")} value={website} />}
+                  {hours && <ReviewRow label={t("Hours")} value={hours} />}
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
               </div>
@@ -454,7 +457,7 @@ export function SignUpPage() {
                   else setProviderStep((s) => s - 1)
                 }}
               >
-                <ArrowLeft className="size-4" /> Back
+                <ArrowLeft className="size-4" /> {t("Back")}
               </Button>
               {providerStep < PROVIDER_STEPS ? (
                 <Button
@@ -466,7 +469,7 @@ export function SignUpPage() {
                   }
                   onClick={() => setProviderStep((s) => s + 1)}
                 >
-                  Continue <ArrowRight className="size-4" />
+                  {t("Continue")} <ArrowRight className="size-4" />
                 </Button>
               ) : (
                 <Button
@@ -485,14 +488,14 @@ export function SignUpPage() {
         )}
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+          {t("Already have an account?")}{" "}
           <Link to="/login" className="font-semibold text-primary hover:underline">
-            Sign In
+            {t("Sign In")}
           </Link>
         </p>
         <p className="mt-2 text-center text-sm">
           <a href="https://verde-gardener-app.web.app" className="text-muted-foreground hover:underline">
-             Back to Verde
+             {t("Back to Verde")}
           </a>
         </p>
       </div>

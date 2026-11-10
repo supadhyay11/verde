@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { AddressParts } from "@/lib/address"
@@ -17,12 +18,13 @@ export function AddressFields({
   labelClassName?: string
   required?: boolean
 }) {
+  const t = useT()
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
-        <Label className={labelClassName}>Street Address</Label>
+        <Label className={labelClassName}>{t("Street Address")}</Label>
         <Input
-          placeholder="124 Maple Dr"
+          placeholder={t("124 Maple Dr")}
           value={value.street}
           onChange={(e) => onChange({ ...value, street: e.target.value })}
           required={required}
@@ -30,18 +32,18 @@ export function AddressFields({
       </div>
       <div className="grid grid-cols-[2fr_1fr_1fr] gap-2">
         <div className="space-y-1.5">
-          <Label className={labelClassName}>City</Label>
+          <Label className={labelClassName}>{t("City")}</Label>
           <Input
-            placeholder="Beverly Hills"
+            placeholder={t("Beverly Hills")}
             value={value.city}
             onChange={(e) => onChange({ ...value, city: e.target.value })}
             required={required}
           />
         </div>
         <div className="space-y-1.5">
-          <Label className={labelClassName}>State</Label>
+          <Label className={labelClassName}>{t("State")}</Label>
           <Input
-            placeholder="CA"
+            placeholder={t("CA")}
             maxLength={2}
             value={value.state}
             onChange={(e) => onChange({ ...value, state: e.target.value.toUpperCase() })}
@@ -49,7 +51,7 @@ export function AddressFields({
           />
         </div>
         <div className="space-y-1.5">
-          <Label className={labelClassName}>ZIP</Label>
+          <Label className={labelClassName}>{t("ZIP")}</Label>
           <Input
             placeholder="90210"
             inputMode="numeric"

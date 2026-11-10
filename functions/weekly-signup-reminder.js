@@ -6,13 +6,13 @@ const { appLinkTextLines } = require("./app-link")
 // Same Resend setup/secrets as the on-demand "Send Invite" button (see
 // functions/send-invite-email.js) - this reuses that same
 // RESEND_INVITE_FROM_EMAIL secret rather than asking for a new one,
-// since it's the same kind of email (an invite to create a TadPool
+// since it's the same kind of email (an invite to create a Verde
 // account), just sent automatically on a schedule instead of by hand.
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY")
 const RESEND_INVITE_FROM_EMAIL = defineSecret("RESEND_INVITE_FROM_EMAIL")
 
 function inviteLink(code) {
-  return `https://app.tadpool.app/signup?code=${encodeURIComponent(code)}`
+  return `https://verde-gardener-app.web.app/signup?code=${encodeURIComponent(code)}`
 }
 
 async function sendViaResend({ apiKey, from, to, subject, text }) {
@@ -100,16 +100,16 @@ exports.sendWeeklySignupReminders = onSchedule(
           apiKey,
           from,
           to: property.email,
-          subject: `Reminder: create your ${businessName || "TadPool"} account`,
+          subject: `Reminder: create your ${businessName || "Verde"} account`,
           text: [
             `Hi ${property.customerName || "there"}!`,
             "",
-            `Just a reminder - ${who}TadPool has you set up to track your pool service online, but your account isn't created yet.`,
+            `Just a reminder - ${who}Verde has you set up to track your pool service online, but your account isn't created yet.`,
             "",
             `Create your account here: ${inviteLink(property.inviteCode)}`,
             "",
             `Your invite code: ${property.inviteCode}`,
-            ...appLinkTextLines("Prefer the app? Download TadPool, tap Create Account, and enter your invite code:"),
+            ...appLinkTextLines("Prefer the app? Download Verde, tap Create Account, and enter your invite code:"),
             "",
             "Once you're signed in, you can see your service history, photos, and",
             "upcoming visits any time.",

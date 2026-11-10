@@ -1,3 +1,5 @@
+import { BilingualNote, pickText } from "@/lib/i18n/text"
+import { LanguageToggle, useI18n, useT } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useParams } from "react-router-dom"
@@ -19,6 +21,8 @@ import type { ServiceJob } from "@/types"
 // used to browse a business's jobs, only to open one you already have
 // the (unguessable) link to.
 export function JobReportPage() {
+  const t = useT()
+  const { lang, setLang } = useI18n()
   const { jobId } = useParams()
   const [job, setJob] = React.useState<ServiceJob | null | undefined>(undefined)
   const [error, setError] = React.useState<string | null>(null)
@@ -35,6 +39,14 @@ export function JobReportPage() {
         }
         const loadedJob = { id: snap.id, ...snap.data() } as ServiceJob
         setJob(loadedJob)
+        // Open in the customer's language unless this visitor already chose one.
+        try {
+          if (!localStorage.getItem("verde-lang") && loadedJob.reportLanguage) {
+            setLang(loadedJob.reportLanguage)
+          }
+        } catch {
+          // ignore
+        }
         if (loadedJob.status === "completed") {
           // Fire-and-forget: lets the provider see whether/when this
           // report was actually opened (see functions/report-view.js).
@@ -69,7 +81,7 @@ export function JobReportPage() {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-2 bg-background px-6 text-center">
         <VerdeMark className="size-8 text-primary" />
-        <p className="font-semibold">Report not available</p>
+        <p className="font-semibold">{t("Report not available")}</p>
         <p className="max-w-xs text-sm text-muted-foreground">
           {error ?? "This link may be expired, or the service hasn't been marked complete yet."}
         </p>
@@ -82,7 +94,7 @@ export function JobReportPage() {
   // (all of the US) displays as the previous evening - a service done
   // "today" was showing as the day before. Appending a local midnight
   // time makes the browser parse it in local time instead.
-  const dateStr = new Date(`${job.scheduledDate}T00:00:00`).toLocaleDateString(undefined, {
+  const dateStr = new Date(`${job.scheduledDate}T00:00:00`).toLocaleDateString(lang === "es" ? "es-US" : undefined, {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -94,13 +106,14 @@ export function JobReportPage() {
   return (
     <div className="min-h-dvh bg-muted/30 pb-10">
       <div className="mx-auto flex max-w-lg flex-col gap-4 px-4 pt-6">
+        <div className="flex justify-end"><LanguageToggle /></div>
         <div className="flex items-center gap-2 px-1">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
             <VerdeMark className="size-4" />
           </span>
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Garden Service Report
+              {t("Garden Service Report")}
             </p>
             <p className="text-sm font-bold">
               {job.reportBusinessName || "Your Garden Service Provider"}
@@ -135,7 +148,7 @@ export function JobReportPage() {
             {job.report && !isReady && (
               <p className="mt-1 flex items-center gap-1 text-xs font-medium text-warning">
                 <Clock className="size-3.5" />
-                Wait {job.report.waitHours || "a few"} hours before using the area.
+                {t("Wait")} {job.report.waitHours || "a few"} {t("hours before using the area.")}
               </p>
             )}
           </div>
@@ -143,7 +156,7 @@ export function JobReportPage() {
           {job.photoUrl ? (
             <img
               src={job.photoUrl}
-              alt="Garden photo"
+              alt={t("Garden photo")}
               className="aspect-video w-full rounded-xl object-cover"
             />
           ) : job.beforePhotoUrl || job.afterPhotoUrl ? (
@@ -151,14 +164,14 @@ export function JobReportPage() {
               {job.beforePhotoUrl && (
                 <img
                   src={job.beforePhotoUrl}
-                  alt="Before service"
+                  alt={t("Before service")}
                   className="aspect-square w-full rounded-lg object-cover"
                 />
               )}
               {job.afterPhotoUrl && (
                 <img
                   src={job.afterPhotoUrl}
-                  alt="After service"
+                  alt={t("After service")}
                   className="aspect-square w-full rounded-lg object-cover"
                 />
               )}
@@ -185,10 +198,10 @@ export function JobReportPage() {
           <Card className="gap-4 p-4">
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Services Performed</h3>
+                <h3 className="text-sm font-semibold">{t("Services Performed")}</h3>
                 {job.tasks.length > 0 && (
                   <span className="text-xs font-medium text-muted-foreground">
-                    {job.tasks.filter((t) => t.done).length} of {job.tasks.length} done
+                    {job.tasks.filter((t) => t.done).length} {t("of")} {job.tasks.length} {t("done")}
                   </span>
                 )}
               </div>
@@ -205,7 +218,7 @@ export function JobReportPage() {
                           <span className="text-sm font-medium">{task.label}</span>
                         </div>
                         <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success whitespace-nowrap">
-                          Completed
+                          {t("Completed")}
                         </span>
                       </div>
                     ))}
@@ -215,7 +228,7 @@ export function JobReportPage() {
               )}
             </div>
             <div>
-              <h3 className="mb-1.5 text-sm font-semibold">Tools &amp; Equipment</h3>
+              <h3 className="mb-1.5 text-sm font-semibold">{t("Tools & Equipment")}</h3>
               <div className="overflow-hidden rounded-xl border">
                 <div className="flex items-center justify-between gap-2 p-3">
                   <div className="flex items-center gap-2.5">
@@ -231,7 +244,7 @@ export function JobReportPage() {
                     <span className="text-sm font-medium">
                       {job.report.equipmentStatus === "running"
                         ? "Mower, tools & equipment"
-                        : job.report.attentionNotes || "See technician for details"}
+                        : (job.report.attentionNotes ? pickText(job.report.attentionNotes, job.attentionNotesI18n, lang).shown : "See technician for details")}
                     </span>
                   </div>
                   <span
@@ -251,20 +264,20 @@ export function JobReportPage() {
 
         {job.notes && (
           <Card className="gap-2 p-4">
-            <h3 className="text-sm font-semibold">Comments</h3>
-            <p className="text-sm whitespace-pre-wrap text-muted-foreground">{job.notes}</p>
+            <h3 className="text-sm font-semibold">{t("Comments")}</h3>
+            <BilingualNote text={job.notes} tr={job.notesI18n} className="text-sm text-muted-foreground" />
           </Card>
         )}
 
         <Card className="gap-2 p-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-xs text-muted-foreground">Service Type</p>
+              <p className="text-xs text-muted-foreground">{t("Service Type")}</p>
               <p className="font-medium">{job.serviceType}</p>
             </div>
             {job.invoiceRef && (
               <div>
-                <p className="text-xs text-muted-foreground">Invoice</p>
+                <p className="text-xs text-muted-foreground">{t("Invoice")}</p>
                 <p className="flex items-center gap-1 font-medium">
                   <FileText className="size-3.5" /> {job.invoiceRef}
                 </p>
@@ -276,18 +289,16 @@ export function JobReportPage() {
         {!job.ownerId && job.reportInviteCode && (
           <Card className="gap-2 border-primary/30 bg-primary/5 p-4 text-center">
             <Sparkles className="mx-auto size-5 text-primary" />
-            <h3 className="text-sm font-semibold">Want to see reports like this anytime?</h3>
+            <h3 className="text-sm font-semibold">{t("Want to see reports like this anytime?")}</h3>
             <p className="text-xs text-muted-foreground">
-              Create a free Verde account to view your service history, photos, and
-              upcoming visits from{" "}
-              {job.reportBusinessName ? job.reportBusinessName : "your provider"} whenever
-              you want.
+              {t("Create a free Verde account to view your service history, photos, and upcoming visits from")}{" "}
+              {job.reportBusinessName ? job.reportBusinessName : "your provider"} {t("whenever you want.")}
             </p>
             <Button asChild className="mt-1 w-full">
-              <a href={inviteLink(job.reportInviteCode)}>Join Verde - it's free</a>
+              <a href={inviteLink(job.reportInviteCode, lang)}>{t("Join Verde - it's free")}</a>
             </Button>
             <p className="text-xs text-muted-foreground">
-              Your invite code: <span className="font-semibold">{job.reportInviteCode}</span>
+              {t("Your invite code:")} <span className="font-semibold">{job.reportInviteCode}</span>
             </p>
           </Card>
         )}
@@ -302,10 +313,10 @@ export function JobReportPage() {
             className="flex items-center gap-1 text-xs font-semibold text-primary"
           >
             <VerdeMark className="size-3" />
-            Powered by Verde
+            {t("Powered by Verde")}
           </a>
           <p className="text-[11px] text-muted-foreground">
-            The easiest way for garden pros to run their business — verde-gardener-app.web.app
+            {t("The easiest way for garden pros to run their business — verde-gardener-app.web.app")}
           </p>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
@@ -35,6 +36,7 @@ const REASON_TEXT: Record<string, string> = {
  * it from the banner) it's a normal page they can leave.
  */
 export function VerifyEmailScreen({ required = false }: { required?: boolean }) {
+  const t = useT()
   const { user, emailVerified, refreshEmailVerified, logout } = useAuth()
   const navigate = useNavigate()
   const [code, setCode] = React.useState("")
@@ -136,12 +138,11 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
         <span className="bg-brand-gradient mb-5 flex size-14 items-center justify-center rounded-2xl text-primary-foreground">
           <VerdeMark className="size-7" />
         </span>
-        <h1 className="font-display text-2xl font-bold tracking-tight">Check your email</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight">{t("Check your email")}</h1>
         <p className="mt-1.5 flex items-start gap-2 text-sm text-muted-foreground">
           <MailCheck className="mt-0.5 size-4 shrink-0" />
           <span>
-            We sent a 6-digit code to <strong className="text-foreground">{user?.email}</strong>. It can take a minute
-            to arrive - check spam if you don't see it.
+            {t("We sent a 6-digit code to")} <strong className="text-foreground">{user?.email}</strong>{t(". It can take a minute to arrive - check spam if you don't see it.")}
           </span>
         </p>
 
@@ -154,7 +155,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
             placeholder="123456"
             maxLength={6}
             autoFocus
-            aria-label="6-digit verification code"
+            aria-label={t("6-digit verification code")}
             className="h-14 text-center font-mono text-2xl tracking-[0.5em]"
           />
           {message && <p className="text-sm text-destructive">{message}</p>}
@@ -166,12 +167,12 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
 
         {editing ? (
           <form onSubmit={handleChangeEmail} className="mt-4 space-y-2 rounded-lg border p-3">
-            <p className="text-sm font-medium">What's the right email address?</p>
+            <p className="text-sm font-medium">{t("What's the right email address?")}</p>
             <Input
               type="email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t("you@example.com")}
               autoComplete="email"
               required
               autoFocus
@@ -181,7 +182,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
                 {changing ? "Saving..." : "Save and send code"}
               </Button>
               <Button type="button" size="sm" variant="outline" onClick={() => setEditing(false)}>
-                Cancel
+                {t("Cancel")}
               </Button>
             </div>
           </form>
@@ -194,7 +195,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
             }}
             className="mt-4 text-sm text-muted-foreground underline underline-offset-2"
           >
-            Wrong email address?
+            {t("Wrong email address?")}
           </button>
         )}
 
@@ -209,7 +210,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
           </button>
           {required ? (
             <button type="button" onClick={() => void logout()} className="text-muted-foreground underline underline-offset-2">
-              Sign out
+              {t("Sign out")}
             </button>
           ) : (
             <button
@@ -217,7 +218,7 @@ export function VerifyEmailScreen({ required = false }: { required?: boolean }) 
               onClick={() => navigate("/jobs")}
               className="text-muted-foreground underline underline-offset-2"
             >
-              Not now
+              {t("Not now")}
             </button>
           )}
         </div>

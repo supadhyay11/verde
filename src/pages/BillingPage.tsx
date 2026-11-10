@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import {
   Calendar,
@@ -85,6 +86,7 @@ function SendInvoiceForm({
   onCancel: () => void
   onCreated: (result: { propertyId: string; invoiceId: string; scheduled: boolean }) => void
 }) {
+  const t = useT()
   const { createInvoice } = useJobsStore()
   const [amount, setAmount] = React.useState(
     property.monthlyRate != null ? String(property.monthlyRate) : ""
@@ -140,14 +142,14 @@ function SendInvoiceForm({
   return (
     <Card className="gap-3 p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold">Send Invoice - {property.customerName}</p>
-        <button type="button" onClick={onCancel} aria-label="Close">
+        <p className="text-sm font-semibold">{t("Send Invoice -")} {property.customerName}</p>
+        <button type="button" onClick={onCancel} aria-label={t("Close")}>
           <X className="size-4 text-muted-foreground" />
         </button>
       </div>
       <div className="flex flex-col gap-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">Amount</Label>
+          <Label className="text-xs">{t("Amount")}</Label>
           <Input
             type="number"
             inputMode="decimal"
@@ -159,7 +161,7 @@ function SendInvoiceForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Billing period</Label>
+          <Label className="text-xs">{t("Billing period")}</Label>
           <div className="flex gap-2">
             <button
               type="button"
@@ -171,7 +173,7 @@ function SendInvoiceForm({
                   : "border-input text-muted-foreground")
               }
             >
-              Service month
+              {t("Service month")}
             </button>
             <button
               type="button"
@@ -183,7 +185,7 @@ function SendInvoiceForm({
                   : "border-input text-muted-foreground")
               }
             >
-              Custom / one-time
+              {t("Custom / one-time")}
             </button>
           </div>
           {periodMode === "month" ? (
@@ -194,23 +196,23 @@ function SendInvoiceForm({
             />
           ) : (
             <Input
-              placeholder="One-time algae treatment"
+              placeholder={t("One-time algae treatment")}
               value={customPeriod}
               onChange={(e) => setCustomPeriod(e.target.value)}
             />
           )}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Notes (optional - shown on the PDF)</Label>
+          <Label className="text-xs">{t("Notes (optional - shown on the PDF)")}</Label>
           <Input
-            placeholder="Extra mulch, fertilizer, plant replacement, etc."
+            placeholder={t("Extra mulch, fertilizer, plant replacement, etc.")}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs">
-            Schedule date (only used if you tap "Schedule" below)
+            {t("Schedule date (only used if you tap \"Schedule\" below)")}
           </Label>
           <Input
             type="date"
@@ -253,6 +255,7 @@ function EditInvoiceForm({
   onCancel: () => void
   onSaved: () => void
 }) {
+  const t = useT()
   const { updateInvoice } = useJobsStore()
   // "Service month" periods are always produced by monthValueLabel, e.g.
   // "August 2026" - matching that shape is how we tell a month-mode
@@ -303,20 +306,20 @@ function EditInvoiceForm({
     <Card className="gap-3 border-primary/30 p-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold">
-          Edit Invoice{invoice.invoiceNumber != null ? ` #${invoice.invoiceNumber}` : ""}
+          {t("Edit Invoice")}{invoice.invoiceNumber != null ? ` #${invoice.invoiceNumber}` : ""}
         </p>
-        <button type="button" onClick={onCancel} aria-label="Close">
+        <button type="button" onClick={onCancel} aria-label={t("Close")}>
           <X className="size-4 text-muted-foreground" />
         </button>
       </div>
       {!pendingSend && (
         <p className="rounded-md bg-warning/10 px-2.5 py-1.5 text-xs text-warning-foreground">
-          This invoice was already sent to the customer - they may still have the old amount/PDF. Consider letting them know separately.
+          {t("This invoice was already sent to the customer - they may still have the old amount/PDF. Consider letting them know separately.")}
         </p>
       )}
       <div className="flex flex-col gap-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">Amount</Label>
+          <Label className="text-xs">{t("Amount")}</Label>
           <Input
             type="number"
             inputMode="decimal"
@@ -327,7 +330,7 @@ function EditInvoiceForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Billing period</Label>
+          <Label className="text-xs">{t("Billing period")}</Label>
           <div className="flex gap-2">
             <button
               type="button"
@@ -339,7 +342,7 @@ function EditInvoiceForm({
                   : "border-input text-muted-foreground")
               }
             >
-              Service month
+              {t("Service month")}
             </button>
             <button
               type="button"
@@ -351,30 +354,30 @@ function EditInvoiceForm({
                   : "border-input text-muted-foreground")
               }
             >
-              Custom / one-time
+              {t("Custom / one-time")}
             </button>
           </div>
           {periodMode === "month" ? (
             <Input type="month" value={monthValue} onChange={(e) => setMonthValue(e.target.value)} />
           ) : (
             <Input
-              placeholder="One-time algae treatment"
+              placeholder={t("One-time algae treatment")}
               value={customPeriod}
               onChange={(e) => setCustomPeriod(e.target.value)}
             />
           )}
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Notes (optional - shown on the PDF)</Label>
+          <Label className="text-xs">{t("Notes (optional - shown on the PDF)")}</Label>
           <Input
-            placeholder="Extra mulch, fertilizer, plant replacement, etc."
+            placeholder={t("Extra mulch, fertilizer, plant replacement, etc.")}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
         </div>
         {pendingSend && (
           <div className="space-y-1.5">
-            <Label className="text-xs">Scheduled send date</Label>
+            <Label className="text-xs">{t("Scheduled send date")}</Label>
             <Input
               type="date"
               min={localTodayIso()}
@@ -401,6 +404,7 @@ function CustomerBillingRow({
   invoices: Invoice[]
   onInvoiceCreated: (result: { propertyId: string; invoiceId: string; scheduled: boolean }) => void
 }) {
+  const t = useT()
   const { markInvoicePaid, deleteInvoice } = useJobsStore()
   const [open, setOpen] = React.useState(false)
   const [showInvoiceForm, setShowInvoiceForm] = React.useState(false)
@@ -456,7 +460,7 @@ function CustomerBillingRow({
       </button>
 
       {unpaidTotal > 0 && (
-        <p className="text-xs text-muted-foreground">{money(unpaidTotal)} outstanding</p>
+        <p className="text-xs text-muted-foreground">{money(unpaidTotal)} {t("outstanding")}</p>
       )}
 
       {showInvoiceForm ? (
@@ -471,14 +475,14 @@ function CustomerBillingRow({
         />
       ) : (
         <Button variant="outline" size="sm" onClick={() => setShowInvoiceForm(true)}>
-          <Send className="size-3.5" /> Send Invoice
+          <Send className="size-3.5" /> {t("Send Invoice")}
         </Button>
       )}
 
       {open && (
         <div className="flex flex-col gap-1.5 pt-1">
           {sorted.length === 0 && (
-            <p className="py-2 text-xs text-muted-foreground">No invoices sent to this customer yet.</p>
+            <p className="py-2 text-xs text-muted-foreground">{t("No invoices sent to this customer yet.")}</p>
           )}
           {sorted.map((inv) => {
             const pendingSend = Boolean(inv.scheduledSendAt && !inv.sentAt)
@@ -515,8 +519,8 @@ function CustomerBillingRow({
                   >
                     {pendingSend ? (
                       <>
-                        <Calendar className="size-3" /> Scheduled to send{" "}
-                        {formatScheduledDate(inv.scheduledSendAt!)} as a PDF
+                        <Calendar className="size-3" /> {t("Scheduled to send")}{" "}
+                        {formatScheduledDate(inv.scheduledSendAt!)} {t("as a PDF")}
                       </>
                     ) : inv.status === "paid" ? (
                       "Marked as paid"
@@ -534,7 +538,7 @@ function CustomerBillingRow({
                         : "Not sent yet"}
                   </p>
                   {inv.status === "paid" && inv.paidAt && (
-                    <p className="text-success">Paid {formatSentAt(inv.paidAt)}</p>
+                    <p className="text-success">{t("Paid")} {formatSentAt(inv.paidAt)}</p>
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
@@ -542,8 +546,8 @@ function CustomerBillingRow({
                     variant="ghost"
                     size="sm"
                     onClick={() => window.open(`/invoice/${inv.id}`, "_blank")}
-                    aria-label="Print invoice"
-                    title="Print invoice"
+                    aria-label={t("Print invoice")}
+                    title={t("Print invoice")}
                   >
                     <Printer className="size-3.5" />
                   </Button>
@@ -552,8 +556,8 @@ function CustomerBillingRow({
                       variant="ghost"
                       size="sm"
                       onClick={() => setEditingInvoiceId(inv.id)}
-                      aria-label="Edit invoice"
-                      title="Edit invoice"
+                      aria-label={t("Edit invoice")}
+                      title={t("Edit invoice")}
                     >
                       <Pencil className="size-3.5" />
                     </Button>
@@ -563,8 +567,8 @@ function CustomerBillingRow({
                       variant="ghost"
                       size="sm"
                       className="text-destructive hover:text-destructive"
-                      aria-label="Delete invoice"
-                      title="Delete invoice"
+                      aria-label={t("Delete invoice")}
+                      title={t("Delete invoice")}
                       onClick={() => {
                         const warning =
                           inv.status === "paid"
@@ -592,8 +596,8 @@ function CustomerBillingRow({
                           deleteInvoice(inv.id)
                         }
                       }}
-                      aria-label="Cancel scheduled invoice"
-                      title="Cancel scheduled invoice"
+                      aria-label={t("Cancel scheduled invoice")}
+                      title={t("Cancel scheduled invoice")}
                     >
                       <CalendarX className="size-3.5" />
                     </Button>
@@ -603,7 +607,7 @@ function CustomerBillingRow({
                     size="sm"
                     onClick={() => markInvoicePaid(inv.id, inv.status !== "paid")}
                   >
-                    Mark {inv.status === "paid" ? "Unpaid" : "Paid"}
+                    {t("Mark")} {inv.status === "paid" ? "Unpaid" : "Paid"}
                   </Button>
                 </div>
               </div>
@@ -616,6 +620,7 @@ function CustomerBillingRow({
 }
 
 export function BillingPage() {
+  const t = useT()
   const { properties, invoices } = useJobsStore()
   const [search, setSearch] = React.useState("")
   const [note, setNote] = React.useState<string | null>(null)
@@ -685,7 +690,7 @@ export function BillingPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-6">
-      <TopBar title="Billing" />
+      <TopBar title={t("Billing")} />
 
       <div className="flex flex-col gap-3 px-4 py-4">
         <div className="grid grid-cols-3 gap-2">
@@ -706,13 +711,13 @@ export function BillingPage() {
             >
               <p className="text-lg font-bold text-destructive">{money(totalUnpaid)}</p>
               <p className="text-[11px] text-muted-foreground">
-                {unpaidCount} unpaid invoice{unpaidCount === 1 ? "" : "s"}
+                {unpaidCount} {t("unpaid invoice")}{unpaidCount === 1 ? "" : "s"}
               </p>
             </button>
           </Card>
           <Card className="items-center gap-0.5 p-3 text-center">
             <p className="text-lg font-bold">{properties.length}</p>
-            <p className="text-[11px] text-muted-foreground">customers</p>
+            <p className="text-[11px] text-muted-foreground">{t("customers")}</p>
           </Card>
           <Card
             className={
@@ -730,7 +735,7 @@ export function BillingPage() {
               className="flex w-full flex-col items-center gap-0.5 p-3 disabled:cursor-default"
             >
               <p className="text-lg font-bold text-primary">{scheduledCount}</p>
-              <p className="text-[11px] text-muted-foreground">scheduled to send</p>
+              <p className="text-[11px] text-muted-foreground">{t("scheduled to send")}</p>
             </button>
           </Card>
         </div>
@@ -749,7 +754,7 @@ export function BillingPage() {
                 : "Showing customers with a scheduled invoice"}
             </p>
             <Button variant="outline" size="sm" onClick={() => setStatusFilter(null)}>
-              Clear
+              {t("Clear")}
             </Button>
           </Card>
         )}
@@ -768,7 +773,7 @@ export function BillingPage() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search customers"
+              placeholder={t("Search customers")}
               className="pl-9"
             />
           </div>
@@ -795,7 +800,7 @@ export function BillingPage() {
           {properties.length === 0 && (
             <p className="flex flex-col items-center gap-1 py-10 text-center text-sm text-muted-foreground lg:col-span-2">
               <FileText className="mb-1 size-6" />
-              Add a customer first, then come back here to bill them.
+              {t("Add a customer first, then come back here to bill them.")}
             </p>
           )}
         </div>

@@ -11,7 +11,7 @@ const { getAuth } = require("firebase-admin/auth")
 // straight into spam/junk. Sending the exact same verification LINK
 // (still minted by Firebase Auth itself, via generateEmailVerificationLink
 // - clicking it still marks the account verified the normal way) through
-// Resend instead means it rides on the same sender reputation TadPool's
+// Resend instead means it rides on the same sender reputation Verde's
 // invoices/reports/invite emails already have, landing in the inbox
 // instead of junk.
 //
@@ -21,7 +21,7 @@ const { getAuth } = require("firebase-admin/auth")
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY")
 const RESEND_FROM_EMAIL = defineSecret("RESEND_FROM_EMAIL")
 
-const APP_URL = "https://app.tadpool.app"
+const APP_URL = "https://verde-gardener-app.web.app"
 
 // Runs one step of sendVerificationEmail and, if it throws, logs the real
 // error and re-throws it as an HttpsError that names the step - so the app
@@ -84,7 +84,7 @@ exports.sendVerificationEmail = onCall(
 
     const apiKey = (RESEND_API_KEY.value() || "").trim()
     const rawFrom = (RESEND_FROM_EMAIL.value() || "").trim()
-    const from = rawFrom ? withSenderName(rawFrom, "TadPool") : ""
+    const from = rawFrom ? withSenderName(rawFrom, "Verde") : ""
     if (!apiKey || !from) {
       throw new HttpsError(
         "failed-precondition",
@@ -100,16 +100,16 @@ exports.sendVerificationEmail = onCall(
       apiKey,
       from,
       to: userRecord.email,
-      subject: "Verify your email for TadPool",
+      subject: "Verify your email for Verde",
       text: [
         `Hi ${userRecord.displayName || "there"}!`,
         "",
-        "Please verify your email address for your TadPool account by",
+        "Please verify your email address for your Verde account by",
         "clicking the link below:",
         "",
         link,
         "",
-        "If you didn't create a TadPool account, you can safely ignore",
+        "If you didn't create a Verde account, you can safely ignore",
         "this email.",
       ].join("\n"),
     }))

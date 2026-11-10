@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { NavLink, Outlet } from "react-router-dom"
@@ -67,6 +68,7 @@ const TAIL_NAV_ITEMS = [
 // 6-digit-code screen. Hidden during platform-admin "view as" so previewing
 // an account never emails that person.
 function VerifyEmailBanner() {
+  const t = useT()
   const { user, emailVerified } = useAuth()
 
   // `emailVerified === undefined` just means Firebase Auth hasn't reported a
@@ -80,16 +82,17 @@ function VerifyEmailBanner() {
   return (
     <div className="flex shrink-0 flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-warning px-3 py-1.5 text-center text-xs font-semibold text-warning-foreground">
       <span className="flex items-center gap-1.5">
-        <Mail className="size-3.5" /> Please verify your email address ({user.email})
+        <Mail className="size-3.5" /> {t("Please verify your email address (")}{user.email})
       </span>
       <NavLink to="/verify-email" className="underline underline-offset-2">
-        Enter code
+        {t("Enter code")}
       </NavLink>
     </div>
   )
 }
 
 export function AppShell() {
+  const t = useT()
   const { user } = useAuth()
   const { messages } = useJobsStore()
   const isDesktop = useIsDesktop()
@@ -127,8 +130,7 @@ export function AppShell() {
 
   const impersonationBanner = isImpersonatingSession() && (
     <div className="flex shrink-0 items-center justify-center gap-1.5 bg-warning px-3 py-1.5 text-center text-xs font-semibold text-warning-foreground">
-      <ShieldAlert className="size-3.5" /> Viewing as {user?.name ?? "provider"} (admin preview) -
-      close this tab to exit
+      <ShieldAlert className="size-3.5" /> {t("Viewing as")} {user?.name ?? "provider"} {t("(admin preview) - close this tab to exit")}
     </div>
   )
 
@@ -146,7 +148,7 @@ export function AppShell() {
               <VerdeMark className="size-4.5" />
             </span>
             <span className="font-display text-lg font-extrabold tracking-tight text-foreground">
-              Verde
+              {t("Verde")}
             </span>
           </div>
           <nav className="flex flex-1 flex-col gap-1 px-3">

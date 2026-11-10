@@ -96,7 +96,7 @@ exports.sendEmailCode = onCall(
 
     const apiKey = (RESEND_API_KEY.value() || "").trim()
     const rawFrom = (RESEND_FROM_EMAIL.value() || "").trim()
-    const from = rawFrom ? withSenderName(rawFrom, "TadPool") : ""
+    const from = rawFrom ? withSenderName(rawFrom, "Verde") : ""
     if (!apiKey || !from) {
       throw new HttpsError("failed-precondition", "Verification email isn't set up yet - try again shortly.")
     }
@@ -108,13 +108,13 @@ exports.sendEmailCode = onCall(
         apiKey,
         from,
         to: user.email,
-        subject: `${code} is your TadPool verification code`,
+        subject: `${code} is your Verde verification code`,
         text: [
           `Hi ${user.displayName || "there"}!`,
           "",
-          `Your TadPool verification code is: ${code}`,
+          `Your Verde verification code is: ${code}`,
           "",
-          "It expires in 10 minutes. If you didn't create a TadPool account,",
+          "It expires in 10 minutes. If you didn't create a Verde account,",
           "you can safely ignore this email.",
         ].join("\n"),
       })

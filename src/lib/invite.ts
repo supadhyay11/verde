@@ -6,18 +6,26 @@
 /** Public sign-up link for a specific invite code - scanning the QR or
  * following a "Send Invite" link drops the customer straight onto the
  * owner sign-up tab with the code pre-filled. */
-export function inviteLink(code: string): string {
-  return `https://verde-gardener-app.web.app/signup?code=${encodeURIComponent(code)}`
+export function inviteLink(code: string, lang: "en" | "es" = "en"): string {
+  return `https://verde-gardener-app.web.app/signup?code=${encodeURIComponent(code)}&lang=${lang}`
 }
 
-export function inviteMessage(businessName: string | undefined, code: string): string {
+export function inviteMessage(
+  businessName: string | undefined,
+  code: string,
+  lang: "en" | "es" = "en"
+): string {
+  if (lang === "es") {
+    const quien = businessName ? `${businessName} en ` : ""
+    return `¡Hola! ${quien}Verde le tiene registrado para seguir su servicio de jardinería en línea. Cree su cuenta aquí: ${inviteLink(code, "es")} (código de invitación: ${code}). Consejo: en iPhone, toque Compartir y luego "Añadir a pantalla de inicio".`
+  }
   const who = businessName ? `${businessName} on ` : ""
   // The "Add to Home Screen" tip is deliberately short here - this same
   // message goes out over SMS too, where every extra character counts
   // toward the segment limit. The auto-sent invite email (see
   // functions/send-invite-email.js) has room for the fuller version with
   // step-by-step instructions.
-  return `Hi! ${who}Verde has you set up to track your garden service online. Create your account here: ${inviteLink(code)} (invite code: ${code}). Tip: on iPhone, tap Share then "Add to Home Screen" for the best experience.`
+  return `Hi! ${who}Verde has you set up to track your garden service online. Create your account here: ${inviteLink(code, "en")} (invite code: ${code}). Tip: on iPhone, tap Share then "Add to Home Screen" for the best experience.`
 }
 
 const IS_IOS = typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent)

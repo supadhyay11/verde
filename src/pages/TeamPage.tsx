@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { httpsCallable } from "firebase/functions"
 import { Check, Copy, Dices, Plus, ShieldCheck, Trash2, UserCog, Users, X } from "lucide-react"
@@ -63,6 +64,7 @@ interface TeamPlan {
 }
 
 export function TeamPage() {
+  const t = useT()
   const { user } = useAuth()
   const { businessUsers } = useJobsStore()
 
@@ -167,23 +169,21 @@ export function TeamPage() {
 
   return (
     <div className="flex min-h-full flex-col gap-4 bg-background pb-8">
-      <TopBar title="Team" showBack backTo="/profile" />
+      <TopBar title={t("Team")} showBack backTo="/profile" />
 
       <div className="flex flex-col gap-4 px-4">
         <p className="text-sm text-muted-foreground">
-          Add technicians to your team so they can log in and complete the jobs you
-          schedule for them. Admins can manage customers, billing, and the team;
-          technicians only see and complete their assigned jobs.
+          {t("Add technicians to your team so they can log in and complete the jobs you schedule for them. Admins can manage customers, billing, and the team; technicians only see and complete their assigned jobs.")}
         </p>
 
         {plan && (
           <Card className="gap-1 p-3.5">
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-semibold">
-                {plan.used} of {plan.maxTechnicians} technicians
+                {plan.used} {t("of")} {plan.maxTechnicians} {t("technicians")}
               </p>
               <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                {plan.planName} plan
+                {plan.planName} {t("plan")}
               </span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-muted">
@@ -198,7 +198,7 @@ export function TeamPage() {
                   ? "You're at the limit for Pro. Premium covers up to 10 technicians."
                   : "You're at the limit for Premium."}{" "}
                 <Link to="/support" className="font-medium text-primary underline-offset-2 hover:underline">
-                  Contact us to {plan.plan === "pro" ? "upgrade" : "add more"}
+                  {t("Contact us to")} {plan.plan === "pro" ? "upgrade" : "add more"}
                 </Link>
                 .
               </p>
@@ -210,15 +210,14 @@ export function TeamPage() {
           <Card className="gap-3 border-success/30 bg-success/5 p-4">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-1.5 text-sm font-semibold text-success">
-                <ShieldCheck className="size-4" /> {created.name}'s account is ready
+                <ShieldCheck className="size-4" /> {created.name}{t("'s account is ready")}
               </p>
               <Button variant="ghost" size="sm" onClick={() => setCreated(null)}>
                 <X className="size-4" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Share these sign-in details with {created.name} - they should change the
-              password from Profile once they've signed in.
+              {t("Share these sign-in details with")} {created.name} {t("- they should change the password from Profile once they've signed in.")}
               {created.signInWith.includes("@")
                 ? ""
                 : " They'll sign in with this phone number - email-based password reset won't work for this account, so if they forget it, come back here and remove/re-add them with a new password instead."}
@@ -227,7 +226,7 @@ export function TeamPage() {
               label={created.signInWith.includes("@") ? "Email" : "Phone Number"}
               value={created.signInWith}
             />
-            <CopyableCredential label="Password" value={created.password} />
+            <CopyableCredential label={t("Password")} value={created.password} />
           </Card>
         )}
 
@@ -242,7 +241,7 @@ export function TeamPage() {
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold">
-                      {member.name} {isSelf && <span className="text-muted-foreground">(you)</span>}
+                      {member.name} {isSelf && <span className="text-muted-foreground">{t("(you)")}</span>}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {member.phone || member.email}
@@ -267,8 +266,8 @@ export function TeamPage() {
                       disabled={busyUid === member.id}
                       className="h-9 flex-1 rounded-lg border border-input bg-transparent px-2.5 text-xs"
                     >
-                      <option value="admin">Admin</option>
-                      <option value="technician">Technician</option>
+                      <option value="admin">{t("Admin")}</option>
+                      <option value="technician">{t("Technician")}</option>
                     </select>
                     {confirmRemoveUid === member.id ? (
                       <div className="flex items-center gap-1.5">
@@ -279,7 +278,7 @@ export function TeamPage() {
                           disabled={busyUid === member.id}
                           onClick={() => handleRemove(member.id)}
                         >
-                          Confirm
+                          {t("Confirm")}
                         </Button>
                         <Button
                           type="button"
@@ -287,7 +286,7 @@ export function TeamPage() {
                           size="sm"
                           onClick={() => setConfirmRemoveUid(null)}
                         >
-                          Cancel
+                          {t("Cancel")}
                         </Button>
                       </div>
                     ) : (
@@ -311,30 +310,29 @@ export function TeamPage() {
         {adding ? (
           <Card className="gap-3 p-4">
             <p className="flex items-center gap-1.5 text-sm font-semibold">
-              <Users className="size-4" /> Add a Teammate
+              <Users className="size-4" /> {t("Add a Teammate")}
             </p>
             <form onSubmit={handleAdd} className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="techName">Name</Label>
+                <Label htmlFor="techName">{t("Name")}</Label>
                 <Input id="techName" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="techIdentifier">Email or Phone Number</Label>
+                <Label htmlFor="techIdentifier">{t("Email or Phone Number")}</Label>
                 <Input
                   id="techIdentifier"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="name@example.com or (555) 123-4567"
+                  placeholder={t("name@example.com or (555) 123-4567")}
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Whatever they'll type to log in - an email or a phone number, either
-                  works.
+                  {t("Whatever they'll type to log in - an email or a phone number, either works.")}
                 </p>
               </div>
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="techPassword">Password</Label>
+                  <Label htmlFor="techPassword">{t("Password")}</Label>
                   <Button
                     type="button"
                     variant="ghost"
@@ -342,30 +340,29 @@ export function TeamPage() {
                     className="h-auto p-0 text-xs font-medium text-primary"
                     onClick={() => setPassword(generatePassword())}
                   >
-                    <Dices className="size-3.5" /> Generate one
+                    <Dices className="size-3.5" /> {t("Generate one")}
                   </Button>
                 </div>
                 <Input
                   id="techPassword"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder={t("At least 6 characters")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Set this yourself, or leave it blank and we'll generate one you can
-                  copy after adding them.
+                  {t("Set this yourself, or leave it blank and we'll generate one you can copy after adding them.")}
                 </p>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="techRole">Role</Label>
+                <Label htmlFor="techRole">{t("Role")}</Label>
                 <select
                   id="techRole"
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value as BusinessRole)}
                   className="h-11 w-full rounded-xl border border-input bg-transparent px-3 text-sm"
                 >
-                  <option value="technician">Technician - completes assigned jobs</option>
-                  <option value="admin">Admin - full access, same as you</option>
+                  <option value="technician">{t("Technician - completes assigned jobs")}</option>
+                  <option value="admin">{t("Admin - full access, same as you")}</option>
                 </select>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
@@ -380,7 +377,7 @@ export function TeamPage() {
                     resetAddForm()
                   }}
                 >
-                  Cancel
+                  {t("Cancel")}
                 </Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
                   {submitting ? "Adding..." : "Add Teammate"}
@@ -395,13 +392,12 @@ export function TeamPage() {
             disabled={atLimit}
             onClick={() => setAdding(true)}
           >
-            <Plus className="size-4" /> Add a Technician
+            <Plus className="size-4" /> {t("Add a Technician")}
           </Button>
         )}
 
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <UserCog className="size-3.5" /> Every business needs at least one admin, so you
-          can't demote or remove the last one.
+          <UserCog className="size-3.5" /> {t("Every business needs at least one admin, so you can't demote or remove the last one.")}
         </p>
       </div>
     </div>

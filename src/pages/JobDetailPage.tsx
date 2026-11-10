@@ -1,3 +1,5 @@
+import { BilingualNote, pickText } from "@/lib/i18n/text"
+import { useI18n, useT } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -60,6 +62,7 @@ function PhotoSlot({
   uploading: boolean
   onPick: (file: File) => void
 }) {
+  const t = useT()
   const cameraRef = React.useRef<HTMLInputElement>(null)
   const galleryRef = React.useRef<HTMLInputElement>(null)
 
@@ -112,7 +115,7 @@ function PhotoSlot({
 
         <span
           role="button"
-          aria-label="Choose from gallery"
+          aria-label={t("Choose from gallery")}
           onClick={(e) => {
             e.stopPropagation()
             if (!uploading) galleryRef.current?.click()
@@ -127,6 +130,8 @@ function PhotoSlot({
 }
 
 export function JobDetailPage() {
+  const t = useT()
+  const { lang } = useI18n()
   const { id } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -187,7 +192,7 @@ export function JobDetailPage() {
   if (!job) {
     return (
       <div className="p-6 text-center text-sm text-muted-foreground">
-        Job not found.
+        {t("Job not found.")}
       </div>
     )
   }
@@ -263,6 +268,7 @@ export function JobDetailPage() {
         // never has to read the property/business docs directly (those
         // hold things like the gate code that must stay private).
         reportCustomerName: property?.customerName ?? "",
+        reportLanguage: property?.language ?? "en",
         reportAddress: property?.address ?? "",
         reportBusinessName: business?.name ?? "",
         reportBusinessPhone: business?.phone ?? "",
@@ -362,13 +368,13 @@ export function JobDetailPage() {
   function handleInviteEmail() {
     if (!property?.email) return
     const subject = "Create your free Verde account"
-    const body = inviteMessage(business?.name, property.inviteCode)
+    const body = inviteMessage(business?.name, property.inviteCode, property.language)
     window.open(`mailto:${property.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank")
   }
 
   function handleInviteText() {
     if (!property?.phone) return
-    const body = inviteMessage(business?.name, property.inviteCode)
+    const body = inviteMessage(business?.name, property.inviteCode, property.language)
     window.open(smsLink(property.phone, body), "_blank")
   }
 
@@ -381,7 +387,7 @@ export function JobDetailPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-6">
-      <TopBar title="Job Details" showBack backTo="/jobs" />
+      <TopBar title={t("Job Details")} showBack backTo="/jobs" />
 
       {showCompletedView ? (
         <div className="flex flex-col gap-5 px-4 py-4">
@@ -394,12 +400,12 @@ export function JobDetailPage() {
             </div>
             <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Clock className="size-4" />{" "}
-              {new Date(`${job.scheduledDate}T00:00:00`).toDateString()} &middot;{" "}
+              {new Date(`${job.scheduledDate}T00:00:00`).toDateString()} {t("·")}{" "}
               {job.scheduledTime}
             </p>
             {job.completedAt && (
               <p className="text-xs text-muted-foreground">
-                Completed {new Date(job.completedAt).toLocaleString(undefined, {
+                {t("Completed")} {new Date(job.completedAt).toLocaleString(undefined, {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
@@ -423,21 +429,21 @@ export function JobDetailPage() {
             )}
             <div className="grid grid-cols-2 gap-3 border-t pt-3 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground">Service Provider</p>
+                <p className="text-xs text-muted-foreground">{t("Service Provider")}</p>
                 <p className="flex items-center gap-1.5 font-medium">
                   <UserIcon className="size-3.5" /> {technician?.name ?? "—"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Service Type</p>
+                <p className="text-xs text-muted-foreground">{t("Service Type")}</p>
                 <p className="font-medium">{job.serviceType}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Duration</p>
-                <p className="font-medium">{job.estMinutes} mins</p>
+                <p className="text-xs text-muted-foreground">{t("Duration")}</p>
+                <p className="font-medium">{job.estMinutes} {t("mins")}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Invoice</p>
+                <p className="text-xs text-muted-foreground">{t("Invoice")}</p>
                 <p className="flex items-center gap-1.5 font-medium">
                   <FileText className="size-3.5" /> {job.invoiceRef ?? "—"}
                 </p>
@@ -458,16 +464,16 @@ export function JobDetailPage() {
                   </span>
                   <div>
                     <p className="font-display text-sm font-bold text-success">
-                      All Done &amp; Looking Great
+                      {t("All Done & Looking Great")}
                     </p>
                     {job.report.waterStatus === "ready" ? (
                       <p className="text-xs text-muted-foreground">
-                        Serviced today — dive in whenever you're ready.
+                        {t("Serviced today — dive in whenever you're ready.")}
                       </p>
                     ) : (
                       <p className="flex items-center gap-1 text-xs font-medium text-warning">
                         <Clock className="size-3.5" />
-                        Wait {job.report.waitHours || "a few"} hours before using the area.
+                        {t("Wait")} {job.report.waitHours || "a few"} {t("hours before using the area.")}
                       </p>
                     )}
                   </div>
@@ -475,7 +481,7 @@ export function JobDetailPage() {
                 {job.photoUrl ? (
                   <img
                     src={job.photoUrl}
-                    alt="Garden photo"
+                    alt={t("Garden photo")}
                     className="mt-2 aspect-video w-full rounded-lg object-cover"
                   />
                 ) : job.beforePhotoUrl || job.afterPhotoUrl ? (
@@ -483,14 +489,14 @@ export function JobDetailPage() {
                     {job.beforePhotoUrl && (
                       <img
                         src={job.beforePhotoUrl}
-                        alt="Before service"
+                        alt={t("Before service")}
                         className="aspect-square w-full rounded-lg object-cover"
                       />
                     )}
                     {job.afterPhotoUrl && (
                       <img
                         src={job.afterPhotoUrl}
-                        alt="After service"
+                        alt={t("After service")}
                         className="aspect-square w-full rounded-lg object-cover"
                       />
                     )}
@@ -499,10 +505,10 @@ export function JobDetailPage() {
               </div>
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Services Performed</h3>
+                  <h3 className="text-sm font-semibold">{t("Services Performed")}</h3>
                   {job.tasks.length > 0 && (
                     <span className="text-xs font-medium text-muted-foreground">
-                      {job.tasks.filter((t) => t.done).length} of {job.tasks.length} done
+                      {job.tasks.filter((t) => t.done).length} {t("of")} {job.tasks.length} {t("done")}
                     </span>
                   )}
                 </div>
@@ -519,7 +525,7 @@ export function JobDetailPage() {
                             <span className="text-sm font-medium">{task.label}</span>
                           </div>
                           <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success whitespace-nowrap">
-                            Completed
+                            {t("Completed")}
                           </span>
                         </div>
                       ))}
@@ -529,11 +535,11 @@ export function JobDetailPage() {
                 )}
               </div>
               <div>
-                <h3 className="mb-2 text-sm font-semibold">Tools &amp; Equipment</h3>
+                <h3 className="mb-2 text-sm font-semibold">{t("Tools & Equipment")}</h3>
                 <p className="text-sm text-muted-foreground">
                   {job.report.equipmentStatus === "running"
                     ? "✓ Running smoothly"
-                    : `⚠ Attention needed: ${job.report.attentionNotes || "—"}`}
+                    : `⚠ Attention needed: ${job.report.attentionNotes ? pickText(job.report.attentionNotes, job.attentionNotesI18n, lang).shown : "—"}`}
                 </p>
               </div>
             </Card>
@@ -541,15 +547,15 @@ export function JobDetailPage() {
 
           {job.notes && (
             <Card className="gap-2 p-4">
-              <h3 className="text-sm font-semibold">Comments</h3>
-              <p className="text-sm whitespace-pre-wrap text-muted-foreground">{job.notes}</p>
+              <h3 className="text-sm font-semibold">{t("Comments")}</h3>
+              <BilingualNote text={job.notes} tr={job.notesI18n} className="text-sm text-muted-foreground" />
             </Card>
           )}
 
           {isProvider && job.status === "completed" && (
             <div>
               <h3 className="mb-2 flex items-center gap-1.5 font-semibold">
-                Send Report
+                {t("Send Report")}
               </h3>
               <p className="mb-2 text-xs text-muted-foreground">
                 {property?.email
@@ -558,8 +564,7 @@ export function JobDetailPage() {
                 {property?.phone && property?.smsConsent
                   ? "A text with the report link was sent automatically too. "
                   : ""}
-                Use these buttons any time to resend, or if the customer's
-                contact info was added after this job was completed.
+                {t("Use these buttons any time to resend, or if the customer's contact info was added after this job was completed.")}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 <Button
@@ -568,7 +573,7 @@ export function JobDetailPage() {
                   disabled={!property?.email}
                   onClick={handleSendEmail}
                 >
-                  <Mail className="size-4" /> Email
+                  <Mail className="size-4" /> {t("Email")}
                 </Button>
                 <Button
                   variant="outline"
@@ -576,7 +581,7 @@ export function JobDetailPage() {
                   disabled={!property?.phone}
                   onClick={handleSendText}
                 >
-                  <MessageSquare className="size-4" /> Text
+                  <MessageSquare className="size-4" /> {t("Text")}
                 </Button>
                 <Button
                   variant="outline"
@@ -584,12 +589,12 @@ export function JobDetailPage() {
                   disabled={!property?.email || !property?.phone}
                   onClick={handleSendBoth}
                 >
-                  Both
+                  {t("Both")}
                 </Button>
               </div>
               {!property?.email && !property?.phone && (
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                  Add an email or phone number for this customer to send them a report.
+                  {t("Add an email or phone number for this customer to send them a report.")}
                 </p>
               )}
               <button
@@ -597,16 +602,14 @@ export function JobDetailPage() {
                 onClick={() => window.open(reportLink(), "_blank")}
                 className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground underline"
               >
-                <LinkIcon className="size-3.5" /> Preview report page
+                <LinkIcon className="size-3.5" /> {t("Preview report page")}
               </button>
 
               {!job.ownerId && property?.inviteCode && (
                 <div className="mt-4 border-t pt-4">
-                  <h3 className="mb-1 font-semibold">Invite to Verde</h3>
+                  <h3 className="mb-1 font-semibold">{t("Invite to Verde")}</h3>
                   <p className="mb-2 text-xs text-muted-foreground">
-                    This customer doesn't have an account yet - the report page
-                    already includes a "Join Verde" link with their invite
-                    code, or send it directly below.
+                    {t("This customer doesn't have an account yet - the report page already includes a \"Join Verde\" link with their invite code, or send it directly below.")}
                   </p>
                   <div className="grid grid-cols-3 gap-2">
                     <Button
@@ -615,7 +618,7 @@ export function JobDetailPage() {
                       disabled={!property?.email}
                       onClick={handleInviteEmail}
                     >
-                      <Mail className="size-4" /> Email
+                      <Mail className="size-4" /> {t("Email")}
                     </Button>
                     <Button
                       variant="outline"
@@ -623,7 +626,7 @@ export function JobDetailPage() {
                       disabled={!property?.phone}
                       onClick={handleInviteText}
                     >
-                      <MessageSquare className="size-4" /> Text
+                      <MessageSquare className="size-4" /> {t("Text")}
                     </Button>
                     <Button
                       variant="outline"
@@ -631,18 +634,18 @@ export function JobDetailPage() {
                       disabled={!property?.email || !property?.phone}
                       onClick={handleInviteBoth}
                     >
-                      Both
+                      {t("Both")}
                     </Button>
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Invite code: <span className="font-semibold">{property.inviteCode}</span>{" "}
+                    {t("Invite code:")} <span className="font-semibold">{property.inviteCode}</span>{" "}
                     ·{" "}
                     <button
                       type="button"
-                      onClick={() => window.open(inviteLink(property.inviteCode), "_blank")}
+                      onClick={() => window.open(inviteLink(property.inviteCode, property.language), "_blank")}
                       className="underline"
                     >
-                      preview invite link
+                      {t("preview invite link")}
                     </button>
                   </p>
                 </div>
@@ -653,7 +656,7 @@ export function JobDetailPage() {
                 className="mt-3 w-full"
                 onClick={() => navigate("/jobs")}
               >
-                Done
+                {t("Done")}
               </Button>
             </div>
           )}
@@ -701,7 +704,7 @@ export function JobDetailPage() {
                   disabled={savingSchedule}
                   onClick={() => setEditingSchedule(false)}
                 >
-                  Cancel
+                  {t("Cancel")}
                 </Button>
               </div>
             ) : (
@@ -713,7 +716,7 @@ export function JobDetailPage() {
                   onClick={startEditSchedule}
                   className="ml-1 text-xs font-medium text-primary underline"
                 >
-                  Edit
+                  {t("Edit")}
                 </button>
               </p>
             )}
@@ -721,11 +724,11 @@ export function JobDetailPage() {
 
           <div className="flex h-36 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <MapPin className="size-6" />
-            <span className="ml-2 text-sm">Map preview</span>
+            <span className="ml-2 text-sm">{t("Map preview")}</span>
           </div>
 
           <div>
-            <h3 className="mb-2 text-lg font-semibold">Completed Tasks</h3>
+            <h3 className="mb-2 text-lg font-semibold">{t("Completed Tasks")}</h3>
             <div className="flex flex-col gap-3">
               {tasks.map((task) => (
                 <label
@@ -758,7 +761,7 @@ export function JobDetailPage() {
                 return (
                   <>
                     <p className="mb-1.5 text-sm text-muted-foreground">
-                      Add a task if needed:
+                      {t("Add a task if needed:")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {remaining.map((t) => (
@@ -779,10 +782,10 @@ export function JobDetailPage() {
           </div>
 
           <div>
-            <h3 className="mb-2 text-lg font-semibold">Documentation</h3>
+            <h3 className="mb-2 text-lg font-semibold">{t("Documentation")}</h3>
             <div className="max-w-48">
               <PhotoSlot
-                label="Photo"
+                label={t("Photo")}
                 url={job.photoUrl}
                 uploading={uploading}
                 onPick={handlePhotoPick}
@@ -792,7 +795,7 @@ export function JobDetailPage() {
 
           <div className="flex flex-col gap-5 rounded-xl border p-4">
               <div>
-                <h3 className="mb-2.5 text-base font-semibold">Garden Status</h3>
+                <h3 className="mb-2.5 text-base font-semibold">{t("Garden Status")}</h3>
                 <div className="flex flex-col gap-2.5">
                   <label className="flex items-center gap-3 rounded-lg border p-3.5 text-base">
                     <input
@@ -804,7 +807,7 @@ export function JobDetailPage() {
                         setReport((r) => ({ ...r, waterStatus: "ready" as WaterStatus }))
                       }
                     />
-                    Looking great, all done
+                    {t("Looking great, all done")}
                   </label>
                   <label className="flex flex-wrap items-center gap-3 rounded-lg border p-3.5 text-base">
                     <input
@@ -817,7 +820,7 @@ export function JobDetailPage() {
                       }
                     />
                     <span className="flex items-center gap-1.5">
-                      Treated (keep off for
+                      {t("Treated (keep off for")}
                       <Input
                         className="mx-1 h-10 w-16 px-2 text-center text-base"
                         placeholder="__"
@@ -829,14 +832,14 @@ export function JobDetailPage() {
                           setReport((r) => ({ ...r, waitHours: e.target.value }))
                         }
                       />
-                      hours before using the area)
+                      {t("hours before using the area)")}
                     </span>
                   </label>
                 </div>
               </div>
 
               <div>
-                <h3 className="mb-2.5 text-base font-semibold">Tools &amp; Equipment</h3>
+                <h3 className="mb-2.5 text-base font-semibold">{t("Tools & Equipment")}</h3>
                 <div className="flex flex-col gap-2.5">
                   <label className="flex items-center gap-3 rounded-lg border p-3.5 text-base">
                     <input
@@ -851,7 +854,7 @@ export function JobDetailPage() {
                         }))
                       }
                     />
-                    Running smoothly
+                    {t("Running smoothly")}
                   </label>
                   <label className="flex items-center gap-3 rounded-lg border p-3.5 text-base">
                     <input
@@ -866,12 +869,12 @@ export function JobDetailPage() {
                         }))
                       }
                     />
-                    Attention needed:
+                    {t("Attention needed:")}
                   </label>
                   {report.equipmentStatus === "attention" && (
                     <Input
                       className="ml-4 h-11 text-base"
-                      placeholder="What needs attention?"
+                      placeholder={t("What needs attention?")}
                       value={report.attentionNotes}
                       onChange={(e) =>
                         setReport((r) => ({ ...r, attentionNotes: e.target.value }))
@@ -883,12 +886,12 @@ export function JobDetailPage() {
           </div>
 
           <div>
-            <h3 className="mb-2 text-lg font-semibold">Comments</h3>
+            <h3 className="mb-2 text-lg font-semibold">{t("Comments")}</h3>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               onBlur={handleNotesBlur}
-              placeholder="Anything worth noting about this visit..."
+              placeholder={t("Anything worth noting about this visit...")}
               rows={3}
               className="w-full rounded-xl border border-input bg-transparent p-4 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             />

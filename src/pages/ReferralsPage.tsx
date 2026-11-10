@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { httpsCallable } from "firebase/functions"
 import { Check, Copy, Gift, Mail, MessageCircle, MessageSquare, Share2 } from "lucide-react"
@@ -18,6 +19,7 @@ interface ReferralInfo {
 }
 
 export function ReferralsPage() {
+  const t = useT()
   const [info, setInfo] = React.useState<ReferralInfo | null>(null)
   const [error, setError] = React.useState("")
   const [copied, setCopied] = React.useState(false)
@@ -62,7 +64,7 @@ export function ReferralsPage() {
 
   return (
     <div className="flex flex-col gap-4 pb-6">
-      <TopBar title="Refer a garden pro" showBack backTo="/profile" />
+      <TopBar title={t("Refer a garden pro")} showBack backTo="/profile" />
 
       <div className="flex flex-col gap-4 px-4">
         <Card className="gap-3 border-primary/20 bg-primary/5 p-4">
@@ -70,23 +72,22 @@ export function ReferralsPage() {
             <span className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Gift className="size-5" />
             </span>
-            <h2 className="text-base font-bold">Give {months} months, get {months} months</h2>
+            <h2 className="text-base font-bold">{t("Give")} {months} {t("months, get")} {months} {t("months")}</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            Know another garden pro who'd like Verde? Send them your link. When they sign up with
-            it, you both get {months} more months free.
+            {t("Know another garden pro who'd like Verde? Send them your link. When they sign up with it, you both get")} {months} {t("more months free.")}
           </p>
         </Card>
 
         {error ? (
           <Card className="p-4 text-sm text-destructive">{error}</Card>
         ) : !info ? (
-          <Card className="p-4 text-sm text-muted-foreground">Loading your link…</Card>
+          <Card className="p-4 text-sm text-muted-foreground">{t("Loading your link…")}</Card>
         ) : (
           <>
             <Card className="gap-3 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Your referral link
+                {t("Your referral link")}
               </p>
               <p className="break-all rounded-lg border bg-muted/40 px-3 py-2 font-mono text-sm">
                 {info.link}
@@ -98,12 +99,12 @@ export function ReferralsPage() {
                 </Button>
                 {canNativeShare ? (
                   <Button type="button" variant="outline" onClick={nativeShare}>
-                    <Share2 className="size-4" /> Share…
+                    <Share2 className="size-4" /> {t("Share…")}
                   </Button>
                 ) : (
                   <Button asChild variant="outline">
                     <a href={`mailto:?subject=${encodeURIComponent("Try Verde")}&body=${encodeURIComponent(message)}`}>
-                      <Mail className="size-4" /> Email
+                      <Mail className="size-4" /> {t("Email")}
                     </a>
                   </Button>
                 )}
@@ -111,12 +112,12 @@ export function ReferralsPage() {
               <div className="grid grid-cols-2 gap-2">
                 <Button asChild variant="outline">
                   <a href={smsLink("", message)}>
-                    <MessageSquare className="size-4" /> Text
+                    <MessageSquare className="size-4" /> {t("Text")}
                   </a>
                 </Button>
                 <Button asChild variant="outline">
                   <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="size-4" /> WhatsApp
+                    <MessageCircle className="size-4" /> {t("WhatsApp")}
                   </a>
                 </Button>
               </div>
@@ -126,13 +127,13 @@ export function ReferralsPage() {
               <div className="flex items-end justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Pros who joined
+                    {t("Pros who joined")}
                   </p>
                   <p className="text-2xl font-bold">{info.joined.length}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Free months earned
+                    {t("Free months earned")}
                   </p>
                   <p className="text-2xl font-bold">{info.monthsEarned}</p>
                 </div>
@@ -151,13 +152,12 @@ export function ReferralsPage() {
               )}
               {info.referredByCreditMonths > 0 && (
                 <p className="rounded-lg bg-primary/5 px-3 py-2 text-sm">
-                  You joined Verde through a referral, so you also get{" "}
-                  {info.referredByCreditMonths} free months.
+                  {t("You joined Verde through a referral, so you also get")}{" "}
+                  {info.referredByCreditMonths} {t("free months.")}
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                Free months are applied to your Verde plan. A person can only be referred once,
-                and signing up with your own link doesn't count.
+                {t("Free months are applied to your Verde plan. A person can only be referred once, and signing up with your own link doesn't count.")}
               </p>
             </Card>
           </>

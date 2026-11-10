@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { Link } from "react-router-dom"
 import {
   CheckCircle2,
@@ -61,6 +62,7 @@ const DONUT_CONFIG: { status: JobStatus; label: string; color: string }[] = [
 ]
 
 function JobStatusDonut({ jobs }: { jobs: ServiceJob[] }) {
+  const t = useT()
   const total = jobs.length
   const counts: Record<JobStatus, number> = {
     completed: 0,
@@ -103,7 +105,7 @@ function JobStatusDonut({ jobs }: { jobs: ServiceJob[] }) {
           {counts.completed}
         </text>
         <text x="18" y="23.5" textAnchor="middle" fontSize="3.3" fill="#64748B">
-          done
+          {t("done")}
         </text>
       </svg>
       <div className="flex flex-1 flex-col gap-2">
@@ -116,13 +118,14 @@ function JobStatusDonut({ jobs }: { jobs: ServiceJob[] }) {
             <span className="font-bold">{counts[status]}</span>
           </div>
         ))}
-        {total === 0 && <p className="text-xs text-muted-foreground">No jobs scheduled this week.</p>}
+        {total === 0 && <p className="text-xs text-muted-foreground">{t("No jobs scheduled this week.")}</p>}
       </div>
     </div>
   )
 }
 
 export function DashboardPage() {
+  const t = useT()
   const { user } = useAuth()
   const { jobs, properties, invoices } = useJobsStore()
 
@@ -168,10 +171,10 @@ export function DashboardPage() {
         />
         <div className="px-4 py-5">
           <h2 className="font-display text-2xl font-bold tracking-tight">
-            Good Morning, {firstName}
+            {t("Good Morning,")} {firstName}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Here&apos;s the status of your garden.
+            {t("Here's the status of your garden.")}
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3 px-4">
@@ -180,14 +183,14 @@ export function DashboardPage() {
               <Clock className="size-4.5 text-primary" />
             </span>
             <p className="font-display text-2xl font-bold">{activeJobs.length}</p>
-            <p className="text-xs text-muted-foreground">Upcoming Visits</p>
+            <p className="text-xs text-muted-foreground">{t("Upcoming Visits")}</p>
           </Card>
           <Card className="items-center gap-1.5 p-4 text-center">
             <span className="bg-success/10 flex size-9 items-center justify-center rounded-full">
               <CheckCircle2 className="size-4.5 text-success" />
             </span>
             <p className="font-display text-2xl font-bold">{completedCount}</p>
-            <p className="text-xs text-muted-foreground">Completed</p>
+            <p className="text-xs text-muted-foreground">{t("Completed")}</p>
           </Card>
         </div>
 
@@ -201,7 +204,7 @@ export function DashboardPage() {
                     "radial-gradient(circle at 90% 0%, rgba(255,255,255,0.35), transparent 55%)",
                 }}
               />
-              <p className="relative text-sm font-medium opacity-90">Next Visit</p>
+              <p className="relative text-sm font-medium opacity-90">{t("Next Visit")}</p>
               <p className="font-display relative text-lg font-bold">
                 {new Date(`${upcoming.scheduledDate}T00:00:00`).toDateString()}
               </p>
@@ -214,7 +217,7 @@ export function DashboardPage() {
 
         <div className="px-4 py-5">
           <Button asChild className="w-full" size="lg">
-            <Link to="/jobs">View Service History</Link>
+            <Link to="/jobs">{t("View Service History")}</Link>
           </Button>
         </div>
       </div>
@@ -268,22 +271,22 @@ export function DashboardPage() {
       <div className="flex flex-col gap-5 px-4 py-5">
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight">
-            Good Morning, {firstName}
+            {t("Good Morning,")} {firstName}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Here is the status of your customers today.
+            {t("Here is the status of your customers today.")}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 lg:max-w-lg">
           <Button asChild size="lg">
             <Link to="/jobs/new">
-              <Plus className="size-4" /> Schedule
+              <Plus className="size-4" /> {t("Schedule")}
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline">
             <Link to="/customers">
-              <UserPlus className="size-4" /> Add Customer
+              <UserPlus className="size-4" /> {t("Add Customer")}
             </Link>
           </Button>
         </div>
@@ -297,7 +300,7 @@ export function DashboardPage() {
                   "radial-gradient(circle at 90% 0%, rgba(255,255,255,0.35), transparent 55%)",
               }}
             />
-            <p className="relative text-sm font-medium opacity-90">Today&apos;s Jobs</p>
+            <p className="relative text-sm font-medium opacity-90">{t("Today's Jobs")}</p>
             {/* Deliberately the sum of the two numbers on the line below,
                 not a separate scheduledDate-based count - those two are
                 what the badge is trying to summarize, and a job completed
@@ -308,8 +311,8 @@ export function DashboardPage() {
               {todaysCompletedCount + todaysScheduledCount}
             </p>
             <p className="relative flex items-center gap-1.5 text-sm opacity-90">
-              <Clock className="size-3.5" /> {todaysCompletedCount} Completed &middot;{" "}
-              {todaysScheduledCount} Scheduled
+              <Clock className="size-3.5" /> {todaysCompletedCount} {t("Completed ·")}{" "}
+              {todaysScheduledCount} {t("Scheduled")}
             </p>
           </Card>
         </Link>
@@ -323,10 +326,10 @@ export function DashboardPage() {
               <span className="mb-1 flex size-8 items-center justify-center rounded-lg bg-green-100">
                 <DollarSign className="size-4 text-green-600" />
               </span>
-              <p className="text-xs font-semibold text-muted-foreground">Revenue (MTD)</p>
+              <p className="text-xs font-semibold text-muted-foreground">{t("Revenue (MTD)")}</p>
               <p className="font-display text-2xl font-bold">{money(revenueThisMonth)}</p>
               <p className="text-xs text-muted-foreground">
-                {thisMonthInvoices.length} invoice{thisMonthInvoices.length === 1 ? "" : "s"}
+                {thisMonthInvoices.length} {t("invoice")}{thisMonthInvoices.length === 1 ? "" : "s"}
               </p>
             </Card>
           </Link>
@@ -335,10 +338,10 @@ export function DashboardPage() {
               <span className="mb-1 flex size-8 items-center justify-center rounded-lg bg-blue-100">
                 <Users className="size-4 text-blue-600" />
               </span>
-              <p className="text-xs font-semibold text-muted-foreground">Active Customers</p>
+              <p className="text-xs font-semibold text-muted-foreground">{t("Active Customers")}</p>
               <p className="font-display text-2xl font-bold">{properties.length}</p>
               <p className="text-xs font-semibold text-green-600">
-                +{newCustomersThisMonth} new this month
+                +{newCustomersThisMonth} {t("new this month")}
               </p>
             </Card>
           </Link>
@@ -347,12 +350,12 @@ export function DashboardPage() {
               <span className="mb-1 flex size-8 items-center justify-center rounded-lg bg-amber-100">
                 <CalendarCheck className="size-4 text-amber-600" />
               </span>
-              <p className="text-xs font-semibold text-muted-foreground">Jobs This Week</p>
+              <p className="text-xs font-semibold text-muted-foreground">{t("Jobs This Week")}</p>
               <p className="font-display text-2xl font-bold">
                 {thisWeekCompleted}
                 <span className="text-sm font-medium text-muted-foreground"> / {thisWeekJobs.length}</span>
               </p>
-              <p className="text-xs text-muted-foreground">completed so far</p>
+              <p className="text-xs text-muted-foreground">{t("completed so far")}</p>
             </Card>
           </Link>
           <Link to="/my-billing">
@@ -360,10 +363,10 @@ export function DashboardPage() {
               <span className="mb-1 flex size-8 items-center justify-center rounded-lg bg-red-100">
                 <AlertTriangle className="size-4 text-red-600" />
               </span>
-              <p className="text-xs font-semibold text-muted-foreground">Outstanding</p>
+              <p className="text-xs font-semibold text-muted-foreground">{t("Outstanding")}</p>
               <p className="font-display text-2xl font-bold">{money(outstandingTotal)}</p>
               <p className={"text-xs font-semibold " + (overdueInvoices.length > 0 ? "text-red-600" : "text-muted-foreground")}>
-                {unpaidInvoices.length} unpaid{overdueInvoices.length > 0 ? `, ${overdueInvoices.length} overdue` : ""}
+                {unpaidInvoices.length} {t("unpaid")}{overdueInvoices.length > 0 ? `, ${overdueInvoices.length} overdue` : ""}
               </p>
             </Card>
           </Link>
@@ -373,9 +376,9 @@ export function DashboardPage() {
         <Link to="/jobs">
           <Card className="gap-3 p-4 transition-shadow hover:shadow-md">
             <div>
-              <p className="font-display font-semibold">Job Status</p>
+              <p className="font-display font-semibold">{t("Job Status")}</p>
               <p className="text-xs text-muted-foreground">
-                This week &middot; {thisWeekJobs.length} scheduled
+                {t("This week ·")} {thisWeekJobs.length} {t("scheduled")}
               </p>
             </div>
             <JobStatusDonut jobs={thisWeekJobs} />
@@ -387,9 +390,9 @@ export function DashboardPage() {
         {billingList.length > 0 && (
           <Card className="gap-3 p-4">
             <Link to="/my-billing">
-              <p className="font-display font-semibold">Billing</p>
+              <p className="font-display font-semibold">{t("Billing")}</p>
               <p className="text-xs text-muted-foreground">
-                {money(outstandingTotal)} outstanding &middot; {unpaidInvoices.length} invoice
+                {money(outstandingTotal)} {t("outstanding ·")} {unpaidInvoices.length} {t("invoice")}
                 {unpaidInvoices.length === 1 ? "" : "s"}
               </p>
             </Link>

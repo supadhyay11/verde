@@ -1,3 +1,5 @@
+import { pickText } from "@/lib/i18n/text"
+import { useI18n, useT } from "@/lib/i18n"
 import * as React from "react"
 import { useParams } from "react-router-dom"
 import { ImagePlus, Loader2, Send } from "lucide-react"
@@ -28,8 +30,10 @@ function toMillis(value: unknown): number {
 }
 
 export function ChatThreadPage() {
+  const t = useT()
   const { propertyId } = useParams()
   const { user } = useAuth()
+  const { lang } = useI18n()
   const { messages, getProperty, getUser, businessUsers, addMessage, uploadChatPhoto, markThreadRead } =
     useJobsStore()
   const [draft, setDraft] = React.useState("")
@@ -126,11 +130,20 @@ export function ChatThreadPage() {
                 {message.photoUrl && (
                   <img
                     src={message.photoUrl}
-                    alt="Attachment"
+                    alt={t("Attachment")}
                     className="mb-1.5 w-48 rounded-lg object-cover"
                   />
                 )}
-                {message.text && <p>{message.text}</p>}
+                {message.text && (
+                  <>
+                    <p className="whitespace-pre-wrap">{pickText(message.text, message.translations, lang).shown}</p>
+                    {pickText(message.text, message.translations, lang).original && (
+                      <p className="mt-1 text-[11px] whitespace-pre-wrap italic opacity-60">
+                        {message.text}
+                      </p>
+                    )}
+                  </>
+                )}
                 <p
                   className={cn(
                     "mt-1 text-right text-[10px] opacity-70"
@@ -179,7 +192,7 @@ export function ChatThreadPage() {
         <Input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Type a message..."
+          placeholder={t("Type a message...")}
           className="rounded-full"
         />
         <button

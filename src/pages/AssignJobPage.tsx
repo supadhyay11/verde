@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { CalendarDays, Clock, MapPin, User as UserIcon } from "lucide-react"
@@ -21,6 +22,7 @@ const SERVICE_TYPES: ServiceType[] = [
 ]
 
 export function AssignJobPage() {
+  const t = useT()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
@@ -110,14 +112,13 @@ export function AssignJobPage() {
   if (properties.length === 0) {
     return (
       <div className="flex min-h-full flex-col bg-background pb-6">
-        <TopBar title="Schedule Service" showBack backTo="/customers" />
+        <TopBar title={t("Schedule Service")} showBack backTo="/customers" />
         <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
           <p className="text-base text-muted-foreground">
-            You don&apos;t have any customers yet. Add one first, then come
-            back to schedule their service.
+            {t("You don't have any customers yet. Add one first, then come back to schedule their service.")}
           </p>
           <Button asChild size="lg">
-            <Link to="/customers">Add a Customer</Link>
+            <Link to="/customers">{t("Add a Customer")}</Link>
           </Button>
         </div>
       </div>
@@ -126,11 +127,11 @@ export function AssignJobPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-8">
-      <TopBar title="Schedule Service" showBack backTo="/customers" />
+      <TopBar title={t("Schedule Service")} showBack backTo="/customers" />
       <form onSubmit={handleSubmit} className="flex flex-col gap-7 px-4 py-5">
         <div className="space-y-2.5">
           <Label className="flex items-center gap-2 text-base font-semibold text-primary">
-            <MapPin className="size-5" /> Customer
+            <MapPin className="size-5" /> {t("Customer")}
           </Label>
           <select
             value={propertyId}
@@ -155,12 +156,12 @@ export function AssignJobPage() {
               </p>
               {selectedProperty.gateCode && (
                 <p className="text-sm text-muted-foreground">
-                  Gate code: {selectedProperty.gateCode}
+                  {t("Gate code:")} {selectedProperty.gateCode}
                 </p>
               )}
               {!selectedProperty.claimed && (
                 <p className="text-sm text-accent-foreground">
-                  This customer hasn&apos;t created their account yet.
+                  {t("This customer hasn't created their account yet.")}
                 </p>
               )}
             </div>
@@ -170,7 +171,7 @@ export function AssignJobPage() {
         {team.length > 1 && (
           <div className="space-y-2.5">
             <Label className="flex items-center gap-2 text-base font-semibold">
-              <UserIcon className="size-5 text-muted-foreground" /> Assign To
+              <UserIcon className="size-5 text-muted-foreground" /> {t("Assign To")}
             </Label>
             <select
               value={technicianId}
@@ -190,7 +191,7 @@ export function AssignJobPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2.5">
             <Label className="flex items-center gap-2 text-base font-semibold">
-              <CalendarDays className="size-5 text-muted-foreground" /> Date
+              <CalendarDays className="size-5 text-muted-foreground" /> {t("Date")}
             </Label>
             <Input
               type="date"
@@ -202,7 +203,7 @@ export function AssignJobPage() {
           </div>
           <div className="space-y-2.5">
             <Label className="flex items-center gap-2 text-base font-semibold">
-              <Clock className="size-5 text-muted-foreground" /> Time
+              <Clock className="size-5 text-muted-foreground" /> {t("Time")}
             </Label>
             <Input
               type="time"
@@ -215,7 +216,7 @@ export function AssignJobPage() {
         </div>
 
         <div className="space-y-2.5">
-          <Label className="text-base font-semibold">Service Type</Label>
+          <Label className="text-base font-semibold">{t("Service Type")}</Label>
           <select
             value={serviceType}
             onChange={(e) => setServiceType(e.target.value as ServiceType)}
@@ -231,14 +232,13 @@ export function AssignJobPage() {
 
         {recurrence !== "none" && (
           <p className="rounded-xl bg-accent/60 px-4 py-3 text-sm text-accent-foreground">
-            This will automatically repeat {recurrence} — the next visit is
-            scheduled as soon as this one is marked complete.
+            {t("This will automatically repeat")} {recurrence} {t("— the next visit is scheduled as soon as this one is marked complete.")}
           </p>
         )}
 
         <div className="space-y-2.5">
           <Label className="text-base font-semibold">
-            Anything else needed this visit? (optional)
+            {t("Anything else needed this visit? (optional)")}
           </Label>
           <div className="grid grid-cols-2 gap-2.5">
             {availableExtraTasks.map((t) => (

@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { httpsCallable } from "firebase/functions"
@@ -76,6 +77,7 @@ interface RoutePanelProps {
 }
 
 export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanelProps) {
+  const t = useT()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { jobs, businessUsers, business, getProperty, updateJob } = useJobsStore()
@@ -242,7 +244,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
             type="button"
             variant="outline"
             size="icon"
-            aria-label="Previous day"
+            aria-label={t("Previous day")}
             onClick={() => setDateIso((d) => shiftDay(d, -1))}
           >
             <ChevronLeft className="size-4" />
@@ -254,26 +256,26 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
             type="button"
             variant="outline"
             size="icon"
-            aria-label="Next day"
+            aria-label={t("Next day")}
             onClick={() => setDateIso((d) => shiftDay(d, 1))}
           >
             <ChevronRight className="size-4" />
           </Button>
           {dateIso !== todayIso && (
             <Button type="button" variant="ghost" size="sm" onClick={() => setDateIso(todayIso)}>
-              Today
+              {t("Today")}
             </Button>
           )}
         </div>
         {canChangeTech && technicians.length > 1 && (
           <label className="ml-auto flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Technician</span>
+            <span className="text-muted-foreground">{t("Technician")}</span>
             <select
               value={techId}
               onChange={(e) => onTechIdChange(e.target.value)}
               className="h-10 rounded-md border bg-background px-2 text-sm"
             >
-              <option value="all">Everyone</option>
+              <option value="all">{t("Everyone")}</option>
               {technicians.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.id === user?.id ? `${t.name} (you)` : t.name}
@@ -289,30 +291,30 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
           {preview ? (
             <div className="rounded-xl border border-primary bg-primary/5 p-3">
               <p className="text-xs font-bold tracking-wide text-primary uppercase">
-                Proposed order
+                {t("Proposed order")}
               </p>
               {alreadyShort ? (
                 <p className="mt-1 text-sm">
-                  Your route is already about as short as it gets (~{formatMiles(miles)} mi).
+                  {t("Your route is already about as short as it gets (~")}{formatMiles(miles)} {t("mi).")}
                 </p>
               ) : (
                 <>
                   <p className="mt-1 text-sm font-semibold">
-                    ~{formatMiles(miles)} mi driving, down from ~{formatMiles(currentMiles)} mi
+                    ~{formatMiles(miles)} {t("mi driving, down from ~")}{formatMiles(currentMiles)} {t("mi")}
                   </p>
                   <p className="text-sm text-green-700">
-                    Saves about {formatMiles(savedMiles)} mi ({Math.round(savedPct)}% shorter)
+                    {t("Saves about")} {formatMiles(savedMiles)} {t("mi (")}{Math.round(savedPct)}{t("% shorter)")}
                   </p>
                 </>
               )}
               <p className="mt-1 text-xs text-muted-foreground">
-                The dotted line on the map is today's order. Scheduled times aren't changed.
+                {t("The dotted line on the map is today's order. Scheduled times aren't changed.")}
               </p>
               <div className="mt-3 flex gap-2">
                 {!alreadyShort && (
                   <Button type="button" size="sm" onClick={applyOrder} disabled={saving}>
                     {saving ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-                    Apply this order
+                    {t("Apply this order")}
                   </Button>
                 )}
                 <Button
@@ -330,7 +332,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
             <div className="flex flex-wrap items-center gap-2">
               {canOptimize && (
                 <Button type="button" size="sm" onClick={propose} disabled={saving || locating}>
-                  <RouteIcon className="size-4" /> Optimize route
+                  <RouteIcon className="size-4" /> {t("Optimize route")}
                 </Button>
               )}
               {hasSavedOrder && (
@@ -341,12 +343,12 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
                   onClick={resetOrder}
                   disabled={saving}
                 >
-                  <RotateCcw className="size-4" /> Back to time order
+                  <RotateCcw className="size-4" /> {t("Back to time order")}
                 </Button>
               )}
               {needsTechPick && (
                 <p className="text-xs text-muted-foreground">
-                  This day has several technicians. Pick one above to optimize their route.
+                  {t("This day has several technicians. Pick one above to optimize their route.")}
                 </p>
               )}
             </div>
@@ -366,12 +368,12 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
             <div>
               <p className="text-sm font-semibold">
                 {rows.length} {rows.length === 1 ? "stop" : "stops"}
-                {stops.length > 1 && <> · ~{formatMiles(miles)} mi driving</>}
+                {stops.length > 1 && <> · ~{formatMiles(miles)} {t("mi driving")}</>}
               </p>
               <p className="text-xs text-muted-foreground">
                 {locating ? (
                   <span className="inline-flex items-center gap-1">
-                    <Loader2 className="size-3 animate-spin" /> Finding addresses on the map…
+                    <Loader2 className="size-3 animate-spin" /> {t("Finding addresses on the map…")}
                   </span>
                 ) : hasSavedOrder || preview ? (
                   "In route order. Tap a stop to open the job."
@@ -383,7 +385,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
             {directionsUrl && (
               <Button asChild size="sm" variant="outline">
                 <a href={directionsUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink className="size-4" /> Open in Maps
+                  <ExternalLink className="size-4" /> {t("Open in Maps")}
                 </a>
               </Button>
             )}
@@ -391,7 +393,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
 
           {rows.length === 0 && (
             <p className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
-              Nothing scheduled for this day.
+              {t("Nothing scheduled for this day.")}
             </p>
           )}
 
@@ -439,7 +441,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
                               : "First stop"
                             : `~${formatMiles(leg)} mi from previous`}
                         </span>
-                        {done && <span className="font-medium text-green-700">Done</span>}
+                        {done && <span className="font-medium text-green-700">{t("Done")}</span>}
                         <a
                           href={mapsLink(r.property!.address)}
                           target="_blank"
@@ -447,7 +449,7 @@ export function RoutePanel({ techId, onTechIdChange, canChangeTech }: RoutePanel
                           onClick={(e) => e.stopPropagation()}
                           className="ml-auto inline-flex items-center gap-1 font-medium text-primary underline-offset-2 hover:underline"
                         >
-                          <MapPin className="size-3" /> Directions
+                          <MapPin className="size-3" /> {t("Directions")}
                         </a>
                       </span>
                     </span>

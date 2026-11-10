@@ -34,6 +34,8 @@ export interface AppUser {
    * phone, so this remembered flag is how the "Add to Home Screen" banner
    * knows to stay away from people who already have the app. */
   appInstalled?: boolean
+  /** Language this person uses the app in (English or Spanish). */
+  language?: "en" | "es"
 }
 
 export interface Business {
@@ -152,6 +154,8 @@ export interface Property {
   businessId: string
   /** Customer's display name, captured by the provider when the customer is added. */
   customerName: string
+  /** Language this customer prefers for reports, invoices and messages. */
+  language?: "en" | "es"
   /** Set once the customer signs up with their invite code; null until claimed. */
   ownerId: string | null
   /** Unique code the customer uses to sign up and link to this property. */
@@ -202,6 +206,15 @@ export interface Property {
 export type WaterStatus = "ready" | "treated"
 export type EquipmentStatus = "running" | "attention"
 
+/** A piece of free text in both languages. `src` is the language it was
+ * written in; the other side is machine-translated. */
+export interface BilingualText {
+  en: string
+  es: string
+  src?: string
+  orig?: string
+}
+
 export interface ServiceReport {
   waterStatus: WaterStatus
   /** Only set when waterStatus is "treated". */
@@ -240,6 +253,10 @@ export interface ServiceJob {
   /** @deprecated kept for jobs completed before the single-photo change */
   afterPhotoUrl?: string
   notes?: string
+  notesI18n?: BilingualText
+  attentionNotesI18n?: BilingualText
+  /** Language the customer reads reports in, snapshotted at completion. */
+  reportLanguage?: "en" | "es"
   invoiceRef?: string
   recurrence: RecurrenceRule
   completedAt?: string
@@ -356,5 +373,7 @@ export interface ChatMessage {
   text?: string
   photoUrl?: string
   createdAt: string
+  /** Added a moment after sending by the translate Cloud Function. */
+  translations?: BilingualText
 }
 

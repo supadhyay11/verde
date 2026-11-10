@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { Loader2, MapPinOff } from "lucide-react"
 import { loadGoogleMaps } from "@/lib/google-maps"
@@ -28,6 +29,7 @@ const TEAL = "#2F8F4E"
 
 /** The day's stops as numbered pins joined by a line, in visit order. */
 export function RouteMap({ stops, selectedId, ghostPath, origin, onSelect, className }: RouteMapProps) {
+  const t = useT()
   const hostRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<any>(null)
   const overlaysRef = React.useRef<any[]>([])
@@ -171,7 +173,7 @@ export function RouteMap({ stops, selectedId, ghostPath, origin, onSelect, class
           {state === "loading" ? (
             <>
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Loading map…</p>
+              <p className="text-sm text-muted-foreground">{t("Loading map…")}</p>
             </>
           ) : (
             <>

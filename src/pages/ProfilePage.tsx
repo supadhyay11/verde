@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Bell, ChevronRight, Clock, Gift, Globe, Image as ImageIcon, KeyRound, LifeBuoy, LogOut, Mail, MapPin, Phone, Trash2, Users, Wallet } from "lucide-react"
+import { LanguageToggle, useT } from "@/lib/i18n"
 import { TopBar } from "@/components/TopBar"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,6 +18,7 @@ import {
 import { Link, useNavigate } from "react-router-dom"
 
 export function ProfilePage() {
+  const t = useT()
   const { user, logout, resetPassword, updateUserProfile, deleteMyAccount } = useAuth()
   const { business, updateBusiness, uploadBusinessLogo } = useJobsStore()
   const navigate = useNavigate()
@@ -188,7 +190,7 @@ export function ProfilePage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background">
-      <TopBar title="Profile" />
+      <TopBar title={t("Profile")} />
       <div className="flex flex-col items-center gap-2 px-4 py-6">
         <Avatar className="size-20">
           <AvatarFallback className="bg-primary/10 text-2xl text-primary">
@@ -213,7 +215,7 @@ export function ProfilePage() {
           <Button asChild variant="outline" className="w-full justify-between">
             <Link to="/team">
               <span className="flex items-center gap-2">
-                <Users className="size-4" /> Team
+                <Users className="size-4" /> {t("Team")}
               </span>
               <ChevronRight className="size-4 text-muted-foreground" />
             </Link>
@@ -223,18 +225,24 @@ export function ProfilePage() {
           <Button asChild variant="outline" className="w-full justify-between">
             <Link to="/referrals">
               <span className="flex items-center gap-2">
-                <Gift className="size-4" /> Refer a garden pro - you both get 3 months free
+                <Gift className="size-4" /> {t("Refer a garden pro - you both get 3 months free")}
               </span>
               <ChevronRight className="size-4 text-muted-foreground" />
             </Link>
           </Button>
         )}
+        <Card className="gap-2 p-4">
+          <p className="flex items-center gap-1.5 text-sm font-semibold">
+            <Globe className="size-4" /> {t("Language / Idioma")}
+          </p>
+          <LanguageToggle />
+        </Card>
         <Card className="gap-3 p-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">Account</p>
+            <p className="text-sm font-semibold">{t("Account")}</p>
             {!editingAccount && (
               <Button variant="ghost" size="sm" onClick={startEditingAccount}>
-                Edit
+                {t("Edit")}
               </Button>
             )}
           </div>
@@ -242,7 +250,7 @@ export function ProfilePage() {
           {editingAccount ? (
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="accountName">Name</Label>
+                <Label htmlFor="accountName">{t("Name")}</Label>
                 <Input
                   id="accountName"
                   value={accountName}
@@ -250,7 +258,7 @@ export function ProfilePage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="accountPhone">Phone</Label>
+                <Label htmlFor="accountPhone">{t("Phone")}</Label>
                 <Input
                   id="accountPhone"
                   type="tel"
@@ -260,7 +268,7 @@ export function ProfilePage() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                Email can't be changed here - contact support if it needs to update.
+                {t("Email can't be changed here - contact support if it needs to update.")}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -269,7 +277,7 @@ export function ProfilePage() {
                   onClick={() => setEditingAccount(false)}
                   disabled={savingAccount}
                 >
-                  Cancel
+                  {t("Cancel")}
                 </Button>
                 <Button
                   className="flex-1"
@@ -302,7 +310,7 @@ export function ProfilePage() {
               </p>
               {isBizAdmin(user) && !editingBusiness && (
                 <Button variant="ghost" size="sm" onClick={startEditingBusiness}>
-                  Edit
+                  {t("Edit")}
                 </Button>
               )}
             </div>
@@ -312,7 +320,7 @@ export function ProfilePage() {
                 {business.logoUrl ? (
                   <img
                     src={business.logoUrl}
-                    alt="Business logo"
+                    alt={t("Business logo")}
                     className="size-12 rounded-md border object-contain"
                   />
                 ) : (
@@ -344,7 +352,7 @@ export function ProfilePage() {
             {editingBusiness ? (
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="businessName">Business name</Label>
+                  <Label htmlFor="businessName">{t("Business name")}</Label>
                   <Input
                     id="businessName"
                     value={businessName}
@@ -352,7 +360,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="businessAddress">Address</Label>
+                  <Label htmlFor="businessAddress">{t("Address")}</Label>
                   <Input
                     id="businessAddress"
                     value={businessAddress}
@@ -360,7 +368,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="businessPhone">Phone</Label>
+                  <Label htmlFor="businessPhone">{t("Phone")}</Label>
                   <Input
                     id="businessPhone"
                     type="tel"
@@ -370,19 +378,19 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="businessWebsite">Website (optional)</Label>
+                  <Label htmlFor="businessWebsite">{t("Website (optional)")}</Label>
                   <Input
                     id="businessWebsite"
-                    placeholder="verde-gardener-app.web.app"
+                    placeholder={t("verde-gardener-app.web.app")}
                     value={businessWebsite}
                     onChange={(e) => setBusinessWebsite(e.target.value)}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="businessHours">Hours (optional)</Label>
+                  <Label htmlFor="businessHours">{t("Hours (optional)")}</Label>
                   <Input
                     id="businessHours"
-                    placeholder="Mon-Fri, 8am-5pm"
+                    placeholder={t("Mon-Fri, 8am-5pm")}
                     value={businessHours}
                     onChange={(e) => setBusinessHours(e.target.value)}
                   />
@@ -394,7 +402,7 @@ export function ProfilePage() {
                     onClick={() => setEditingBusiness(false)}
                     disabled={savingBusiness}
                   >
-                    Cancel
+                    {t("Cancel")}
                   </Button>
                   <Button
                     className="flex-1"
@@ -435,36 +443,34 @@ export function ProfilePage() {
           <Card className="gap-3 p-4">
             <div className="flex items-center justify-between">
               <p className="flex items-center gap-1.5 text-sm font-semibold">
-                <Wallet className="size-4" /> Payment Settings
+                <Wallet className="size-4" /> {t("Payment Settings")}
               </p>
               {!editingPayment && (
                 <Button variant="ghost" size="sm" onClick={startEditingPayment}>
-                  Edit
+                  {t("Edit")}
                 </Button>
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Shown on invoices you send, so customers can pay you directly. Payment is
-              always completed by the customer manually - there's no processor involved,
-              so you'll mark invoices as paid yourself once they come through.
+              {t("Shown on invoices you send, so customers can pay you directly. Payment is always completed by the customer manually - there's no processor involved, so you'll mark invoices as paid yourself once they come through.")}
             </p>
 
             {editingPayment ? (
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="venmoUsername">Venmo username</Label>
+                  <Label htmlFor="venmoUsername">{t("Venmo username")}</Label>
                   <Input
                     id="venmoUsername"
-                    placeholder="your-venmo-handle"
+                    placeholder={t("your-venmo-handle")}
                     value={venmoUsername}
                     onChange={(e) => setVenmoUsername(e.target.value)}
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="zelleContact">Zelle email or phone</Label>
+                  <Label htmlFor="zelleContact">{t("Zelle email or phone")}</Label>
                   <Input
                     id="zelleContact"
-                    placeholder="you@example.com"
+                    placeholder={t("you@example.com")}
                     value={zelleContact}
                     onChange={(e) => setZelleContact(e.target.value)}
                   />
@@ -476,7 +482,7 @@ export function ProfilePage() {
                     onClick={() => setEditingPayment(false)}
                     disabled={savingPayment}
                   >
-                    Cancel
+                    {t("Cancel")}
                   </Button>
                   <Button className="flex-1" onClick={handleSavePayment} disabled={savingPayment}>
                     {savingPayment ? "Saving..." : "Save"}
@@ -485,8 +491,8 @@ export function ProfilePage() {
               </div>
             ) : (
               <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                <p>Venmo: {business.venmoUsername || "Not set"}</p>
-                <p>Zelle: {business.zelleContact || "Not set"}</p>
+                <p>{t("Venmo:")} {business.venmoUsername || "Not set"}</p>
+                <p>{t("Zelle:")} {business.zelleContact || "Not set"}</p>
               </div>
             )}
           </Card>
@@ -503,19 +509,19 @@ export function ProfilePage() {
         </Button>
         {resetState === "sent" && (
           <p className="text-center text-xs text-success">
-            Check your email ({user.email}) for a link to set a new password.
+            {t("Check your email (")}{user.email}{t(") for a link to set a new password.")}
           </p>
         )}
         {resetState === "error" && (
           <p className="text-center text-xs text-destructive">
-            Couldn't send the reset email. Try again in a moment.
+            {t("Couldn't send the reset email. Try again in a moment.")}
           </p>
         )}
 
         {pushState !== "unsupported" && (
           <Card className="gap-2 p-4">
             <p className="flex items-center gap-1.5 text-sm font-semibold">
-              <Bell className="size-4" /> Push Notifications
+              <Bell className="size-4" /> {t("Push Notifications")}
             </p>
             <p className="text-xs text-muted-foreground">
               {user.role === "provider"
@@ -524,8 +530,7 @@ export function ProfilePage() {
             </p>
             {pushState === "denied" ? (
               <p className="text-xs text-muted-foreground">
-                Notifications are blocked for Verde in your browser/phone settings -
-                turn them back on there to enable this.
+                {t("Notifications are blocked for Verde in your browser/phone settings - turn them back on there to enable this.")}
               </p>
             ) : (
               <Button
@@ -546,17 +551,17 @@ export function ProfilePage() {
 
         <Button asChild variant="outline" className="w-full">
           <Link to="/support">
-            <LifeBuoy className="size-4" /> Help &amp; Support
+            <LifeBuoy className="size-4" /> {t("Help & Support")}
           </Link>
         </Button>
 
         <Button variant="outline" className="w-full" onClick={handleLogout}>
-          <LogOut className="size-4" /> Sign Out
+          <LogOut className="size-4" /> {t("Sign Out")}
         </Button>
 
         <Card className="gap-3 border-destructive/30 bg-destructive/5 p-4">
           <p className="flex items-center gap-1.5 text-sm font-semibold text-destructive">
-            <Trash2 className="size-4" /> Delete Account
+            <Trash2 className="size-4" /> {t("Delete Account")}
           </p>
           {!confirmingDeleteAccount ? (
             <>
@@ -572,7 +577,7 @@ export function ProfilePage() {
                 className="w-full border-destructive/40 text-destructive hover:text-destructive"
                 onClick={() => setConfirmingDeleteAccount(true)}
               >
-                Delete my account
+                {t("Delete my account")}
               </Button>
             </>
           ) : (
@@ -585,7 +590,7 @@ export function ProfilePage() {
               <Input
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
-                placeholder="DELETE"
+                placeholder={t("DELETE")}
                 disabled={deletingAccount}
               />
               {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
@@ -600,7 +605,7 @@ export function ProfilePage() {
                     setDeleteError(null)
                   }}
                 >
-                  Cancel
+                  {t("Cancel")}
                 </Button>
                 <Button
                   variant="destructive"

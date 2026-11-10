@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import QRCode from "qrcode"
@@ -20,7 +21,6 @@ import {
 import { TopBar } from "@/components/TopBar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AddressFields } from "@/components/AddressFields"
@@ -43,7 +43,7 @@ interface CustomerFormValues {
   phone: string
   email: string
   gateCode: string
-  hasSpa: boolean
+  language: "en" | "es"
   monthlyRate: string
 }
 
@@ -53,7 +53,7 @@ const EMPTY_FORM: CustomerFormValues = {
   phone: "",
   email: "",
   gateCode: "",
-  hasSpa: false,
+  language: "en",
   monthlyRate: "",
 }
 
@@ -77,7 +77,7 @@ async function sendInvite(
   property: Property,
   businessName: string | undefined
 ): Promise<InviteDispatchResult> {
-  const message = inviteMessage(businessName, property.inviteCode)
+  const message = inviteMessage(businessName, property.inviteCode, property.language)
 
   if (property.phone) {
     window.open(smsLink(property.phone, message), "_blank")
@@ -100,12 +100,13 @@ async function sendInvite(
   return "copied"
 }
 
-function InviteQrCode({ code }: { code: string }) {
+function InviteQrCode({ code, lang }: { code: string; lang?: "en" | "es" }) {
+  const t = useT()
   const [dataUrl, setDataUrl] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     let cancelled = false
-    QRCode.toDataURL(inviteLink(code), { width: 220, margin: 1 })
+    QRCode.toDataURL(inviteLink(code, lang), { width: 220, margin: 1 })
       .then((url) => {
         if (!cancelled) setDataUrl(url)
       })
@@ -121,9 +122,9 @@ function InviteQrCode({ code }: { code: string }) {
 
   return (
     <div className="flex flex-col items-center gap-1.5 rounded-md border bg-card p-3">
-      <img src={dataUrl} alt="QR code to sign up with this invite" className="size-[140px]" />
+      <img src={dataUrl} alt={t("QR code to sign up with this invite")} className="size-[140px]" />
       <p className="text-center text-[11px] text-muted-foreground">
-        Customer scans this to sign up with their code pre-filled
+        {t("Customer scans this to sign up with their code pre-filled")}
       </p>
     </div>
   )
@@ -136,22 +137,23 @@ function CustomerFields({
   values: CustomerFormValues
   onChange: (values: CustomerFormValues) => void
 }) {
+  const t = useT()
   return (
     <>
       <div className="space-y-1.5">
-        <Label className="text-xs">Owner Name</Label>
+        <Label className="text-xs">{t("Owner Name")}</Label>
         <Input
-          placeholder="e.g. Priya Shah"
+          placeholder={t("e.g. Priya Shah")}
           value={values.name}
           onChange={(e) => onChange({ ...values, name: e.target.value })}
         />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs">Property Address</Label>
+        <Label className="text-xs">{t("Property Address")}</Label>
         <AddressFields value={values.addr} onChange={(addr) => onChange({ ...values, addr })} />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs">Phone (optional)</Label>
+        <Label className="text-xs">{t("Phone (optional)")}</Label>
         <Input
           type="tel"
           placeholder="+1 555 123 4567"
@@ -160,16 +162,16 @@ function CustomerFields({
         />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs">Email (optional)</Label>
+        <Label className="text-xs">{t("Email (optional)")}</Label>
         <Input
           type="email"
-          placeholder="priya@example.com"
+          placeholder={t("priya@example.com")}
           value={values.email}
           onChange={(e) => onChange({ ...values, email: e.target.value })}
         />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs">Gate Code (optional)</Label>
+        <Label className="text-xs">{t("Gate Code (optional)")}</Label>
         <Input
           placeholder="4892"
           value={values.gateCode}
@@ -177,7 +179,7 @@ function CustomerFields({
         />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs">Monthly Rate (optional)</Label>
+        <Label className="text-xs">{t("Monthly Rate (optional)")}</Label>
         <Input
           type="number"
           inputMode="decimal"
@@ -188,15 +190,26 @@ function CustomerFields({
           onChange={(e) => onChange({ ...values, monthlyRate: e.target.value })}
         />
       </div>
-      <label className="flex items-center gap-2.5 rounded-lg border p-3 text-sm font-medium">
-        <Checkbox
-          checked={values.hasSpa}
-          onCheckedChange={(checked) =>
-            onChange({ ...values, hasSpa: checked === true })
-          }
-        />
-        Does this customer also have a spa?
-      </label>
+      <div className="space-y-1.5">
+        <Label className="text-xs">{t("Customer's language")}</Label>
+        <div className="flex gap-2">
+          {(["en", "es"] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => onChange({ ...values, language: l })}
+              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold ${
+                values.language === l ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"
+              }`}
+            >
+              {l === "en" ? "English" : "Español"}
+            </button>
+          ))}
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          {t("Reports, invoices and messages to this customer go out in this language.")}
+        </p>
+      </div>
     </>
   )
 }
@@ -210,6 +223,7 @@ function EditCustomerCard({
   onCancel: () => void
   onSaved: () => void
 }) {
+  const t = useT()
   const { updateCustomer } = useJobsStore()
   const [values, setValues] = React.useState<CustomerFormValues>({
     name: property.customerName ?? "",
@@ -217,7 +231,7 @@ function EditCustomerCard({
     phone: property.phone ?? "",
     email: property.email ?? "",
     gateCode: property.gateCode ?? "",
-    hasSpa: property.hasSpa ?? false,
+    language: property.language ?? "en",
     monthlyRate: property.monthlyRate != null ? String(property.monthlyRate) : "",
   })
   const [submitting, setSubmitting] = React.useState(false)
@@ -238,7 +252,7 @@ function EditCustomerCard({
         phone: values.phone.trim() || undefined,
         email: values.email.trim() || undefined,
         gateCode: values.gateCode.trim() || undefined,
-        hasSpa: values.hasSpa,
+        language: values.language,
         monthlyRate: values.monthlyRate.trim() ? Number(values.monthlyRate) : undefined,
       })
       onSaved()
@@ -252,7 +266,7 @@ function EditCustomerCard({
   return (
     <Card className="gap-3 p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold">Edit Customer</p>
+        <p className="text-sm font-semibold">{t("Edit Customer")}</p>
         <button type="button" onClick={onCancel}>
           <X className="size-4 text-muted-foreground" />
         </button>
@@ -265,7 +279,7 @@ function EditCustomerCard({
             {submitting ? "Saving..." : "Save Changes"}
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {t("Cancel")}
           </Button>
         </div>
       </form>
@@ -274,6 +288,7 @@ function EditCustomerCard({
 }
 
 export function CustomersPage() {
+  const t = useT()
   const navigate = useNavigate()
   const { properties, business, addCustomer, deleteCustomer } = useJobsStore()
 
@@ -352,7 +367,7 @@ export function CustomersPage() {
         phone: newValues.phone.trim() || undefined,
         email: newValues.email.trim() || undefined,
         gateCode: newValues.gateCode.trim() || undefined,
-        hasSpa: newValues.hasSpa,
+        language: newValues.language,
         monthlyRate: newValues.monthlyRate.trim() ? Number(newValues.monthlyRate) : undefined,
       })
       setJustAdded({ id: propertyId, code })
@@ -400,7 +415,7 @@ export function CustomersPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-6">
-      <TopBar title="Customers" />
+      <TopBar title={t("Customers")} />
 
       <div className="flex flex-col gap-3 px-4 py-4">
         {properties.length > 0 && (
@@ -408,7 +423,7 @@ export function CustomersPage() {
             <Card className="items-center gap-0.5 p-3 text-center">
               <p className="text-lg font-bold">{properties.length}</p>
               <p className="text-[11px] text-muted-foreground">
-                total customer{properties.length === 1 ? "" : "s"}
+                {t("total customer")}{properties.length === 1 ? "" : "s"}
               </p>
             </Card>
             <Card
@@ -429,7 +444,7 @@ export function CustomersPage() {
                 <p className="text-lg font-bold text-success">
                   {properties.filter((p) => p.claimed).length}
                 </p>
-                <p className="text-[11px] text-muted-foreground">active</p>
+                <p className="text-[11px] text-muted-foreground">{t("active")}</p>
               </button>
             </Card>
             <Card
@@ -450,7 +465,7 @@ export function CustomersPage() {
                 <p className="text-lg font-bold text-muted-foreground">
                   {properties.filter((p) => !p.claimed).length}
                 </p>
-                <p className="text-[11px] text-muted-foreground">pending</p>
+                <p className="text-[11px] text-muted-foreground">{t("pending")}</p>
               </button>
             </Card>
           </div>
@@ -459,20 +474,19 @@ export function CustomersPage() {
         {statusFilter && (
           <Card className="flex-row items-center justify-between gap-2 p-3">
             <p className="text-xs font-medium text-foreground">
-              Showing {statusFilter} customers only
+              {t("Showing")} {statusFilter} {t("customers only")}
             </p>
             <Button variant="outline" size="sm" onClick={() => setStatusFilter(null)}>
-              Clear
+              {t("Clear")}
             </Button>
           </Card>
         )}
 
         {justAdded && (
           <Card className="gap-2 border-l-4 border-l-success p-4">
-            <p className="text-sm font-semibold">Customer added</p>
+            <p className="text-sm font-semibold">{t("Customer added")}</p>
             <p className="text-xs text-muted-foreground">
-              Share this invite code with them so they can create their
-              account and see their service schedule.
+              {t("Share this invite code with them so they can create their account and see their service schedule.")}
             </p>
             <button
               type="button"
@@ -522,13 +536,13 @@ export function CustomersPage() {
                   "No phone or email on file - invite message copied to your clipboard instead."}
               </p>
             )}
-            {qrOpenId === justAdded.id && <InviteQrCode code={justAdded.code} />}
+            {qrOpenId === justAdded.id && <InviteQrCode code={justAdded.code} lang={newValues.language} />}
             <button
               type="button"
               className="self-start text-xs text-muted-foreground underline"
               onClick={() => setJustAdded(null)}
             >
-              Dismiss
+              {t("Dismiss")}
             </button>
           </Card>
         )}
@@ -536,7 +550,7 @@ export function CustomersPage() {
         {showForm ? (
           <Card className="gap-3 p-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold">New Customer</p>
+              <p className="text-sm font-semibold">{t("New Customer")}</p>
               <button type="button" onClick={() => setShowForm(false)}>
                 <X className="size-4 text-muted-foreground" />
               </button>
@@ -552,7 +566,7 @@ export function CustomersPage() {
         ) : (
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => setShowForm(true)}>
-              <Plus className="size-4" /> Add Customer
+              <Plus className="size-4" /> {t("Add Customer")}
             </Button>
           </div>
         )}
@@ -563,7 +577,7 @@ export function CustomersPage() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search customers by name, address, or phone"
+              placeholder={t("Search customers by name, address, or phone")}
               className="pl-9"
             />
           </div>
@@ -623,11 +637,11 @@ export function CustomersPage() {
                   <div className="flex items-center gap-2">
                     {property.claimed ? (
                       <span className="flex items-center gap-1 rounded-full bg-success/10 px-2 py-1 text-xs font-medium text-success">
-                        <ShieldCheck className="size-3.5" /> Active
+                        <ShieldCheck className="size-3.5" /> {t("Active")}
                       </span>
                     ) : (
                       <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                        Pending
+                        {t("Pending")}
                       </span>
                     )}
                   </div>
@@ -680,7 +694,7 @@ export function CustomersPage() {
                           "No phone or email on file - invite message copied to your clipboard instead."}
                       </p>
                     )}
-                    {qrOpenId === property.id && <InviteQrCode code={property.inviteCode} />}
+                    {qrOpenId === property.id && <InviteQrCode code={property.inviteCode} lang={property.language} />}
                   </div>
                 )}
 
@@ -688,10 +702,7 @@ export function CustomersPage() {
                   confirmResetId === property.id ? (
                     <div className="flex flex-col gap-2 rounded-md border bg-muted p-3">
                       <p className="text-xs text-muted-foreground">
-                        Reset sign-in for {property.customerName}? Their
-                        current login is removed and a new invite code is
-                        issued. Jobs, invoices, payments and messages stay
-                        exactly as they are.
+                        {t("Reset sign-in for")} {property.customerName}{t("? Their current login is removed and a new invite code is issued. Jobs, invoices, payments and messages stay exactly as they are.")}
                       </p>
                       {resetError && <p className="text-xs text-destructive">{resetError}</p>}
                       <div className="flex gap-2">
@@ -711,7 +722,7 @@ export function CustomersPage() {
                           disabled={resetting}
                           onClick={() => setConfirmResetId(null)}
                         >
-                          Cancel
+                          {t("Cancel")}
                         </Button>
                       </div>
                     </div>
@@ -724,7 +735,7 @@ export function CustomersPage() {
                         setConfirmResetId(property.id)
                       }}
                     >
-                      Can't sign in? Reset access
+                      {t("Can't sign in? Reset access")}
                     </button>
                   )
                 )}
@@ -732,9 +743,7 @@ export function CustomersPage() {
                 {confirmDeleteId === property.id ? (
                   <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3">
                     <p className="text-xs text-destructive">
-                      Remove {property.customerName}? This deletes their
-                      property and invite code. Past jobs and messages are
-                      kept but will no longer be reachable from Customers.
+                      {t("Remove")} {property.customerName}{t("? This deletes their property and invite code. Past jobs and messages are kept but will no longer be reachable from Customers.")}
                     </p>
                     <div className="flex gap-2">
                       <Button
@@ -754,7 +763,7 @@ export function CustomersPage() {
                         disabled={deleting}
                         onClick={() => setConfirmDeleteId(null)}
                       >
-                        Cancel
+                        {t("Cancel")}
                       </Button>
                     </div>
                   </div>
@@ -766,7 +775,7 @@ export function CustomersPage() {
                       className="flex-1"
                       onClick={() => navigate(`/jobs/new?propertyId=${property.id}`)}
                     >
-                      Schedule Service
+                      {t("Schedule Service")}
                     </Button>
                     <Button
                       variant="outline"
@@ -782,7 +791,7 @@ export function CustomersPage() {
           )}
           {properties.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
-              No customers yet. Add your first one above.
+              {t("No customers yet. Add your first one above.")}
             </p>
           )}
         </div>

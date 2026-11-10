@@ -56,7 +56,7 @@ const { markReportViewed } = require("./report-view")
 exports.markReportViewed = markReportViewed
 
 // In-app "Contact Us" - sends a signed-in user's support message
-// straight to admin@tadpool.app. See functions/support.js.
+// straight to support@verde-gardener-app.web.app. See functions/support.js.
 const { sendSupportMessage } = require("./support")
 exports.sendSupportMessage = sendSupportMessage
 
@@ -65,7 +65,7 @@ exports.sendSupportMessage = sendSupportMessage
 // functions/book-demo.js.
 
 // Homepage "Email us" form in the chat button - public, emails
-// admin@tadpool.app only. See functions/contact-email.js.
+// support@verde-gardener-app.web.app only. See functions/contact-email.js.
 
 // Referral program - a business shares its link, and when another pool pro
 // signs up with it both earn free months. Server-only collections, no
@@ -78,7 +78,7 @@ exports.recordReferral = recordReferral
 // directly into their own bank account. See functions/stripe-connect.js
 // for the full setup steps (Stripe account, secrets, webhook).
 
-// // TadPool's own subscription billing - businesses paying TadPool to use
+// // Verde's own subscription billing - businesses paying Verde to use
 // // the app ($19.99/month flat, first 3 months free), separate from
 // // Stripe Connect above. See functions/stripe-billing.js.
 // const {
@@ -91,7 +91,7 @@ exports.recordReferral = recordReferral
 // exports.stripeBillingWebhook = stripeBillingWebhook
 
 // One-time "Connect to QuickBooks" customer import - a business admin
-// connects once, TadPool pulls in their existing QuickBooks Online
+// connects once, Verde pulls in their existing QuickBooks Online
 // customers, no ongoing sync in either direction. See
 // functions/quickbooks-import.js for the full setup steps (Intuit app,
 // secrets, redirect URI).
@@ -251,3 +251,9 @@ const {
 exports.onBusinessCreatedSetPlan = onBusinessCreatedSetPlan
 exports.getTeamPlan = getTeamPlan
 exports.adminSetBusinessPlan = adminSetBusinessPlan
+
+// English <-> Spanish: adds the other-language version of chat messages and
+// visit notes. See functions/translate.js.
+const { onMessageCreatedTranslate, onJobNotesTranslate } = require("./translate")
+exports.onMessageCreatedTranslate = onMessageCreatedTranslate
+exports.onJobNotesTranslate = onJobNotesTranslate

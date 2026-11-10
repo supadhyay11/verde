@@ -2,7 +2,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https")
 const { getFirestore, FieldValue } = require("firebase-admin/firestore")
 
 // Referral program: a business shares its personal link
-// (https://app.tadpool.app/signup?ref=CODE); when another pool pro signs up
+// (https://verde-gardener-app.web.app/signup?ref=CODE); when another pool pro signs up
 // with it, BOTH businesses earn CREDIT_MONTHS free months.
 //
 // Everything lives in two server-only collections, written ONLY here with the
@@ -13,14 +13,14 @@ const { getFirestore, FieldValue } = require("firebase-admin/firestore")
 //   referrals/{referredBusinessId}{ referrerBusinessId, referrerUid, referredBusinessId,
 //                                   referredUid, code, creditMonthsEach, createdAt }
 //
-// TadPool's own subscription billing is not switched on yet (see the
+// Verde's own subscription billing is not switched on yet (see the
 // commented-out stripe-billing block in functions/index.js), so credits are a
 // ledger: each referral records the months earned, and billing applies them
 // when it goes live. The doc id of `referrals` is the REFERRED business, so a
 // business can only ever be referred once.
 
 const CREDIT_MONTHS = 3
-const APP_URL = "https://app.tadpool.app"
+const APP_URL = "https://verde-gardener-app.web.app"
 // No 0/O/1/I/L so a code is easy to read out loud or type from a text.
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 const CODE_LENGTH = 7

@@ -79,7 +79,7 @@ interface AuthContextValue {
    * for name, the Firebase Auth displayName too, so the two never drift
    * apart. Email is deliberately not editable here - changing it needs
    * Firebase Auth's own re-verification flow, not a plain profile edit. */
-  updateUserProfile: (patch: { name?: string; phone?: string }) => Promise<void>
+  updateUserProfile: (patch: { name?: string; phone?: string; language?: "en" | "es" }) => Promise<void>
   /** Permanently deletes the signed-in user's own account (Firestore
    * profile + Firebase Auth sign-in, plus their whole business if this is
    * a provider - see functions/self-delete-account.js) and signs them
@@ -393,11 +393,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const updateUserProfile = React.useCallback(
-    async (patch: { name?: string; phone?: string }) => {
+    async (patch: { name?: string; phone?: string; language?: "en" | "es" }) => {
       if (!firebaseUser) throw new Error("Not signed in.")
       const updates: Record<string, string | null> = {}
       if (patch.name !== undefined) updates.name = patch.name
       if (patch.phone !== undefined) updates.phone = patch.phone || null
+      if (patch.language !== undefined) updates.language = patch.language
       if (Object.keys(updates).length === 0) return
       await updateDoc(doc(db, "users", firebaseUser.uid), updates)
       if (patch.name !== undefined) {

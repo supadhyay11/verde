@@ -3,7 +3,7 @@ const { onDocumentCreated } = require("firebase-functions/v2/firestore")
 const { getFirestore, FieldValue } = require("firebase-admin/firestore")
 
 /**
- * TadPool plans. Pro is $39.99/month for up to 3 technicians, Premium is
+ * Verde plans. Pro is $39.99/month for up to 3 technicians, Premium is
  * $69.99/month for up to 10; every feature is in both. A "technician" here
  * is anyone with a service login in the business (the owner and every
  * teammate, admin or technician role), i.e. every users/{uid} doc with
@@ -72,7 +72,7 @@ async function assertRoomForTechnician(db, businessId) {
       "failed-precondition",
       info.plan === "pro"
         ? `Your Pro plan includes up to ${info.maxTechnicians} technicians. Upgrade to Premium (up to ${PLANS.premium.maxTechnicians}) to add more.`
-        : `Your Premium plan includes up to ${info.maxTechnicians} technicians. Contact admin@tadpool.app if you need a larger team.`
+        : `Your Premium plan includes up to ${info.maxTechnicians} technicians. Contact support@verde-gardener-app.web.app if you need a larger team.`
     )
   }
 }
@@ -96,7 +96,7 @@ exports.getTeamPlan = onCall(async (request) => {
   const me = (await db.collection("users").doc(uid).get()).data()
   if (!me) throw new HttpsError("permission-denied", "No account found.")
   let businessId = me.businessId
-  // A TadPool admin may look up any business (used by the Admin page).
+  // A Verde admin may look up any business (used by the Admin page).
   if (me.role === "admin" && typeof request.data?.businessId === "string") {
     businessId = request.data.businessId
   } else if (me.role !== "provider") {
@@ -106,7 +106,7 @@ exports.getTeamPlan = onCall(async (request) => {
   return getPlanInfo(db, businessId)
 })
 
-// TadPool admin only: until card payments exist, this is how a business is
+// Verde admin only: until card payments exist, this is how a business is
 // moved between plans.
 exports.adminSetBusinessPlan = onCall(async (request) => {
   const uid = request.auth?.uid

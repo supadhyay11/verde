@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { Download, Share, SquarePlus, X } from "lucide-react"
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore"
@@ -55,6 +56,7 @@ function isStandalone(): boolean {
 const DISMISS_KEY = "verde-a2hs-dismissed"
 
 export function AddToHomeScreenBanner() {
+  const t = useT()
   const { user } = useAuth()
   const [dismissed, setDismissed] = React.useState(() => {
     try {
@@ -132,12 +134,12 @@ export function AddToHomeScreenBanner() {
     <div className="flex shrink-0 flex-col gap-2 border-b bg-primary/5 px-4 py-3 text-sm">
       <div className="flex items-start justify-between gap-2">
         <p className="flex items-center gap-1.5 font-semibold text-primary">
-          <SquarePlus className="size-4 shrink-0" /> Add Verde to your Home Screen
+          <SquarePlus className="size-4 shrink-0" /> {t("Add Verde to your Home Screen")}
         </p>
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Dismiss"
+          aria-label={t("Dismiss")}
           className="shrink-0 text-muted-foreground hover:text-foreground"
         >
           <X className="size-4" />
@@ -146,16 +148,15 @@ export function AddToHomeScreenBanner() {
 
       {IS_IOS ? (
         <p className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-          Tap <Share className="mx-0.5 inline size-3.5" /> Share, then "Add to Home Screen"
-          - it opens instantly, full-screen, like any other app.
+          {t("Tap")} <Share className="mx-0.5 inline size-3.5" /> {t("Share, then \"Add to Home Screen\" - it opens instantly, full-screen, like any other app.")}
         </p>
       ) : (
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">
-            Opens instantly, full-screen, like any other app.
+            {t("Opens instantly, full-screen, like any other app.")}
           </p>
           <Button size="sm" onClick={handleInstallClick}>
-            <Download className="size-3.5" /> Install
+            <Download className="size-3.5" /> {t("Install")}
           </Button>
         </div>
       )}

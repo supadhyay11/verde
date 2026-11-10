@@ -20,7 +20,7 @@ const PDFDocument = require("pdfkit")
 //   3. Create an API key and set it: `firebase functions:secrets:set RESEND_API_KEY`
 //   4. Set the "from" address you verified:
 //      `firebase functions:secrets:set RESEND_FROM_EMAIL`
-//      (e.g. "TadPool Invoices <invoices@tadpool.app>")
+//      (e.g. "Verde Invoices <invoices@tadpool.app>")
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY")
 const RESEND_FROM_EMAIL = defineSecret("RESEND_FROM_EMAIL")
 
@@ -28,7 +28,7 @@ const RESEND_FROM_EMAIL = defineSecret("RESEND_FROM_EMAIL")
 // and its /invoice/:invoiceId route in App.tsx) - shows Venmo/Zelle "pay"
 // buttons already; this is what the invoice email now links to, alongside
 // the PDF attachment it already sent.
-const PUBLIC_APP_URL = "https://app.tadpool.app"
+const PUBLIC_APP_URL = "https://verde-gardener-app.web.app"
 const { appLinkTextLines, appLinkHtml } = require("./app-link")
 
 function escapeHtml(value) {
@@ -344,7 +344,7 @@ async function sendInvoicePdfEmail({ apiKey, from, invoice, invoiceId }) {
       ...(venmo ? [`Pay with Venmo (${invoice.snapVenmoUsername}): ${venmo}`] : []),
       "",
       "A PDF copy is attached as well.",
-      ...appLinkTextLines("See your service history and invoices in the TadPool app:"),
+      ...appLinkTextLines("See your service history and invoices in the Verde app:"),
       "",
       "Thanks!",
     ].join("\n"),
@@ -362,7 +362,7 @@ async function sendInvoicePdfEmail({ apiKey, from, invoice, invoiceId }) {
         ? `<p style="text-align:center;margin:8px 0 0;font-size:13px;color:#555555;">Venmo: ${escapeHtml(invoice.snapVenmoUsername)}</p><p style="text-align:center;margin:2px 0 0;"><a href="${escapeHtml(venmo)}" style="color:#0369a1;font-weight:600;text-decoration:underline;">Pay with Venmo -></a></p>`
         : "",
       `<p style="font-size:13px;color:#666666;">A PDF copy of this invoice is attached as well.</p>`,
-      appLinkHtml("See your service history and invoices in the TadPool app:"),
+      appLinkHtml("See your service history and invoices in the Verde app:"),
       `<p>Thanks!</p>`,
       `</div>`,
     ].join(""),

@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { Link, useNavigate } from "react-router-dom"
 import {
@@ -96,6 +97,7 @@ function JobCard({
   assigneeName: string | undefined
   updateJob: (id: string, patch: Partial<ServiceJob>) => Promise<void>
 }) {
+  const t = useT()
   const navigate = useNavigate()
   const [editing, setEditing] = React.useState(false)
   const [editDate, setEditDate] = React.useState(job.scheduledDate)
@@ -192,7 +194,7 @@ function JobCard({
               disabled={saving}
               onClick={handleCancel}
             >
-              Cancel
+              {t("Cancel")}
             </Button>
           </div>
         ) : (
@@ -212,7 +214,7 @@ function JobCard({
         )}
       </div>
       {assigneeName && (
-        <p className="text-xs text-muted-foreground">Assigned to {assigneeName}</p>
+        <p className="text-xs text-muted-foreground">{t("Assigned to")} {assigneeName}</p>
       )}
       {isProvider ? (
         <div className="flex items-start justify-between gap-2">
@@ -270,7 +272,7 @@ function JobCard({
         </span>
         {job.distanceMiles != null && (
           <span className="flex items-center gap-1">
-            <MapPin className="size-3.5" /> {Number(job.distanceMiles.toFixed(1))} mi
+            <MapPin className="size-3.5" /> {Number(job.distanceMiles.toFixed(1))} {t("mi")}
           </span>
         )}
       </div>
@@ -304,6 +306,7 @@ function MissedJobs({
   updateJob: (id: string, patch: Partial<ServiceJob>) => Promise<void>
   deleteJob: (id: string) => Promise<void>
 }) {
+  const t = useT()
   const [open, setOpen] = React.useState(false)
   const [confirmId, setConfirmId] = React.useState<string | "all" | null>(null)
   const [busy, setBusy] = React.useState(false)
@@ -330,14 +333,13 @@ function MissedJobs({
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1 text-left text-sm font-semibold text-destructive"
       >
-        Missed jobs <span className="text-xs font-normal opacity-80">({jobs.length})</span>
+        {t("Missed jobs")} <span className="text-xs font-normal opacity-80">({jobs.length})</span>
         {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
       </button>
       {open && (
         <>
           <p className="text-xs text-muted-foreground">
-            These were scheduled for a past day and never completed. Reschedule a job with the
-            pencil on its card, or delete the ones you won't do.
+            {t("These were scheduled for a past day and never completed. Reschedule a job with the pencil on its card, or delete the ones you won't do.")}
             {repeating > 0 &&
               ` ${repeating} of them repeat: deleting a repeating job doesn't schedule its next visit, so reschedule those instead if you want the series to continue.`}
           </p>
@@ -352,9 +354,9 @@ function MissedJobs({
                 {busy ? "Deleting..." : `Yes, delete ${jobs.length}`}
               </Button>
               <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmId(null)}>
-                Cancel
+                {t("Cancel")}
               </Button>
-              <span className="text-xs text-muted-foreground">This can't be undone.</span>
+              <span className="text-xs text-muted-foreground">{t("This can't be undone.")}</span>
             </div>
           ) : (
             <Button
@@ -363,7 +365,7 @@ function MissedJobs({
               className="self-start text-destructive"
               onClick={() => setConfirmId("all")}
             >
-              <Trash2 className="size-3.5" /> Delete all {jobs.length} missed jobs
+              <Trash2 className="size-3.5" /> {t("Delete all")} {jobs.length} {t("missed jobs")}
             </Button>
           )}
           {error && <p className="text-xs text-destructive">{error}</p>}
@@ -390,7 +392,7 @@ function MissedJobs({
                       {busy ? "Deleting..." : "Yes, delete this job"}
                     </Button>
                     <Button size="sm" variant="ghost" disabled={busy} onClick={() => setConfirmId(null)}>
-                      Cancel
+                      {t("Cancel")}
                     </Button>
                   </div>
                 ) : (
@@ -400,7 +402,7 @@ function MissedJobs({
                     className="self-end text-destructive"
                     onClick={() => setConfirmId(job.id)}
                   >
-                    <Trash2 className="size-3.5" /> Delete job
+                    <Trash2 className="size-3.5" /> {t("Delete job")}
                   </Button>
                 )}
               </div>
@@ -413,6 +415,7 @@ function MissedJobs({
 }
 
 export function JobsListPage() {
+  const t = useT()
   const { user } = useAuth()
   const { jobs, businessUsers, getProperty, getUser, updateJob, deleteJob } = useJobsStore()
   const team = businessUsers.filter((u) => u.role === "provider")
@@ -601,7 +604,7 @@ export function JobsListPage() {
         </div>
         {isProvider && (
           <div className="flex items-center gap-2">
-            <div className="flex rounded-lg bg-muted p-0.5" role="group" aria-label="Jobs view">
+            <div className="flex rounded-lg bg-muted p-0.5" role="group" aria-label={t("Jobs view")}>
               {(
                 [
                   { key: "list", label: "List", icon: List },
@@ -626,7 +629,7 @@ export function JobsListPage() {
             </div>
             <Button asChild size="sm">
               <Link to="/jobs/new">
-                <Plus className="size-4" /> New
+                <Plus className="size-4" /> {t("New")}
               </Link>
             </Button>
           </div>
@@ -639,7 +642,7 @@ export function JobsListPage() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by customer name"
+            placeholder={t("Search by customer name")}
             className="pl-9"
           />
         </div>
@@ -648,7 +651,7 @@ export function JobsListPage() {
       {isProvider && isAdmin && view === "list" && team.length > 1 && (
         <div className="flex items-center gap-2 px-4 pt-3">
           <label htmlFor="jobsTechFilter" className="text-sm text-muted-foreground">
-            Technician
+            {t("Technician")}
           </label>
           <select
             id="jobsTechFilter"
@@ -656,7 +659,7 @@ export function JobsListPage() {
             onChange={(e) => setTechId(e.target.value)}
             className="h-10 flex-1 rounded-xl border border-input bg-transparent px-3 text-sm sm:max-w-xs"
           >
-            <option value="all">Everyone</option>
+            <option value="all">{t("Everyone")}</option>
             {team.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.id === user?.id ? `${t.name} (you)` : t.name}
@@ -700,7 +703,7 @@ export function JobsListPage() {
                 <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4">
                   {todayCompleted.length > 0 && (
                     <p className="lg:col-span-2 text-sm font-semibold text-muted-foreground">
-                      Remaining{" "}
+                      {t("Remaining")}{" "}
                       <span className="text-xs font-normal opacity-70">({todayRemaining.length})</span>
                     </p>
                   )}
@@ -722,7 +725,7 @@ export function JobsListPage() {
                 <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4">
                   {todayRemaining.length > 0 && (
                     <p className="lg:col-span-2 text-sm font-semibold text-muted-foreground">
-                      Completed{" "}
+                      {t("Completed")}{" "}
                       <span className="text-xs font-normal opacity-70">({todayCompleted.length})</span>
                     </p>
                   )}
@@ -861,7 +864,7 @@ export function JobsListPage() {
               />
             ))}
             {sortedJobs.length === 0 && (
-              <p className="py-10 text-center text-sm text-muted-foreground">No visits yet.</p>
+              <p className="py-10 text-center text-sm text-muted-foreground">{t("No visits yet.")}</p>
             )}
           </div>
         )}

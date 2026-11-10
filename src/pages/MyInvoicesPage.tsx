@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { Navigate } from "react-router-dom"
 import { CheckCircle2, FileText } from "lucide-react"
 import { TopBar } from "@/components/TopBar"
@@ -12,13 +13,14 @@ function money(amount: number): string {
 }
 
 function InvoiceRow({ invoice }: { invoice: Invoice }) {
+  const t = useT()
   return (
     <Card className="gap-2 p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-sm font-semibold">{invoice.period}</p>
           {invoice.invoiceNumber != null && (
-            <p className="text-xs text-muted-foreground">Invoice #{invoice.invoiceNumber}</p>
+            <p className="text-xs text-muted-foreground">{t("Invoice #")}{invoice.invoiceNumber}</p>
           )}
         </div>
         <p className="text-lg font-bold">{money(invoice.amount)}</p>
@@ -26,11 +28,11 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
       <div className="flex items-center justify-between gap-2">
         {invoice.status === "paid" ? (
           <span className="flex items-center gap-1 text-xs font-semibold text-success">
-            <CheckCircle2 className="size-3.5" /> Paid
+            <CheckCircle2 className="size-3.5" /> {t("Paid")}
           </span>
         ) : (
           <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-bold text-warning">
-            Unpaid
+            {t("Unpaid")}
           </span>
         )}
         <Button asChild size="sm" variant="outline">
@@ -53,6 +55,7 @@ function InvoiceRow({ invoice }: { invoice: Invoice }) {
 // the existing Connect setup - see ProfilePage's Stripe card); for now
 // "pay" means the same Venmo/Zelle flow the emailed invoice already offers.
 export function MyInvoicesPage() {
+  const t = useT()
   const { user } = useAuth()
   const { invoices } = useJobsStore()
 
@@ -70,19 +73,19 @@ export function MyInvoicesPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background">
-      <TopBar title="Billing" />
+      <TopBar title={t("Billing")} />
       <div className="flex flex-col gap-4 px-4 py-4">
         {invoices.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
             <FileText className="size-8 text-muted-foreground/50" />
-            <p>No invoices yet - they'll show up here once your provider sends one.</p>
+            <p>{t("No invoices yet - they'll show up here once your provider sends one.")}</p>
           </div>
         ) : (
           <>
             {unpaid.length > 0 && (
               <div className="flex flex-col gap-2">
                 <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Unpaid
+                  {t("Unpaid")}
                 </h3>
                 {unpaid.map((invoice) => (
                   <InvoiceRow key={invoice.id} invoice={invoice} />
@@ -92,7 +95,7 @@ export function MyInvoicesPage() {
             {paid.length > 0 && (
               <div className="flex flex-col gap-2">
                 <h3 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Paid
+                  {t("Paid")}
                 </h3>
                 {paid.map((invoice) => (
                   <InvoiceRow key={invoice.id} invoice={invoice} />

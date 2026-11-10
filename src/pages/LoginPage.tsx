@@ -1,3 +1,4 @@
+import { LanguageToggle, useT } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
 import * as React from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
@@ -5,6 +6,7 @@ import { ArrowRight, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 
 export function LoginPage() {
+  const t = useT()
   const [identifier, setIdentifier] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [submitting, setSubmitting] = React.useState(false)
@@ -36,6 +38,7 @@ export function LoginPage() {
     >
       {/* Brand panel: a short header on phones, a full side panel on laptops. */}
       <div className="relative flex shrink-0 flex-col items-center justify-center gap-3.5 overflow-hidden bg-[#14532D] px-6 pt-16 pb-16 text-center lg:w-[44%] lg:max-w-[560px] lg:items-start lg:justify-between lg:p-14 lg:text-left">
+        <LanguageToggle dark className="absolute top-4 right-4 z-10" />
         <svg
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 size-full"
@@ -51,22 +54,22 @@ export function LoginPage() {
         </svg>
         <a
           href="https://verde-gardener-app.web.app"
-          aria-label="Go to Verde homepage"
+          aria-label={t("Go to Verde homepage")}
           className="relative flex flex-col items-center gap-3.5 lg:flex-row lg:gap-3"
         >
           <span className="flex size-[68px] items-center justify-center rounded-[20px] bg-[#86D17A] text-[#14532D] lg:size-11 lg:rounded-[13px]">
             <VerdeMark className="size-11 lg:size-[28px]" />
           </span>
           <span className="font-display text-3xl font-extrabold text-white lg:text-2xl">
-            Verde
+            {t("Verde")}
           </span>
         </a>
         <div className="relative hidden flex-col gap-3.5 lg:flex">
           <h2 className="font-display text-[40px] leading-[1.1] font-extrabold text-balance text-white">
-            Every garden, every visit, one clear picture.
+            {t("Every garden, every visit, one clear picture.")}
           </h2>
           <p className="max-w-[400px] text-[17px] leading-normal text-[#D6EBD8]">
-            Garden pros plan routes and send reports. Customers see what was done and what is next.
+            {t("Garden pros plan routes and send reports. Customers see what was done and what is next.")}
           </p>
         </div>
       </div>
@@ -76,18 +79,18 @@ export function LoginPage() {
         <div className="flex w-full max-w-[400px] flex-col gap-5 lg:gap-6">
           <div className="flex flex-col gap-1">
             <h1 className="font-display text-[26px] leading-[1.15] font-extrabold lg:text-[32px]">
-              Welcome back
+              {t("Welcome back")}
             </h1>
             <p className="text-[15px] text-[#4B5E50] lg:text-base">
-              <span className="lg:hidden">Your gardens, visits and invoices in one place.</span>
-              <span className="hidden lg:inline">Sign in to manage your services.</span>
+              <span className="lg:hidden">{t("Your gardens, visits and invoices in one place.")}</span>
+              <span className="hidden lg:inline">{t("Sign in to manage your services.")}</span>
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 lg:gap-[18px]">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="login-id" className="text-sm font-semibold">
-                Email or phone number
+                {t("Email or phone number")}
               </label>
               <input
                 id="login-id"
@@ -95,7 +98,7 @@ export function LoginPage() {
                 inputMode="email"
                 autoCapitalize="none"
                 autoComplete="username"
-                placeholder="you@example.com or (555) 123-4567"
+                placeholder={t("you@example.com or (555) 123-4567")}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
@@ -106,13 +109,13 @@ export function LoginPage() {
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
                 <label htmlFor="login-pw" className="text-sm font-semibold">
-                  Password
+                  {t("Password")}
                 </label>
                 <Link
                   to="/forgot-password"
                   className="inline-flex min-h-11 items-center text-sm font-semibold text-[#166534] hover:underline"
                 >
-                  Forgot password?
+                  {t("Forgot password?")}
                 </Link>
               </div>
               <div className="relative flex">
@@ -120,7 +123,7 @@ export function LoginPage() {
                   id="login-pw"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  placeholder="Your password"
+                  placeholder={t("Your password")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -151,22 +154,22 @@ export function LoginPage() {
 
           <div className="flex items-center gap-3 text-[13px] text-[#4B5E50] lg:hidden">
             <div className="h-px flex-1 bg-[#DCE7DD]" />
-            New to Verde?
+            {t("New to Verde?")}
             <div className="h-px flex-1 bg-[#DCE7DD]" />
           </div>
           <Link
             to="/signup"
             className="flex h-[54px] items-center justify-center rounded-2xl border-[1.5px] border-[#1F7A3D] text-base font-bold text-[#166534] lg:hidden"
           >
-            Create an account
+            {t("Create an account")}
           </Link>
           <p className="text-center text-[13px] text-[#4B5E50] lg:hidden">
-            Got an invite code from your garden service? Tap Create an account.
+            {t("Got an invite code from your garden service? Tap Create an account.")}
           </p>
           <p className="hidden text-center text-[15px] text-[#4B5E50] lg:block">
-            New to Verde?{" "}
+            {t("New to Verde?")}{" "}
             <Link to="/signup" className="font-bold text-[#166534] hover:underline">
-              Create an account
+              {t("Create an account")}
             </Link>
           </p>
         </div>

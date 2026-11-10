@@ -1,4 +1,4 @@
-// The link to the published TadPool iOS app, added to the customer-facing
+// The link to the published Verde iOS app, added to the customer-facing
 // emails (service report, invoice, weekly sign-up reminder). One place to
 // change it.
 //
@@ -8,7 +8,8 @@
 //
 // It must be the https App Store page, e.g.
 //   https://apps.apple.com/us/app/tadpool/id0000000000
-const APP_STORE_URL = "https://apps.apple.com/us/app/tadpool/id6811681021"
+// Verde has no App Store listing yet, so no download link is added to emails.
+const APP_STORE_URL = ""
 
 function validUrl(url) {
   return typeof url === "string" && /^https:\/\/apps\.apple\.com\/\S+$/.test(url.trim())
@@ -30,7 +31,7 @@ function escapeAttr(value) {
  *   lead: the sentence that introduces the link.
  * `url` is overridable only so the output can be tested.
  */
-function appLinkTextLines(lead = "Get the TadPool app:", url = APP_STORE_URL) {
+function appLinkTextLines(lead = "Get the Verde app:", url = APP_STORE_URL) {
   if (!validUrl(url)) return []
   return ["", `${lead} ${url.trim()}`]
 }
@@ -39,7 +40,7 @@ function appLinkTextLines(lead = "Get the TadPool app:", url = APP_STORE_URL) {
  * Small, muted HTML paragraph for an HTML email. Empty string when no valid
  * link is configured.
  */
-function appLinkHtml(lead = "Get the TadPool app:", url = APP_STORE_URL) {
+function appLinkHtml(lead = "Get the Verde app:", url = APP_STORE_URL) {
   if (!validUrl(url)) return ""
   const href = escapeAttr(url.trim())
   return (

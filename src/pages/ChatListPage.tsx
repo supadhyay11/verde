@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import { Link } from "react-router-dom"
 import { TopBar } from "@/components/TopBar"
 import { Card } from "@/components/ui/card"
@@ -26,6 +27,7 @@ function toMillis(value: unknown): number {
 }
 
 export function ChatListPage() {
+  const t = useT()
   const { user } = useAuth()
   const { properties, messages, businessUsers, getUser } = useJobsStore()
 
@@ -55,7 +57,7 @@ export function ChatListPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background">
-      <TopBar title="Messages" />
+      <TopBar title={t("Messages")} />
       <div className="flex flex-col gap-2 px-4 py-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-3">
         {threads.map(({ property, last, counterpart, unreadCount }) => (
           <Link key={property.id} to={`/chat/${property.id}`}>
@@ -112,7 +114,7 @@ export function ChatListPage() {
         ))}
         {threads.length === 0 && (
           <p className="py-10 text-center text-sm text-muted-foreground lg:col-span-2">
-            No conversations yet.
+            {t("No conversations yet.")}
           </p>
         )}
       </div>

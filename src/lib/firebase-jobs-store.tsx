@@ -25,7 +25,7 @@ interface AddCustomerInput {
   phone?: string
   email?: string
   gateCode?: string
-  hasSpa?: boolean
+  language?: "en" | "es"
   monthlyRate?: number
   smsConsent?: boolean
 }
@@ -36,7 +36,7 @@ interface UpdateCustomerInput {
   phone?: string
   email?: string
   gateCode?: string
-  hasSpa?: boolean
+  language?: "en" | "es"
   monthlyRate?: number
   smsConsent?: boolean
 }
@@ -327,7 +327,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
         phone: input.phone || null,
         email: input.email || null,
         gateCode: input.gateCode || null,
-        hasSpa: input.hasSpa ?? false,
+        language: input.language ?? "en",
         monthlyRate: input.monthlyRate ?? null,
         smsConsent: input.smsConsent ?? false,
         ownerId: null,
@@ -358,7 +358,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
         phone: input.phone || null,
         email: input.email || null,
         gateCode: input.gateCode || null,
-        hasSpa: input.hasSpa ?? false,
+        language: input.language ?? "en",
         monthlyRate: input.monthlyRate ?? null,
         smsConsent: input.smsConsent ?? false,
       })

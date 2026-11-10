@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { httpsCallable } from "firebase/functions"
 import { MessageCircle, Send } from "lucide-react"
@@ -13,6 +14,7 @@ function whatsappLink(number: string) {
 }
 
 export function SupportPage() {
+  const t = useT()
   const [message, setMessage] = React.useState("")
   const [status, setStatus] = React.useState<"idle" | "sending" | "sent" | "error">("idle")
 
@@ -31,32 +33,30 @@ export function SupportPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-6">
-      <TopBar title="Help & Support" showBack backTo="/profile" />
+      <TopBar title={t("Help & Support")} showBack backTo="/profile" />
       <div className="flex flex-col gap-3 px-4 py-4">
         <p className="text-sm text-muted-foreground">
-          Have a question or ran into a problem? Reach out and we&apos;ll get back to
-          you.
+          {t("Have a question or ran into a problem? Reach out and we'll get back to you.")}
         </p>
 
         {SUPPORT_WHATSAPP_NUMBER && (
           <a href={whatsappLink(SUPPORT_WHATSAPP_NUMBER)} target="_blank" rel="noreferrer">
             <Button variant="outline" className="w-full">
-              <MessageCircle className="size-4" /> Message us on WhatsApp
+              <MessageCircle className="size-4" /> {t("Message us on WhatsApp")}
             </Button>
           </a>
         )}
 
         <Card className="gap-3 p-4">
-          <p className="text-sm font-semibold">Email Us</p>
+          <p className="text-sm font-semibold">{t("Email Us")}</p>
           <p className="text-xs text-muted-foreground">
-            Sends straight to our support team - we typically reply within a business
-            day.
+            {t("Sends straight to our support team - we typically reply within a business day.")}
           </p>
           <form onSubmit={handleSend} className="flex flex-col gap-3">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="What's going on?"
+              placeholder={t("What's going on?")}
               rows={5}
               className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm"
               required
@@ -68,13 +68,12 @@ export function SupportPage() {
           </form>
           {status === "sent" && (
             <p className="text-sm text-success">
-              Message sent - we&apos;ll get back to you soon.
+              {t("Message sent - we'll get back to you soon.")}
             </p>
           )}
           {status === "error" && (
             <p className="text-sm text-destructive">
-              Couldn&apos;t send that. Try again in a moment, or email us directly at
-              support@verde-gardener-app.web.app.
+              {t("Couldn't send that. Try again in a moment, or email us directly at support@verde-gardener-app.web.app.")}
             </p>
           )}
         </Card>

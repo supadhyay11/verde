@@ -1,3 +1,4 @@
+import { useT } from "@/lib/i18n"
 import * as React from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -80,6 +81,7 @@ function jobStatusLabel(status: ServiceJob["status"]): string {
 }
 
 export function CustomerProfilePage() {
+  const t = useT()
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { getProperty, jobs, invoices, getUser, updateCustomerSentiment } = useJobsStore()
@@ -120,10 +122,10 @@ export function CustomerProfilePage() {
     return (
       <div className="flex flex-col gap-4 p-4">
         <Button variant="outline" size="sm" onClick={() => navigate("/customers")}>
-          <ArrowLeft className="size-3.5" /> Back to Customers
+          <ArrowLeft className="size-3.5" /> {t("Back to Customers")}
         </Button>
         <p className="text-sm text-muted-foreground">
-          Couldn't find that customer - they may have been removed.
+          {t("Couldn't find that customer - they may have been removed.")}
         </p>
       </div>
     )
@@ -139,7 +141,7 @@ export function CustomerProfilePage() {
   return (
     <div className="flex flex-col gap-4 p-4 pb-24">
       <Button variant="outline" size="sm" className="w-fit" onClick={() => navigate("/customers")}>
-        <ArrowLeft className="size-3.5" /> Back to Customers
+        <ArrowLeft className="size-3.5" /> {t("Back to Customers")}
       </Button>
 
       <Card className="gap-2 p-4">
@@ -158,32 +160,31 @@ export function CustomerProfilePage() {
           </p>
         )}
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          <Calendar className="size-3.5" /> Customer since {customerSinceLabel(property.createdAt)}
+          <Calendar className="size-3.5" /> {t("Customer since")} {customerSinceLabel(property.createdAt)}
         </p>
       </Card>
 
       <div className="grid grid-cols-3 gap-2">
         <Card className="gap-1 p-3 text-center">
           <p className="text-xl font-bold">{completedJobs.length}</p>
-          <p className="text-xs text-muted-foreground">Jobs completed</p>
+          <p className="text-xs text-muted-foreground">{t("Jobs completed")}</p>
         </Card>
         <Card className="gap-1 p-3 text-center">
           <p className="text-xl font-bold">{money(lifetimePaid)}</p>
-          <p className="text-xs text-muted-foreground">Lifetime paid</p>
+          <p className="text-xs text-muted-foreground">{t("Lifetime paid")}</p>
         </Card>
         <Card className="gap-1 p-3 text-center">
           <p className={"text-xl font-bold " + (outstanding > 0 ? "text-destructive" : "")}>
             {money(outstanding)}
           </p>
-          <p className="text-xs text-muted-foreground">Outstanding</p>
+          <p className="text-xs text-muted-foreground">{t("Outstanding")}</p>
         </Card>
       </div>
 
       <Card className="gap-3 p-4">
-        <p className="text-sm font-bold">Customer sentiment</p>
+        <p className="text-sm font-bold">{t("Customer sentiment")}</p>
         <p className="text-xs text-muted-foreground">
-          How's this relationship going? You set this yourself for now - later we'll be
-          able to pick it up automatically from chat.
+          {t("How's this relationship going? You set this yourself for now - later we'll be able to pick it up automatically from chat.")}
         </p>
         <div className="relative h-2.5 w-full rounded-full bg-gradient-to-r from-red-400 via-zinc-300 to-green-400">
           <input
@@ -195,21 +196,21 @@ export function CustomerProfilePage() {
             onMouseUp={commitSentiment}
             onTouchEnd={commitSentiment}
             className="absolute inset-0 h-2.5 w-full cursor-pointer appearance-none bg-transparent [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow"
-            aria-label="Customer sentiment"
+            aria-label={t("Customer sentiment")}
           />
         </div>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Unhappy</span>
-          <span>Neutral</span>
-          <span>Happy</span>
+          <span>{t("Unhappy")}</span>
+          <span>{t("Neutral")}</span>
+          <span>{t("Happy")}</span>
         </div>
         <p className={"text-center text-sm font-semibold " + sentiment.className}>{sentiment.label}</p>
       </Card>
 
       <Card className="gap-2 p-4">
-        <p className="text-sm font-bold">Job history</p>
+        <p className="text-sm font-bold">{t("Job history")}</p>
         {propertyJobs.length === 0 && (
-          <p className="py-2 text-xs text-muted-foreground">No jobs for this customer yet.</p>
+          <p className="py-2 text-xs text-muted-foreground">{t("No jobs for this customer yet.")}</p>
         )}
         {propertyJobs.map((job) => {
           const tech = getUser(job.technicianId)
@@ -229,19 +230,19 @@ export function CustomerProfilePage() {
               </p>
               {job.completedAt && (
                 <p className="flex items-center gap-1 text-success">
-                  <CheckCircle2 className="size-3" /> Completed {formatDateTime(job.completedAt)}
+                  <CheckCircle2 className="size-3" /> {t("Completed")} {formatDateTime(job.completedAt)}
                 </p>
               )}
-              {job.notes && <p className="text-muted-foreground">&ldquo;{job.notes}&rdquo;</p>}
+              {job.notes && <p className="text-muted-foreground">{t("&ldquo;")}{job.notes}{t("&rdquo;")}</p>}
             </button>
           )
         })}
       </Card>
 
       <Card className="gap-2 p-4">
-        <p className="text-sm font-bold">Invoice history</p>
+        <p className="text-sm font-bold">{t("Invoice history")}</p>
         {propertyInvoices.length === 0 && (
-          <p className="py-2 text-xs text-muted-foreground">No invoices for this customer yet.</p>
+          <p className="py-2 text-xs text-muted-foreground">{t("No invoices for this customer yet.")}</p>
         )}
         {propertyInvoices.map((inv) => {
           const pendingSend = Boolean(inv.scheduledSendAt && !inv.sentAt)
@@ -269,7 +270,7 @@ export function CustomerProfilePage() {
                     : "Not sent yet"}
               </p>
               {inv.status === "paid" && inv.paidAt && (
-                <p className="text-success">Paid {formatDateTime(inv.paidAt)}</p>
+                <p className="text-success">{t("Paid")} {formatDateTime(inv.paidAt)}</p>
               )}
             </div>
           )
