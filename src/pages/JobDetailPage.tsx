@@ -1,3 +1,4 @@
+import { MAX_JOB_PHOTOS, jobPhotos } from "@/lib/photos"
 import { BilingualNote, pickText } from "@/lib/i18n/text"
 import { useI18n, useT, tr, locale, trIn } from "@/lib/i18n"
 import * as React from "react"
@@ -6,6 +7,7 @@ import {
   Camera,
   CheckCircle2,
   Images,
+  X,
   MapPin,
   Clock,
   Eye,
@@ -53,22 +55,23 @@ const DEFAULT_REPORT: ServiceReport = {
 
 function PhotoSlot({
   label,
-  url,
   uploading,
   onPick,
+  max = 1,
 }: {
   label: string
-  url?: string
   uploading: boolean
-  onPick: (file: File) => void
+  onPick: (files: File[]) => void
+  /** How many more photos can be added right now. */
+  max?: number
 }) {
   const t = useT()
   const cameraRef = React.useRef<HTMLInputElement>(null)
   const galleryRef = React.useRef<HTMLInputElement>(null)
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) onPick(file)
+    const files = Array.from(e.target.files ?? []).slice(0, max)
+    if (files.length) onPick(files)
     e.target.value = ""
   }
 
@@ -86,6 +89,7 @@ function PhotoSlot({
         ref={galleryRef}
         type="file"
         accept="image/*"
+        multiple={max > 1}
         className="hidden"
         onChange={handleFile}
       />
@@ -98,13 +102,10 @@ function PhotoSlot({
         onClick={() => cameraRef.current?.click()}
         disabled={uploading}
         className={cn(
-          "relative flex aspect-square w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border-2 border-dashed border-accent bg-accent/40 text-primary",
-          url && "border-solid p-0"
+          "relative flex aspect-square w-full flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border-2 border-dashed border-accent bg-accent/40 text-primary"
         )}
       >
-        {url ? (
-          <img src={url} alt={label} className="size-full object-cover" />
-        ) : uploading ? (
+        {uploading ? (
           <Loader2 className="size-6 animate-spin" />
         ) : (
           <>
@@ -135,7 +136,7 @@ export function JobDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { jobs, business, getProperty, getUser, updateJob, uploadJobPhoto } = useJobsStore()
+  const { jobs, business, getProperty, getUser, updateJob, uploadJobPhoto, removeJobPhoto } = useJobsStore()
 
   const job = jobs.find((j) => j.id === id)
   const [tasks, setTasks] = React.useState(job?.tasks ?? [])
@@ -226,10 +227,14 @@ export function JobDetailPage() {
     }
   }
 
-  async function handlePhotoPick(file: File) {
+  async function handlePhotoPick(files: File[]) {
     setUploading(true)
     try {
-      await uploadJobPhoto(currentJob.id, file)
+      const room = MAX_JOB_PHOTOS - jobPhotos(currentJob).length
+      // One after another so each photo is added to the list cleanly.
+      for (const file of files.slice(0, Math.max(room, 0))) {
+        await uploadJobPhoto(currentJob.id, file)
+      }
     } finally {
       setUploading(false)
     }
@@ -484,30 +489,19 @@ export function JobDetailPage() {
                     )}
                   </div>
                 </div>
-                {job.photoUrl ? (
-                  <img
-                    src={job.photoUrl}
-                    alt={t("Garden photo")}
-                    className="mt-2 aspect-video w-full rounded-lg object-cover"
-                  />
-                ) : job.beforePhotoUrl || job.afterPhotoUrl ? (
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {job.beforePhotoUrl && (
-                      <img
-                        src={job.beforePhotoUrl}
-                        alt={t("Before service")}
-                        className="aspect-square w-full rounded-lg object-cover"
-                      />
-                    )}
-                    {job.afterPhotoUrl && (
-                      <img
-                        src={job.afterPhotoUrl}
-                        alt={t("After service")}
-                        className="aspect-square w-full rounded-lg object-cover"
-                      />
-                    )}
+                {jobPhotos(job).length > 0 && (
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {jobPhotos(job).map((url) => (
+                      <a key={url} href={url} target="_blank" rel="noreferrer">
+                        <img
+                          src={url}
+                          alt={t("Garden photo")}
+                          className="aspect-square w-full rounded-lg object-cover"
+                        />
+                      </a>
+                    ))}
                   </div>
-                ) : null}
+                )}
               </div>
               <div>
                 <div className="mb-2 flex items-center justify-between">
@@ -788,14 +782,34 @@ export function JobDetailPage() {
           </div>
 
           <div>
-            <h3 className="mb-2 text-lg font-semibold">{t("Documentation")}</h3>
-            <div className="max-w-48">
-              <PhotoSlot
-                label={t("Photo")}
-                url={job.photoUrl}
-                uploading={uploading}
-                onPick={handlePhotoPick}
-              />
+            <h3 className="mb-2 text-lg font-semibold">
+              {t("Documentation")}{" "}
+              <span className="text-sm font-normal text-muted-foreground">
+                ({jobPhotos(job).length}/{MAX_JOB_PHOTOS})
+              </span>
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {jobPhotos(job).map((url) => (
+                <div key={url} className="relative aspect-square overflow-hidden rounded-lg border">
+                  <img src={url} alt={t("Garden photo")} className="size-full object-cover" />
+                  <button
+                    type="button"
+                    aria-label={t("Remove")}
+                    onClick={() => void removeJobPhoto(currentJob.id, url)}
+                    className="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full bg-background/90 text-foreground shadow-elevated"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+              ))}
+              {jobPhotos(job).length < MAX_JOB_PHOTOS && (
+                <PhotoSlot
+                  label={t("Add photo")}
+                  uploading={uploading}
+                  onPick={handlePhotoPick}
+                  max={MAX_JOB_PHOTOS - jobPhotos(job).length}
+                />
+              )}
             </div>
           </div>
 

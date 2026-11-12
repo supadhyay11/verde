@@ -1,6 +1,7 @@
 // English -> Spanish for every screen. The English text itself is the key.
 // Missing entries simply show in English.
 export const ES: Record<string, string> = {
+  "Add photo": "Agregar foto",
   "you@example.com or (555) 123-4567": "usted@ejemplo.com o (555) 123-4567",
   "% shorter)": "% más corto)",
   "'s account is ready": " ya tiene su cuenta lista",

@@ -13,8 +13,11 @@ import {
   setDoc,
   updateDoc,
   where,
+  getDoc,
+  deleteField,
 } from "firebase/firestore"
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"
+import { jobPhotos } from "@/lib/photos"
 import { db, storage } from "@/lib/firebase"
 import { useAuth, randomInviteCode } from "@/lib/firebase-auth-context"
 import { BASE_TASKS } from "@/lib/tasks"
@@ -78,6 +81,7 @@ interface JobsStoreValue {
   updateCustomer: (propertyId: string, input: UpdateCustomerInput) => Promise<void>
   deleteCustomer: (propertyId: string) => Promise<void>
   uploadJobPhoto: (jobId: string, file: File) => Promise<string>
+  removeJobPhoto: (jobId: string, url: string) => Promise<void>
   uploadBusinessLogo: (file: File) => Promise<string>
   addMessage: (message: ChatMessage) => Promise<void>
   uploadChatPhoto: (propertyId: string, file: File) => Promise<void>
@@ -379,11 +383,27 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
       const storageRef = ref(storage, path)
       await uploadBytes(storageRef, file, { contentType: file.type })
       const url = await getDownloadURL(storageRef)
-      await updateDoc(doc(db, "jobs", jobId), { photoUrl: url })
+      // Photos pile up on the visit (up to 5, enforced on screen). photoUrl
+      // keeps mirroring the first one so older code paths still work.
+      const jobRef = doc(db, "jobs", jobId)
+      const current = jobPhotos((await getDoc(jobRef)).data() ?? {})
+      const next = [...current.filter((u) => u !== url), url]
+      await updateDoc(jobRef, { photoUrls: next, photoUrl: next[0] })
       return url
     },
     [businessId]
   )
+
+  const removeJobPhoto = React.useCallback(async (jobId: string, url: string) => {
+    const jobRef = doc(db, "jobs", jobId)
+    const next = jobPhotos((await getDoc(jobRef)).data() ?? {}).filter((u) => u !== url)
+    await updateDoc(jobRef, {
+      photoUrls: next,
+      photoUrl: next[0] ?? deleteField(),
+      beforePhotoUrl: deleteField(),
+      afterPhotoUrl: deleteField(),
+    })
+  }, [])
 
   // Business logo - same upload-then-write-URL pattern as uploadJobPhoto
   // above, but there's only ever one logo per business (no jobId), so
@@ -595,6 +615,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
       updateCustomer,
       deleteCustomer,
       uploadJobPhoto,
+      removeJobPhoto,
       uploadBusinessLogo,
       addMessage,
       uploadChatPhoto,
@@ -623,6 +644,7 @@ export function JobsStoreProvider({ children }: { children: React.ReactNode }) {
       updateCustomer,
       deleteCustomer,
       uploadJobPhoto,
+      removeJobPhoto,
       uploadBusinessLogo,
       addMessage,
       uploadChatPhoto,

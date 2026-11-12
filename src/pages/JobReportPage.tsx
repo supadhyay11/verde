@@ -1,3 +1,4 @@
+import { jobPhotos } from "@/lib/photos"
 import { BilingualNote, pickText } from "@/lib/i18n/text"
 import { LanguageToggle, useI18n, useT, tr, locale } from "@/lib/i18n"
 import { VerdeMark } from "@/components/VerdeMark"
@@ -153,30 +154,23 @@ export function JobReportPage() {
             )}
           </div>
 
-          {job.photoUrl ? (
-            <img
-              src={job.photoUrl}
-              alt={t("Garden photo")}
-              className="aspect-video w-full rounded-xl object-cover"
-            />
-          ) : job.beforePhotoUrl || job.afterPhotoUrl ? (
-            <div className="grid grid-cols-2 gap-2">
-              {job.beforePhotoUrl && (
-                <img
-                  src={job.beforePhotoUrl}
-                  alt={t("Before service")}
-                  className="aspect-square w-full rounded-lg object-cover"
-                />
-              )}
-              {job.afterPhotoUrl && (
-                <img
-                  src={job.afterPhotoUrl}
-                  alt={t("After service")}
-                  className="aspect-square w-full rounded-lg object-cover"
-                />
-              )}
+          {jobPhotos(job).length > 0 && (
+            <div className={jobPhotos(job).length === 1 ? "" : "grid grid-cols-2 gap-2"}>
+              {jobPhotos(job).map((url) => (
+                <a key={url} href={url} target="_blank" rel="noreferrer">
+                  <img
+                    src={url}
+                    alt={t("Garden photo")}
+                    className={
+                      jobPhotos(job).length === 1
+                        ? "aspect-video w-full rounded-xl object-cover"
+                        : "aspect-square w-full rounded-lg object-cover"
+                    }
+                  />
+                </a>
+              ))}
             </div>
-          ) : null}
+          )}
 
           <div className="flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">

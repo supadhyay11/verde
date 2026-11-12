@@ -249,6 +249,8 @@ export interface ServiceJob {
    * see beforePhotoUrl/afterPhotoUrl below, kept only so older completed
    * jobs still display the photos they already have. */
   photoUrl?: string
+  /** Up to 5 photos for the visit (see lib/photos.ts). photoUrl mirrors the first. */
+  photoUrls?: string[]
   /** @deprecated kept for jobs completed before the single-photo change */
   beforePhotoUrl?: string
   /** @deprecated kept for jobs completed before the single-photo change */
